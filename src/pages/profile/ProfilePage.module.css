@@ -1,0 +1,50 @@
+.page{
+  min-height: 100vh;
+  background: #FFFFFF; /* 2번째 스샷 상단이 하얀 배경 느낌 */
+}
+
+.appBar{
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 var(--px-screen);
+  background: #FFFFFF;
+}
+
+.title{
+  font-size: 22px;
+  font-weight: 900;
+  color: #C9CDD3; /* 2번째 스샷처럼 회색 타이틀 */
+  letter-spacing: -0.5px;
+}
+
+.settingsBtn{
+  position: absolute;
+  right: var(--px-screen);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor: pointer;
+}
+
+.divider{
+  height: 1px;
+  background: #E5E7EB;
+  margin: 0 var(--px-screen);
+}
+
+.content{
+  background: var(--bg);
+  padding: 14px var(--px-screen) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

@@ -1,0 +1,50 @@
+.shell{
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main{
+  padding-bottom: 84px; /* 하단탭 높이만큼 여백 */
+}
+
+.nav{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 84px;
+  background: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 10px 8px 12px;
+  z-index: 50;
+}
+
+.item{
+  text-decoration: none;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 14px;
+}
+
+.icon{
+  color: #9CA3AF;
+}
+
+.label{
+  font-size: 13px;
+  color: #111827;
+}
+
+.active .icon{
+  color: #6366F1; /* 활성 탭 색(원하면 피그마대로) */
+}
+.active .label{
+  color: #6366F1;
+  font-weight: 700;
+}

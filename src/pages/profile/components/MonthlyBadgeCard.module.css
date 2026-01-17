@@ -1,0 +1,53 @@
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.header{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+}
+
+.title{
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sub{
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.chevron{
+  color: var(--text-3);
+  font-size: 18px;
+}
+
+.badges{
+  margin-top: 10px;
+  display:flex;
+  gap:14px;
+}
+
+.badge{
+  text-align:center;
+  font-size: 11px;
+}
+
+.circle{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #FEF08A;
+  border: 2px solid #FACC15;
+  margin-bottom: 4px;
+}
+
+.locked{
+  background:#E5E7EB;
+  border-color:#D1D5DB;
+}
