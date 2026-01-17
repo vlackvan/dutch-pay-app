@@ -16,7 +16,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
-
+.claude/
 # Frontend specific (repo structure)
 frontend/node_modules/
 frontend/dist/
