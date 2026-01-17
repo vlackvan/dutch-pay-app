@@ -3,7 +3,7 @@ import type {
   SettlementCreate,
   SettlementResponse,
   SettlementUpdate,
-  ParticipantResponse,
+  SettlementResultResponse,
 } from '@/types/api.types';
 
 export const settlementsApi = {
@@ -31,8 +31,8 @@ export const settlementsApi = {
     return response.data;
   },
 
-  markPaid: async (detailId: number): Promise<ParticipantResponse> => {
-    const response = await apiClient.patch<ParticipantResponse>(`/settlements/pay/${detailId}`);
+  markPaid: async (detailId: number): Promise<SettlementResultResponse> => {
+    const response = await apiClient.patch<SettlementResultResponse>(`/settlements/pay/${detailId}`);
     return response.data;
   },
 

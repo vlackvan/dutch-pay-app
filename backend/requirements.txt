@@ -17,7 +17,7 @@ email-validator
 pydantic==2.5.3
 pydantic-settings==2.1.0
 
-# HTTP Client (for Kakao OAuth)
+# HTTP Client (for OAuth)
 httpx==0.26.0
 
 # Development

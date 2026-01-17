@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import styles from './settlements/SettlementsPage.module.css';
 import { useNavigate } from 'react-router-dom';
-import { useMyGroups, useCreateGroup, useJoinGroup } from '@/hooks/queries/useGroups';
+import { useMyGroups, useCreateGroup, useJoinGroup, useGetInviteGroup } from '@/hooks/queries/useGroups';
 import { useAuthStore } from '@/stores/auth.store';
+import type { InviteGroupResponse } from '@/types/api.types';
 
 type SheetMode = 'closed' | 'menu' | 'create' | 'join';
 
@@ -13,15 +14,19 @@ export default function SettlementsPage() {
   const { data: groups = [], isLoading, error } = useMyGroups();
   const createGroupMutation = useCreateGroup();
   const joinGroupMutation = useJoinGroup();
+  const inviteLookup = useGetInviteGroup();
 
   const [sheet, setSheet] = useState<SheetMode>('closed');
 
   const [groupTitle, setGroupTitle] = useState('');
   const [groupIcon, setGroupIcon] = useState('🏖️');
   const [groupDescription, setGroupDescription] = useState('');
+  const [participants, setParticipants] = useState<string[]>([]);
 
   const [inviteCode, setInviteCode] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [inviteGroup, setInviteGroup] = useState<InviteGroupResponse | null>(null);
+  const [selectedParticipantId, setSelectedParticipantId] = useState<number | null>(null);
+  const [newParticipantName, setNewParticipantName] = useState('');
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -35,10 +40,13 @@ export default function SettlementsPage() {
 
   const resetForms = () => {
     setGroupTitle('');
-    setGroupIcon('🏖️');
+    setGroupIcon('???');
     setGroupDescription('');
+    setParticipants(user?.name ? [user.name] : ['']);
     setInviteCode('');
-    setNickname('');
+    setInviteGroup(null);
+    setSelectedParticipantId(null);
+    setNewParticipantName('');
   };
 
   const closeAll = () => {
@@ -47,21 +55,45 @@ export default function SettlementsPage() {
   };
 
   const goMenu = () => setSheet('menu');
-  const goCreate = () => setSheet('create');
-  const goJoin = () => setSheet('join');
+  const goCreate = () => {
+    setParticipants(user?.name ? [user.name] : ['']);
+    setSheet('create');
+  };
+  const goJoin = () => {
+    setInviteGroup(null);
+    setSelectedParticipantId(null);
+    setNewParticipantName('');
+    setSheet('join');
+  };
+
+  const updateParticipant = (index: number, value: string) => {
+    setParticipants((prev) => prev.map((name, i) => (i === index ? value : name)));
+  };
+
+  const addParticipant = () => {
+    setParticipants((prev) => [...prev, '']);
+  };
+
+  const removeParticipant = (index: number) => {
+    setParticipants((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const canCreate = useMemo(() => {
-    return groupTitle.trim().length > 0;
-  }, [groupTitle]);
+    const hasParticipants = participants.some((name) => name.trim());
+    return groupTitle.trim().length > 0 && hasParticipants;
+  }, [groupTitle, participants]);
 
   const createGroup = () => {
     if (!canCreate) return;
+
+    const participantNames = participants.map((name) => name.trim()).filter(Boolean);
 
     createGroupMutation.mutate(
       {
         name: groupTitle.trim(),
         description: groupDescription.trim() || undefined,
         icon: groupIcon,
+        participants: participantNames,
       },
       {
         onSuccess: (newGroup) => {
@@ -75,18 +107,35 @@ export default function SettlementsPage() {
   const joinGroup = () => {
     if (!inviteCode.trim()) return;
 
-    joinGroupMutation.mutate(
-      {
-        invite_code: inviteCode.trim(),
-        nickname: nickname.trim() || undefined,
-      },
-      {
-        onSuccess: (joinedGroup) => {
-          closeAll();
-          navigate(`/settlements/${joinedGroup.id}`);
+    if (!inviteGroup) {
+      inviteLookup.mutate(inviteCode.trim(), {
+        onSuccess: (data) => {
+          setInviteGroup(data);
         },
-      }
-    );
+      });
+      return;
+    }
+
+    const payload = { invite_code: inviteCode.trim() } as {
+      invite_code: string;
+      participant_id?: number;
+      participant_name?: string;
+    };
+
+    if (selectedParticipantId) {
+      payload.participant_id = selectedParticipantId;
+    } else if (newParticipantName.trim()) {
+      payload.participant_name = newParticipantName.trim();
+    } else {
+      return;
+    }
+
+    joinGroupMutation.mutate(payload, {
+      onSuccess: (joinedGroup) => {
+        closeAll();
+        navigate(`/settlements/${joinedGroup.id}`);
+      },
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -260,6 +309,35 @@ export default function SettlementsPage() {
                   onChange={(e) => setGroupDescription(e.target.value)}
                 />
 
+                <div className={styles.sectionTitle}>Participants</div>
+                <div className={styles.participantsBox}>
+                  {participants.map((name, index) => (
+                    <div key={`p-${index}`} className={styles.participantRow}>
+                      <input
+                        className={styles.participantInput}
+                        placeholder="Name"
+                        value={name}
+                        onChange={(e) => updateParticipant(index, e.target.value)}
+                      />
+                      {index === 0 ? (
+                        <span className={styles.meBadge}>Me</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.removeBtn}
+                          onClick={() => removeParticipant(index)}
+                          aria-label="Remove participant"
+                        >
+                          -
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" className={styles.addAnother} onClick={addParticipant}>
+                    Add another participant
+                  </button>
+                </div>
+
                 <button
                   className={`${styles.primaryBtn} ${!canCreate || createGroupMutation.isPending ? styles.disabled : ''}`}
                   type="button"
@@ -298,24 +376,63 @@ export default function SettlementsPage() {
                   className={styles.input}
                   placeholder="초대 코드 입력"
                   value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
+                  onChange={(e) => {
+                    setInviteCode(e.target.value);
+                    setInviteGroup(null);
+                    setSelectedParticipantId(null);
+                    setNewParticipantName('');
+                  }}
                 />
 
-                <div className={styles.sectionTitle}>닉네임 (선택)</div>
-                <input
-                  className={styles.input}
-                  placeholder="그룹에서 사용할 닉네임"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                />
+                {inviteGroup && (
+                  <>
+                    <div className={styles.sectionTitle}>Group</div>
+                    <div className={styles.participantName}>{inviteGroup.group_name}</div>
+
+                    <div className={styles.sectionTitle}>Choose participant</div>
+                    <div className={styles.participantsBox}>
+                      {inviteGroup.participants.map((p) => (
+                        <label key={p.id} className={styles.participantRow}>
+                          <input
+                            type="radio"
+                            name="participant"
+                            disabled={p.is_claimed}
+                            checked={selectedParticipantId === p.id}
+                            onChange={() => {
+                              setSelectedParticipantId(p.id);
+                              setNewParticipantName('');
+                            }}
+                          />
+                          <span className={styles.participantName}>{p.name}</span>
+                          {p.is_claimed && <span className={styles.meBadge}>Claimed</span>}
+                        </label>
+                      ))}
+                    </div>
+
+                    <div className={styles.sectionTitle}>Or add yourself</div>
+                    <input
+                      className={styles.input}
+                      placeholder="Name"
+                      value={newParticipantName}
+                      onChange={(e) => {
+                        setNewParticipantName(e.target.value);
+                        if (e.target.value) {
+                          setSelectedParticipantId(null);
+                        }
+                      }}
+                    />
+                  </>
+                )}
 
                 <button
-                  className={`${styles.primaryBtn} ${!inviteCode.trim() || joinGroupMutation.isPending ? styles.disabled : ''}`}
+                  className={`${styles.primaryBtn} ${(!inviteCode.trim() || joinGroupMutation.isPending || inviteLookup.isPending || (inviteGroup ? !(selectedParticipantId || newParticipantName.trim()) : false)) ? styles.disabled : ''}`}
                   type="button"
                   onClick={joinGroup}
-                  disabled={!inviteCode.trim() || joinGroupMutation.isPending}
+                  disabled={!inviteCode.trim() || joinGroupMutation.isPending || inviteLookup.isPending || (inviteGroup ? !(selectedParticipantId || newParticipantName.trim()) : false)}
                 >
-                  {joinGroupMutation.isPending ? '참여 중...' : '참여'}
+                  {inviteGroup
+                    ? joinGroupMutation.isPending ? '참여 중...' : '참여'
+                    : inviteLookup.isPending ? '불러오는 중...' : '다음'}
                 </button>
 
                 {joinGroupMutation.isError && (

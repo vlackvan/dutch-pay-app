@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import styles from '../SettlementDetailPage.module.css';
 import { useCreateSettlement } from '@/hooks/queries/useSettlements';
-import type { GroupMemberResponse, SplitType } from '@/types/api.types';
+import type { GroupParticipantResponse, SplitType } from '@/types/api.types';
 
 type SplitMode = 'equal' | 'custom';
 
@@ -9,15 +9,15 @@ const EMOJIS = ['🍀', '🏖️', '🍻', '🍜', '☕', '🍰', '🎟️', '�
 
 interface AddExpenseButtonProps {
   groupId: number;
-  members: GroupMemberResponse[];
-  currentUserId?: number;
+  participants: GroupParticipantResponse[];
+  currentUserParticipantId?: number;
   onBack: () => void;
 }
 
 export default function AddExpenseButton({
   groupId,
-  members,
-  currentUserId,
+  participants,
+  currentUserParticipantId,
   onBack,
 }: AddExpenseButtonProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -30,7 +30,7 @@ export default function AddExpenseButton({
   const [receiptName, setReceiptName] = useState<string>('');
 
   const [amount, setAmount] = useState<number | ''>('');
-  const [payerId, setPayerId] = useState<number>(currentUserId || members[0]?.user_id || 0);
+  const [payerId, setPayerId] = useState<number>(currentUserParticipantId || participants[0]?.id || 0);
   const [when, setWhen] = useState(() => {
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -43,19 +43,19 @@ export default function AddExpenseButton({
 
   const [selected, setSelected] = useState<Record<number, boolean>>(() => {
     const init: Record<number, boolean> = {};
-    members.forEach((m) => (init[m.user_id] = true));
+    participants.forEach((p) => (init[p.id] = true));
     return init;
   });
 
   const [custom, setCustom] = useState<Record<number, number | ''>>(() => {
     const init: Record<number, number | ''> = {};
-    members.forEach((m) => (init[m.user_id] = ''));
+    participants.forEach((p) => (init[p.id] = ''));
     return init;
   });
 
   const selectedIds = useMemo(
-    () => members.filter((m) => selected[m.user_id]).map((m) => m.user_id),
-    [members, selected]
+    () => participants.filter((p) => selected[p.id]).map((p) => p.id),
+    [participants, selected]
   );
 
   const amountNumber = typeof amount === 'number' ? amount : 0;
@@ -66,8 +66,8 @@ export default function AddExpenseButton({
   }, [amountNumber, selectedIds.length]);
 
   const autoTargetId = useMemo(() => {
-    return selectedIds.length ? selectedIds[selectedIds.length - 1] : members[0]?.user_id;
-  }, [selectedIds, members]);
+    return selectedIds.length ? selectedIds[selectedIds.length - 1] : participants[0]?.id;
+  }, [selectedIds, participants]);
 
   const knownSum = useMemo(() => {
     if (splitMode !== 'custom') return 0;
@@ -82,11 +82,11 @@ export default function AddExpenseButton({
     return rest < 0 ? 0 : rest;
   }, [amountNumber, knownSum, splitMode]);
 
-  const computedRowAmount = (userId: number) => {
-    if (!selected[userId]) return 0;
+  const computedRowAmount = (participantId: number) => {
+    if (!selected[participantId]) return 0;
     if (splitMode === 'equal') return equalShare;
-    if (userId === autoTargetId) return autoAmount;
-    return typeof custom[userId] === 'number' ? custom[userId] : 0;
+    if (participantId === autoTargetId) return autoAmount;
+    return typeof custom[participantId] === 'number' ? custom[participantId] : 0;
   };
 
   const canSubmit = useMemo(() => {
@@ -99,26 +99,31 @@ export default function AddExpenseButton({
   const handleSubmit = () => {
     if (!canSubmit) return;
 
-    const splitType: SplitType = splitMode === 'equal' ? 'EQUAL' : 'AMOUNT';
+    const splitType: SplitType = splitMode === 'equal' ? 'equal' : 'amount';
 
-    const participants = selectedIds.map((userId) => {
+    const finalParticipantIds = selectedIds.includes(payerId)
+      ? selectedIds
+      : [...selectedIds, payerId];
+
+    const participantsPayload = finalParticipantIds.map((participantId) => {
       if (splitMode === 'equal') {
-        return { user_id: userId };
+        return { participant_id: participantId };
       }
       return {
-        user_id: userId,
-        amount: computedRowAmount(userId),
+        participant_id: participantId,
+        amount: computedRowAmount(participantId),
       };
     });
 
     createSettlement.mutate(
       {
         group_id: groupId,
+        payer_participant_id: payerId,
         title: title.trim(),
         total_amount: amountNumber,
         split_type: splitType,
         icon: emoji,
-        participants,
+        participants: participantsPayload,
       },
       {
         onSuccess: () => {
@@ -128,11 +133,11 @@ export default function AddExpenseButton({
     );
   };
 
-  const getMemberName = (userId: number) => {
-    const member = members.find((m) => m.user_id === userId);
-    if (!member) return 'Unknown';
-    const name = member.nickname || member.user_name;
-    return userId === currentUserId ? `${name} (나)` : name;
+  const getParticipantName = (participantId: number) => {
+    const participant = participants.find((p) => p.id === participantId);
+    if (!participant) return 'Unknown';
+    const name = participant.name || participant.user_name;
+    return participantId === currentUserParticipantId ? `${name} (나)` : name;
   };
 
   return (
@@ -225,11 +230,15 @@ export default function AddExpenseButton({
               <select
                 className={styles.selectPlain}
                 value={payerId}
-                onChange={(e) => setPayerId(Number(e.target.value))}
+                onChange={(e) => {
+                  const nextId = Number(e.target.value);
+                  setPayerId(nextId);
+                  setSelected((prev) => ({ ...prev, [nextId]: true }));
+                }}
               >
-                {members.map((m) => (
-                  <option key={m.user_id} value={m.user_id}>
-                    {getMemberName(m.user_id)}
+                {participants.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {getParticipantName(p.id)}
                   </option>
                 ))}
               </select>
@@ -273,25 +282,25 @@ export default function AddExpenseButton({
         </div>
 
         <div className={styles.splitList}>
-          {members.map((m) => {
-            const rowAmount = computedRowAmount(m.user_id);
+          {participants.map((p) => {
+            const rowAmount = computedRowAmount(p.id);
 
             return (
-              <div key={m.user_id} className={styles.splitRow}>
+              <div key={p.id} className={styles.splitRow}>
                 <label className={styles.splitLeft}>
                   <input
                     type="checkbox"
-                    checked={!!selected[m.user_id]}
+                    checked={!!selected[p.id]}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      setSelected((prev) => ({ ...prev, [m.user_id]: checked }));
+                      setSelected((prev) => ({ ...prev, [p.id]: checked }));
 
                       if (!checked) {
-                        setCustom((prev) => ({ ...prev, [m.user_id]: '' }));
+                        setCustom((prev) => ({ ...prev, [p.id]: '' }));
                       }
                     }}
                   />
-                  <span className={styles.splitName}>{getMemberName(m.user_id)}</span>
+                  <span className={styles.splitName}>{getParticipantName(p.id)}</span>
                 </label>
 
                 {splitMode === 'custom' ? (
@@ -300,12 +309,12 @@ export default function AddExpenseButton({
                     <input
                       className={styles.customInput}
                       type="number"
-                      disabled={!selected[m.user_id] || m.user_id === autoTargetId}
-                      value={m.user_id === autoTargetId ? autoAmount : custom[m.user_id] ?? ''}
+                      disabled={!selected[p.id] || p.id === autoTargetId}
+                      value={p.id === autoTargetId ? autoAmount : custom[p.id] ?? ''}
                       onChange={(e) =>
                         setCustom((prev) => ({
                           ...prev,
-                          [m.user_id]: e.target.value === '' ? '' : Number(e.target.value),
+                          [p.id]: e.target.value === '' ? '' : Number(e.target.value),
                         }))
                       }
                       placeholder="0"

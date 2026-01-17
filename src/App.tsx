@@ -6,6 +6,7 @@ import { useAuthInit } from './hooks/useAuthInit';
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
+import GoogleCallbackPage from './pages/auth/GoogleCallbackPage';
 
 // Main pages
 import SettlementsPage from './pages/SettlementsPage';
@@ -19,6 +20,7 @@ function AppRoutes() {
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>

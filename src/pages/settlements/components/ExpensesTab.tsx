@@ -5,15 +5,19 @@ interface ExpensesTabProps {
   settlements: SettlementResponse[];
   myExpenses: number;
   totalExpenses: number;
-  currentUserId?: number;
+  currentUserParticipantId?: number;
 }
 
 export default function ExpensesTab({
   settlements,
   myExpenses,
   totalExpenses,
-  currentUserId,
+  currentUserParticipantId,
 }: ExpensesTabProps) {
+  const formatAmount = (value: number) => {
+    return Math.round(value).toLocaleString();
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const today = new Date();
@@ -73,9 +77,9 @@ export default function ExpensesTab({
                     <div className={styles.expenseText}>
                       <div className={styles.expenseTitle}>{s.title}</div>
                       <div className={styles.expenseSub}>
-                        {s.payer_id === currentUserId
-                          ? `Paid by ${s.payer_name} (me)`
-                          : `Paid by ${s.payer_name}`}
+                        {s.payer_participant_id === currentUserParticipantId
+                          ? `Paid by ${s.payer_name || 'Unknown'} (me)`
+                          : `Paid by ${s.payer_name || 'Unknown'}`}
                       </div>
                     </div>
                   </div>

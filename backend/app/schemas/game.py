@@ -13,8 +13,8 @@ class GameType(str, Enum):
 class GameResultCreate(BaseModel):
     group_id: int
     game_type: GameType
-    participants: List[int]  # List of user IDs
-    loser_id: int  # The one who lost and has to pay
+    participants: List[int]  # List of participant IDs
+    loser_participant_id: int  # The one who lost and has to pay
     amount: Decimal
     game_data: Optional[dict] = None  # Game-specific data
 
@@ -24,7 +24,7 @@ class GameResultResponse(BaseModel):
     group_id: int
     game_type: GameType
     participants: List[int]
-    loser_id: int
+    loser_participant_id: int
     amount: Decimal
     settlement_id: Optional[int] = None
     game_data: Optional[dict] = None

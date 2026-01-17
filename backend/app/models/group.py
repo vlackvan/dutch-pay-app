@@ -28,25 +28,25 @@ class Group(Base):
 
     # Relationships
     owner = relationship("User")
-    members = relationship("GroupMember", back_populates="group")
+    participants = relationship("GroupParticipant", back_populates="group")
     settlements = relationship("Settlement", back_populates="group")
 
 
-class GroupMember(Base):
-    __tablename__ = "group_members"
+class GroupParticipant(Base):
+    __tablename__ = "group_participants"
 
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    # In-group profile (nickname within this group)
-    nickname = Column(String(100), nullable=True)
+    # Display name for this participant in the group
+    name = Column(String(100), nullable=False)
 
-    # Role in group
+    # Role in group (only meaningful when claimed)
     is_admin = Column(Boolean, default=False)
 
     joined_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    group = relationship("Group", back_populates="members")
-    user = relationship("User", back_populates="group_memberships")
+    group = relationship("Group", back_populates="participants")
+    user = relationship("User", back_populates="group_participations")

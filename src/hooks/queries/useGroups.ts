@@ -77,3 +77,9 @@ export function useGetInviteCode(groupId: number) {
     mutationFn: () => groupsApi.getInviteCode(groupId),
   });
 }
+
+export function useGetInviteGroup() {
+  return useMutation({
+    mutationFn: (inviteCode: string) => groupsApi.getInviteGroup(inviteCode),
+  });
+}

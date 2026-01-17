@@ -4,9 +4,10 @@ import type {
   GroupResponse,
   GroupListResponse,
   GroupDetailResponse,
-  GroupMemberResponse,
+  GroupParticipantResponse,
   JoinGroupRequest,
   InviteCodeResponse,
+  InviteGroupResponse,
   SettlementResponse,
   GroupSettlementResults,
 } from '@/types/api.types';
@@ -27,8 +28,13 @@ export const groupsApi = {
     return response.data;
   },
 
-  getMembers: async (groupId: number): Promise<GroupMemberResponse[]> => {
-    const response = await apiClient.get<GroupMemberResponse[]>(`/groups/${groupId}/members`);
+  getMembers: async (groupId: number): Promise<GroupParticipantResponse[]> => {
+    const response = await apiClient.get<GroupParticipantResponse[]>(`/groups/${groupId}/members`);
+    return response.data;
+  },
+
+  getInviteGroup: async (inviteCode: string): Promise<InviteGroupResponse> => {
+    const response = await apiClient.get<InviteGroupResponse>(`/groups/invite/${inviteCode}`);
     return response.data;
   },
 

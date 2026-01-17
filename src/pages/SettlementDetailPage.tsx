@@ -17,7 +17,7 @@ import {
   useGetInviteCode,
 } from '@/hooks/queries/useGroups';
 import { useAuthStore } from '@/stores/auth.store';
-import type { GroupMemberResponse, SettlementResponse } from '@/types/api.types';
+import type { GroupParticipantResponse, SettlementResponse } from '@/types/api.types';
 
 type Tab = 'expenses' | 'members';
 type Panel = 'main' | 'addExpense' | 'balances';
@@ -38,62 +38,75 @@ export default function SettlementDetailPage() {
   const [panel, setPanel] = useState<Panel>('main');
   const [owedOpen, setOwedOpen] = useState(false);
 
-  const members: GroupMemberResponse[] = group?.members || [];
+  const participants: GroupParticipantResponse[] = group?.participants || [];
+  const currentUserParticipantId = useMemo(() => {
+    if (!currentUser) return undefined;
+    return participants.find((p) => p.user_id === currentUser.id)?.id;
+  }, [participants, currentUser]);
 
   const { myExpenses, totalExpenses } = useMemo(() => {
     let my = 0;
     let total = 0;
 
     settlements.forEach((s: SettlementResponse) => {
-      total += s.total_amount;
-      if (s.payer_id === currentUser?.id) {
-        my += s.total_amount;
+      total += Number(s.total_amount);
+      if (!currentUserParticipantId) return;
+      const myShare = s.participants.find((p) => p.participant_id === currentUserParticipantId);
+      if (myShare) {
+        my += Number(myShare.amount_owed);
       }
     });
 
     return { myExpenses: my, totalExpenses: total };
-  }, [settlements, currentUser?.id]);
+  }, [settlements, currentUserParticipantId]);
 
   const balances = useMemo(() => {
-    if (!resultsData?.results || !members.length) return [];
+    if (!resultsData?.results || !participants.length) return [];
 
     const balanceMap = new Map<number, number>();
-    members.forEach((m) => balanceMap.set(m.user_id, 0));
+    participants.forEach((p) => balanceMap.set(p.id, 0));
 
     resultsData.results.forEach((r) => {
-      balanceMap.set(r.debtor_id, (balanceMap.get(r.debtor_id) || 0) - r.amount);
-      balanceMap.set(r.creditor_id, (balanceMap.get(r.creditor_id) || 0) + r.amount);
+      balanceMap.set(r.debtor_participant_id, (balanceMap.get(r.debtor_participant_id) || 0) - r.amount);
+      balanceMap.set(r.creditor_participant_id, (balanceMap.get(r.creditor_participant_id) || 0) + r.amount);
     });
 
-    return members.map((m) => ({
-      id: `b${m.user_id}`,
-      name: m.nickname || m.user_name,
-      value: balanceMap.get(m.user_id) || 0,
-      me: m.user_id === currentUser?.id,
+    return participants.map((p) => ({
+      id: `b${p.id}`,
+      name: p.name || p.user_name,
+      value: balanceMap.get(p.id) || 0,
+      me: p.id === currentUserParticipantId,
     }));
-  }, [resultsData, members, currentUser?.id]);
+  }, [resultsData, participants, currentUserParticipantId]);
 
   const owedAmount = useMemo(() => {
-    if (!resultsData?.results || !currentUser) return 0;
+    if (!resultsData?.results || !currentUserParticipantId) return 0;
     return resultsData.results
-      .filter((r) => r.creditor_id === currentUser.id && !r.is_completed)
+      .filter((r) => r.creditor_participant_id === currentUserParticipantId && !r.is_completed)
       .reduce((sum, r) => sum + r.amount, 0);
-  }, [resultsData, currentUser]);
+  }, [resultsData, currentUserParticipantId]);
 
   const owedDetails = useMemo(() => {
-    if (!resultsData?.results || !currentUser) return [];
+    if (!resultsData?.results || !currentUserParticipantId) return [];
     return resultsData.results
-      .filter((r) => r.creditor_id === currentUser.id || r.debtor_id === currentUser.id)
+      .filter(
+        (r) =>
+          r.creditor_participant_id === currentUserParticipantId ||
+          r.debtor_participant_id === currentUserParticipantId
+      )
       .map((r) => ({
         id: `o${r.id}`,
         from: r.debtor_name,
-        to: r.creditor_id === currentUser.id ? `${r.creditor_name} (me)` : r.creditor_name,
+        to:
+          r.creditor_participant_id === currentUserParticipantId
+            ? `${r.creditor_name} (me)`
+            : r.creditor_name,
         amount: r.amount,
         isCompleted: r.is_completed,
         paymentMethod: r.creditor_payment_method,
         paymentAccount: r.creditor_payment_account,
       }));
-  }, [resultsData, currentUser]);
+  }, [resultsData, currentUserParticipantId]);
 
   const handleCopyInviteCode = async () => {
     try {
@@ -150,8 +163,8 @@ export default function SettlementDetailPage() {
       <div className={styles.page}>
         <AddExpenseButton
           groupId={groupIdNum}
-          members={members}
-          currentUserId={currentUser?.id}
+          participants={participants}
+          currentUserParticipantId={currentUserParticipantId}
           onBack={() => setPanel('main')}
         />
       </div>
@@ -251,10 +264,10 @@ export default function SettlementDetailPage() {
           settlements={settlements}
           myExpenses={myExpenses}
           totalExpenses={totalExpenses}
-          currentUserId={currentUser?.id}
+          currentUserParticipantId={currentUserParticipantId}
         />
       ) : (
-        <MembersTab members={members} groupId={groupIdNum} onCopyInviteCode={handleCopyInviteCode} />
+        <MembersTab participants={participants} groupId={groupIdNum} onCopyInviteCode={handleCopyInviteCode} />
       )}
     </div>
   );

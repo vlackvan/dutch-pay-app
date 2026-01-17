@@ -3,6 +3,8 @@ export interface SignUpRequest {
   email: string;
   password: string;
   name: string;
+  payment_method: string;   // 추가: 'kakaopay' | 'toss' | 'bank'
+  payment_account: string;  // 추가: 계좌번호 또는 빈 문자열
 }
 
 export interface LoginRequest {
@@ -10,9 +12,22 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface GoogleLoginRequest {
+  code: string;
+  mode: 'login' | 'signup';
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;
+  is_new_user?: boolean;
+  requires_profile_completion?: boolean;
+}
+
+export interface GoogleCompleteProfileRequest {
+  name: string;
+  payment_method: string;
+  payment_account?: string;
 }
 
 // User Types
@@ -70,16 +85,18 @@ export interface GroupCreate {
   name: string;
   description?: string;
   icon?: string;
+  participants: string[];
 }
 
-export interface GroupMemberResponse {
+export interface GroupParticipantResponse {
   id: number;
-  user_id: number;
-  nickname: string | null;
+  name: string;
+  user_id: number | null;
   is_admin: boolean;
   joined_at: string;
-  user_name: string;
+  user_name: string | null;
   user_avatar: AvatarResponse | null;
+  is_claimed: boolean;
 }
 
 export interface GroupResponse {
@@ -98,29 +115,40 @@ export interface GroupListResponse extends GroupResponse {
 }
 
 export interface GroupDetailResponse extends GroupResponse {
-  members: GroupMemberResponse[];
+  participants: GroupParticipantResponse[];
 }
 
 export interface JoinGroupRequest {
   invite_code: string;
-  nickname?: string;
+  participant_id?: number;
+  participant_name?: string;
 }
 
 export interface InviteCodeResponse {
   invite_code: string;
+  group_id?: number;
+  group_name?: string;
+}
+
+export interface InviteGroupResponse {
+  invite_code: string;
+  group_id: number;
+  group_name: string;
+  participants: GroupParticipantResponse[];
 }
 
 // Settlement Types
-export type SplitType = 'EQUAL' | 'AMOUNT' | 'RATIO';
+export type SplitType = 'equal' | 'amount' | 'ratio';
 
 export interface ParticipantInput {
-  user_id: number;
+  participant_id: number;
   amount?: number;
   ratio?: number;
 }
 
 export interface SettlementCreate {
   group_id: number;
+  payer_participant_id: number;
   title: string;
   description?: string;
   total_amount: number;
@@ -131,17 +159,19 @@ export interface SettlementCreate {
 
 export interface ParticipantResponse {
   id: number;
-  user_id: number;
+  participant_id: number;
   amount_owed: number;
   is_paid: boolean;
   paid_at: string | null;
-  user_name: string;
+  participant_name: string | null;
+  user_id: number | null;
+  user_name: string | null;
 }
 
 export interface SettlementResponse {
   id: number;
   group_id: number;
-  payer_id: number;
+  payer_participant_id: number;
   title: string;
   description: string | null;
   total_amount: number;
@@ -150,7 +180,8 @@ export interface SettlementResponse {
   receipt_image: string | null;
   is_settled: boolean;
   created_at: string;
-  payer_name: string;
+  payer_name: string | null;
+  payer_user_id: number | null;
   participants: ParticipantResponse[];
 }
 
@@ -165,13 +196,15 @@ export interface SettlementUpdate {
 
 export interface SettlementResultResponse {
   id: number;
-  debtor_id: number;
-  creditor_id: number;
+  debtor_participant_id: number;
+  creditor_participant_id: number;
   amount: number;
   is_completed: boolean;
   completed_at: string | null;
   debtor_name: string;
   creditor_name: string;
+  debtor_user_id: number | null;
+  creditor_user_id: number | null;
   creditor_payment_method: string | null;
   creditor_payment_account: string | null;
 }
@@ -189,7 +222,7 @@ export interface GameResultCreate {
   group_id: number;
   game_type: GameType;
   participants: number[];
-  loser_id: number;
+  loser_participant_id: number;
   amount: number;
   game_data?: Record<string, unknown>;
 }
@@ -199,7 +232,7 @@ export interface GameResultResponse {
   group_id: number;
   game_type: GameType;
   participants: number[];
-  loser_id: number;
+  loser_participant_id: number;
   amount: number;
   settlement_id: number | null;
   game_data: Record<string, unknown> | null;

@@ -3,7 +3,7 @@ import styles from './games/GamesPage.module.css';
 import { useMyGroups } from '@/hooks/queries/useGroups';
 import { useCreateGame } from '@/hooks/queries/useGames';
 import { useAuthStore } from '@/stores/auth.store';
-import type { GroupListResponse, GameType, GroupMemberResponse } from '@/types/api.types';
+import type { GroupListResponse, GameType, GroupParticipantResponse } from '@/types/api.types';
 import { groupsApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 
@@ -11,7 +11,7 @@ type Step = 'selectGroup' | 'selectGame' | 'play' | 'result';
 type GameTypeOption = 'roulette' | 'bomb';
 
 interface GameResult {
-  loserId: number;
+  loserParticipantId: number;
   loserName: string;
   amount: number;
 }
@@ -47,7 +47,7 @@ export default function GamesPage() {
     enabled: !!selectedGroup?.id,
   });
 
-  const members: GroupMemberResponse[] = groupDetail?.members || [];
+  const participants: GroupParticipantResponse[] = groupDetail?.participants || [];
 
   const resetGame = useCallback(() => {
     setStep('selectGroup');
@@ -74,9 +74,9 @@ export default function GamesPage() {
     }
   }, [step, resetGame]);
 
-  const toggleParticipant = (userId: number) => {
+  const toggleParticipant = (participantId: number) => {
     setSelectedParticipants((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(participantId) ? prev.filter((id) => id !== participantId) : [...prev, participantId]
     );
   };
 
@@ -113,11 +113,11 @@ export default function GamesPage() {
 
     setTimeout(() => {
       const loserIndex = Math.floor(Math.random() * selectedParticipants.length);
-      const loserId = selectedParticipants[loserIndex];
-      const loserMember = members.find((m) => m.user_id === loserId);
-      const loserName = loserMember?.nickname || loserMember?.user_name || 'Unknown';
+      const loserParticipantId = selectedParticipants[loserIndex];
+      const loserMember = participants.find((m) => m.id === loserParticipantId);
+      const loserName = loserMember?.name || loserMember?.user_name || 'Unknown';
 
-      setGameResult({ loserId, loserName, amount });
+      setGameResult({ loserParticipantId, loserName, amount });
       setIsSpinning(false);
       setStep('result');
     }, 3000);
@@ -136,11 +136,11 @@ export default function GamesPage() {
       if (isBomb) {
         newCards[index] = 'bomb';
         const currentPlayer = selectedParticipants[currentTurn % selectedParticipants.length];
-        const loserMember = members.find((m) => m.user_id === currentPlayer);
-        const loserName = loserMember?.nickname || loserMember?.user_name || 'Unknown';
+        const loserMember = participants.find((m) => m.id === currentPlayer);
+        const loserName = loserMember?.name || loserMember?.user_name || 'Unknown';
 
         setTimeout(() => {
-          setGameResult({ loserId: currentPlayer, loserName, amount });
+          setGameResult({ loserParticipantId: currentPlayer, loserName, amount });
           setStep('result');
         }, 500);
       } else {
@@ -162,7 +162,7 @@ export default function GamesPage() {
         group_id: selectedGroup.id,
         game_type: gameData!.apiType,
         participants: selectedParticipants,
-        loser_id: gameResult.loserId,
+        loser_participant_id: gameResult.loserParticipantId,
         amount: gameResult.amount,
         game_data: { game_type: selectedGameType },
       },
@@ -181,9 +181,9 @@ export default function GamesPage() {
   const currentPlayerName = useMemo(() => {
     if (selectedGameType !== 'bomb' || selectedParticipants.length === 0) return '';
     const currentPlayerId = selectedParticipants[currentTurn % selectedParticipants.length];
-    const member = members.find((m) => m.user_id === currentPlayerId);
-    return member?.nickname || member?.user_name || '';
-  }, [selectedGameType, currentTurn, selectedParticipants, members]);
+    const member = participants.find((m) => m.id === currentPlayerId);
+    return member?.name || member?.user_name || '';
+  }, [selectedGameType, currentTurn, selectedParticipants, participants]);
 
   const canProceed = useMemo(() => {
     if (step === 'selectGroup') return !!selectedGroup;
@@ -307,16 +307,16 @@ export default function GamesPage() {
               <h3 className={styles.sectionTitle}>참가자 선택</h3>
               <p className={styles.sectionDesc}>최소 2명 이상 선택하세요</p>
               <div className={styles.participantList}>
-                {members.map((member) => (
+                {participants.map((member) => (
                   <button
-                    key={member.user_id}
-                    className={`${styles.participantChip} ${selectedParticipants.includes(member.user_id) ? styles.participantChipSelected : ''}`}
-                    onClick={() => toggleParticipant(member.user_id)}
+                    key={member.id}
+                    className={`${styles.participantChip} ${selectedParticipants.includes(member.id) ? styles.participantChipSelected : ''}`}
+                    onClick={() => toggleParticipant(member.id)}
                   >
                     <div className={styles.participantAvatar}>
-                      {(member.nickname || member.user_name).slice(0, 1)}
+                      {(member.name || member.user_name).slice(0, 1)}
                     </div>
-                    <span>{member.nickname || member.user_name}</span>
+                    <span>{member.name || member.user_name}</span>
                     {member.user_id === currentUser?.id && <span>(나)</span>}
                   </button>
                 ))}
