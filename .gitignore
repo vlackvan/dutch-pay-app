@@ -1,4 +1,6 @@
+# =========================
 # Logs
+# =========================
 logs
 *.log
 npm-debug.log*
@@ -7,18 +9,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Frontend specific (repo structure)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# =========================
+# Python / Backend
+# =========================
+backend/venv/
+backend/__pycache__/
+backend/.env
+*.pyc
+
+# =========================
+# IDE & OS
+# =========================
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# (Optional) If you want to keep only extensions.json, uncomment below
+# .vscode/*
+# !.vscode/extensions.json
+
+# =========================
+# Docker / DB
+# =========================
+mysql_data/
