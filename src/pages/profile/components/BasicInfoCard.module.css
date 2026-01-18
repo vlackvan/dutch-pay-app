@@ -1,23 +1,25 @@
-.group{
-  margin-top: 10px;
+.item{
+  padding: 10px 0;
+}
+
+.item + .item{
+  border-top: 1px solid rgba(209, 190, 158, 0.45);
+}
+
+.row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
 }
 
 .label{
-  font-size: 12px;
   font-weight: 700;
   color: var(--text-2);
-  margin-bottom: 6px;
 }
 
-.field{
-  height: 34px;
-  border-radius: 8px;
-  background: var(--card-muted);
-  display:flex;
-  align-items:center;
-  padding: 0 10px;
-  font-size: 13px;
-  font-weight: 600;
+.value{
+  font-weight: 700;
   color: var(--text-1);
 }
 

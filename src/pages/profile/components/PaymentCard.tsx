@@ -4,13 +4,26 @@ import styles from './PaymentCard.module.css';
 import type { UserProfileResponse } from '@/types/api.types';
 import { useUpdateProfile } from '@/hooks/queries/useUser';
 
-type PaymentMethod = '카카오페이' | '토스' | '네이버페이' | '계좌이체' | '신용/체크카드';
+type PaymentMethod = 'kakaopay' | 'toss' | 'bank';
 
-const METHODS: PaymentMethod[] = ['카카오페이', '토스', '네이버페이', '계좌이체', '신용/체크카드'];
+const METHODS: { value: PaymentMethod; label: string }[] = [
+  { value: 'kakaopay', label: '카카오페이' },
+  { value: 'toss', label: '토스' },
+  { value: 'bank', label: '계좌이체' },
+];
 
 const BANKS = [
-  '국민은행', '신한은행', '우리은행', '하나은행', '농협', '기업은행',
-  '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국'
+  '국민은행',
+  '신한은행',
+  '우리은행',
+  '하나은행',
+  '농협',
+  '기업은행',
+  '카카오뱅크',
+  '토스뱅크',
+  '케이뱅크',
+  '새마을금고',
+  '우체국',
 ];
 
 interface PaymentCardProps {
@@ -21,7 +34,7 @@ export function PaymentCard({ user }: PaymentCardProps) {
   const updateProfile = useUpdateProfile();
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>(
-    (user?.payment_method as PaymentMethod) || '카카오페이'
+    (user?.payment_method as PaymentMethod) || 'kakaopay',
   );
 
   const [bank, setBank] = useState('');
@@ -39,7 +52,7 @@ export function PaymentCard({ user }: PaymentCardProps) {
   }, []);
 
   useEffect(() => {
-    if (method !== '계좌이체') {
+    if (method !== 'bank') {
       setOpen(false);
     }
   }, [method]);
@@ -55,11 +68,14 @@ export function PaymentCard({ user }: PaymentCardProps) {
     updateProfile.mutate({ payment_account: accountInfo });
   };
 
-  const methodLabel = useMemo(() => method ?? '', [method]);
+  const methodLabel = useMemo(
+    () => METHODS.find((m) => m.value === method)?.label ?? '',
+    [method],
+  );
 
   return (
     <SectionCard title="결제 정보">
-      <div className={styles.desc}>주로 사용하는 결제 수단을 등록해주세요</div>
+      <div className={styles.desc}>주로 사용하는 결제 수단을 등록해 주세요</div>
 
       <div className={styles.group}>
         <div className={styles.label}>주 결제 방법</div>
@@ -79,12 +95,12 @@ export function PaymentCard({ user }: PaymentCardProps) {
             <div className={styles.menu} role="listbox" aria-label="결제 방법 선택">
               {METHODS.map((m) => (
                 <button
-                  key={m}
+                  key={m.value}
                   type="button"
-                  className={`${styles.menuItem} ${m === method ? styles.active : ''}`}
-                  onClick={() => handleMethodChange(m)}
+                  className={`${styles.menuItem} ${m.value === method ? styles.active : ''}`}
+                  onClick={() => handleMethodChange(m.value)}
                 >
-                  {m}
+                  {m.label}
                 </button>
               ))}
             </div>
@@ -92,7 +108,7 @@ export function PaymentCard({ user }: PaymentCardProps) {
         </div>
       </div>
 
-      {method === '계좌이체' && (
+      {method === 'bank' && (
         <div className={styles.transferBox}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabel}>은행</div>
@@ -102,7 +118,7 @@ export function PaymentCard({ user }: PaymentCardProps) {
               onChange={(e) => setBank(e.target.value)}
             >
               <option value="" disabled>
-                은행 선택
+                은행을 선택하세요
               </option>
               {BANKS.map((b) => (
                 <option key={b} value={b}>
@@ -119,10 +135,10 @@ export function PaymentCard({ user }: PaymentCardProps) {
               value={account}
               onChange={(e) => setAccount(e.target.value)}
               onBlur={handleAccountSave}
-              placeholder="예) 110-123-456789"
+              placeholder="예: 110-123-456789"
               inputMode="numeric"
             />
-            <div className={styles.hint}>본인 계좌만 등록해주세요</div>
+            <div className={styles.hint}>본인 계좌만 등록할 수 있어요</div>
           </div>
         </div>
       )}
@@ -142,7 +158,7 @@ function ChevronDown({ open }: { open: boolean }) {
     >
       <path
         d="M6 9l6 6 6-6"
-        stroke="#9CA3AF"
+        stroke="#7b8a8b"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

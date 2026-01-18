@@ -12,8 +12,8 @@ export function MonthlyBadgeCard({ badges }: MonthlyBadgeCardProps) {
     <section className={styles.card}>
       <div className={styles.header}>
         <div>
-          <div className={styles.title}>월간 배지</div>
-          <div className={styles.sub}>이번 달 획득한 배지</div>
+          <div className={styles.title}>월간 주민 배지</div>
+          <div className={styles.sub}>이번 달에 획득한 배지</div>
         </div>
         <span className={styles.chevron}>›</span>
       </div>
@@ -45,7 +45,7 @@ function Badge({ label, icon, locked }: { label?: string; icon?: string; locked?
       <div className={`${styles.circle} ${locked ? styles.locked : ''}`}>
         {!locked && icon}
       </div>
-      <div className={styles.label}>{locked ? '잠금' : label}</div>
+      <div className={styles.label}>{locked ? '잠김' : label}</div>
     </div>
   );
 }
