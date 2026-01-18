@@ -265,6 +265,7 @@ export default function SettlementDetailPage() {
           myExpenses={myExpenses}
           totalExpenses={totalExpenses}
           currentUserParticipantId={currentUserParticipantId}
+          groupId={groupIdNum}
         />
       ) : (
         <MembersTab participants={participants} groupId={groupIdNum} onCopyInviteCode={handleCopyInviteCode} />

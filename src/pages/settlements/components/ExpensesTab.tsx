@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styles from '../SettlementDetailPage.module.css';
 import type { SettlementResponse } from '@/types/api.types';
 
@@ -6,6 +7,7 @@ interface ExpensesTabProps {
   myExpenses: number;
   totalExpenses: number;
   currentUserParticipantId?: number;
+  groupId: number;
 }
 
 export default function ExpensesTab({
@@ -13,7 +15,10 @@ export default function ExpensesTab({
   myExpenses,
   totalExpenses,
   currentUserParticipantId,
+  groupId,
 }: ExpensesTabProps) {
+  const navigate = useNavigate();
+
   const formatAmount = (value: number) => {
     return Math.round(value).toLocaleString();
   };
@@ -69,7 +74,12 @@ export default function ExpensesTab({
             <div className={styles.sectionTitle}>{date}</div>
             <main className={styles.expenseList}>
               {daySettlements.map((s) => (
-                <div key={s.id} className={styles.expenseCard}>
+                <button
+                  key={s.id}
+                  className={styles.expenseCard}
+                  type="button"
+                  onClick={() => navigate(`/settlements/${groupId}/expense/${s.id}`)}
+                >
                   <div className={styles.expenseLeft}>
                     <div className={styles.expenseIcon} aria-hidden="true">
                       {s.icon || '💵'}
@@ -84,7 +94,7 @@ export default function ExpensesTab({
                     </div>
                   </div>
                   <div className={styles.expenseAmount}>₩{s.total_amount.toLocaleString()}</div>
-                </div>
+                </button>
               ))}
             </main>
           </div>

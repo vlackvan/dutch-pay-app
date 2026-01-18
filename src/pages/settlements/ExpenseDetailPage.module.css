@@ -1,0 +1,166 @@
+/* =========================
+   Base
+   ========================= */
+.page {
+  min-height: 100vh;
+  background: #FFFFFF;
+}
+
+/* =========================
+   Top Bar
+   ========================= */
+.topBar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  position: sticky;
+  top: 0;
+  background: #FFFFFF;
+  z-index: 10;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.back {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  color: #2F86FF;
+  cursor: pointer;
+}
+
+.topTitle {
+  margin-left: 2px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2F86FF;
+}
+
+/* =========================
+   Detail Header (상단 중앙)
+   ========================= */
+.detailHeader {
+  padding: 32px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.detailIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: #F2F3F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.detailTitle {
+  font-size: 24px;
+  font-weight: 900;
+  color: #111111;
+}
+
+.detailPayer {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9CA3AF;
+}
+
+.payerName {
+  color: #111111;
+  font-weight: 900;
+}
+
+.detailAmount {
+  font-size: 32px;
+  font-weight: 900;
+  color: #2F86FF;
+  margin-top: 4px;
+}
+
+/* =========================
+   Participant Section
+   ========================= */
+.participantSection {
+  padding: 24px 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111111;
+  margin-bottom: 16px;
+}
+
+.participantList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.participantCard {
+  background: #F2F3F7;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.participantInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.participantName {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111111;
+}
+
+.paidBadge {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10B981;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.participantAmount {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111111;
+}
+
+/* =========================
+   Loading & Error States
+   ========================= */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #EF4444;
+  font-size: 1rem;
+}

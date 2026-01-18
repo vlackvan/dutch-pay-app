@@ -13,6 +13,7 @@ import SettlementsPage from './pages/SettlementsPage';
 import GamesPage from './pages/GamesPage';
 import ProfilePage from './pages/ProfilePage';
 import SettlementDetailPage from './pages/SettlementDetailPage';
+import ExpenseDetailPage from './pages/ExpenseDetailPage';
 
 function AppRoutes() {
   return (
@@ -28,6 +29,7 @@ function AppRoutes() {
           <Route path="/" element={<Navigate to="/settlements" replace />} />
           <Route path="/settlements" element={<SettlementsPage />} />
           <Route path="/settlements/:groupId" element={<SettlementDetailPage />} />
+          <Route path="/settlements/:groupId/expense/:expenseId" element={<ExpenseDetailPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>

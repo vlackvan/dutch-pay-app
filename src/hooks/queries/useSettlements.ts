@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { settlementsApi } from '@/lib/api';
 import type { SettlementCreate, SettlementUpdate } from '@/types/api.types';
 import { groupKeys } from './useGroups';
@@ -7,6 +7,14 @@ export const settlementKeys = {
   all: ['settlements'] as const,
   detail: (id: number) => [...settlementKeys.all, 'detail', id] as const,
 };
+
+export function useSettlement(settlementId: number) {
+  return useQuery({
+    queryKey: settlementKeys.detail(settlementId),
+    queryFn: () => settlementsApi.get(settlementId),
+    enabled: !!settlementId,
+  });
+}
 
 export function useCreateSettlement() {
   const queryClient = useQueryClient();
