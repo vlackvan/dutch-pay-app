@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import styles from "./settlements/SettlementsPage.module.css";
 import { useNavigate } from "react-router-dom";
+import styles from "./settlements/SettlementsPage.module.css";
+
+type GroupStatus = "done" | "progress" | "pending";
 
 type Group = {
   id: string;
@@ -8,31 +10,35 @@ type Group = {
   emoji: string;
   createdAt: string;
   membersCount: number;
+  status: GroupStatus;
+};
+
+const STATUS_LABEL: Record<GroupStatus, string> = {
+  done: "정산 완료",
+  progress: "진행 중",
+  pending: "미정산",
 };
 
 const DUMMY: Group[] = [
-  { id: "1", title: "몰입캠프", emoji: "🍀", createdAt: "2024년 1월 1일", membersCount: 6 },
-  { id: "2", title: "튜유", emoji: "🏖️", createdAt: "2024년 1월 10일", membersCount: 4 },
-  { id: "3", title: "여수", emoji: "🏖️", createdAt: "2024년 1월 15일", membersCount: 5 },
-  { id: "4", title: "Flat 96 and others 🇬🇧", emoji: "🤠", createdAt: "2024년 2월 2일", membersCount: 7 },
-  { id: "5", title: "Jeju", emoji: "🏖️", createdAt: "2024년 3월 9일", membersCount: 5 },
-  { id: "6", title: "Birmingham 🇬🇧", emoji: "🇬🇧", createdAt: "2024년 4월 1일", membersCount: 3 },
-  { id: "7", title: "Barcelona", emoji: "🇪🇸", createdAt: "2024년 5월 15일", membersCount: 4 },
+  { id: "1", title: "몰입캠프", emoji: "🏝️", createdAt: "2024년 1월 1일", membersCount: 6, status: "done" },
+  { id: "2", title: "튜유", emoji: "🍺", createdAt: "2024년 1월 10일", membersCount: 4, status: "progress" },
+  { id: "3", title: "여수", emoji: "🐚", createdAt: "2024년 1월 15일", membersCount: 5, status: "pending" },
+  { id: "4", title: "Jeju", emoji: "🍹", createdAt: "2024년 3월 9일", membersCount: 5, status: "done" },
+  { id: "5", title: "물고기 마라톤", emoji: "🐟", createdAt: "2024년 4월 1일", membersCount: 7, status: "pending" },
 ];
 
 type SheetMode = "closed" | "menu" | "create" | "join";
 
 export default function SettlementsPage() {
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
 
   const [groups, setGroups] = useState<Group[]>(DUMMY);
   const [sheet, setSheet] = useState<SheetMode>("closed");
 
   const [groupTitle, setGroupTitle] = useState("");
-  const [currency, setCurrency] = useState("대한민국 원 (KRW)");
-  const [participants, setParticipants] = useState<string[]>(["예은 김"]);
+  const [currency, setCurrency] = useState("원화 (KRW)");
+  const [participants, setParticipants] = useState<string[]>(["나", "김정산"]);
   const [newParticipant, setNewParticipant] = useState("");
-
   const [inviteLink, setInviteLink] = useState("");
 
   useEffect(() => {
@@ -47,8 +53,8 @@ export default function SettlementsPage() {
 
   const resetForms = () => {
     setGroupTitle("");
-    setCurrency("대한민국 원 (KRW)");
-    setParticipants(["예은 김"]);
+    setCurrency("원화 (KRW)");
+    setParticipants(["나", "김정산"]);
     setNewParticipant("");
     setInviteLink("");
   };
@@ -90,16 +96,14 @@ export default function SettlementsPage() {
     const newGroup: Group = {
       id: newId,
       title: groupTitle.trim(),
-      emoji: "🏖️",
+      emoji: "🏝️",
       createdAt,
       membersCount: participants.filter((p) => p.trim()).length,
+      status: "progress",
     };
 
     setGroups((prev) => [newGroup, ...prev]);
     closeAll();
-
-    // ✅ 생성 직후 상세로 이동하고 싶으면 주석 해제
-    // navigate(`/settlements/${newId}`);
   };
 
   const joinGroup = () => {
@@ -115,56 +119,66 @@ export default function SettlementsPage() {
       emoji: "🔗",
       createdAt,
       membersCount: 2,
+      status: "progress",
     };
 
     setGroups((prev) => [newGroup, ...prev]);
     closeAll();
-
-    // ✅ 참여 직후 상세로 이동하고 싶으면 주석 해제
-    // navigate(`/settlements/${newId}`);
   };
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.logoRow}>
-          <div className={styles.logo}>tricount</div>
-          <div className={styles.by}>by bunq</div>
-        </div>
-      </header>
+      <div className={styles.pageInner}>
+        <section className={styles.counter}>
+          <div className={styles.characterWrap} aria-hidden="true">
+            <div className={styles.characterBubble}>🐸</div>
+          </div>
+          <div className={styles.listPanel}>
+            {groups.map((g) => {
+              const statusLabel = STATUS_LABEL[g.status];
+              const statusClass =
+                g.status === "done"
+                  ? styles.statusDone
+                  : g.status === "progress"
+                    ? styles.statusProgress
+                    : styles.statusPending;
 
-      <main className={styles.list}>
-        {groups.map((g) => (
-          <button
-            key={g.id}
-            className={styles.card}
-            type="button"
-            onClick={() => navigate(`/settlements/${g.id}`)} // ✅ 여기만 교체!
-          >
-            <div className={styles.left}>
-              <div className={styles.emoji} aria-hidden="true">
-                {g.emoji}
-              </div>
+              return (
+                <button
+                  key={g.id}
+                  className={styles.groupCard}
+                  type="button"
+                  onClick={() => navigate(`/settlements/${g.id}`)}
+                >
+                  <div className={styles.groupIcon} aria-hidden="true">
+                    {g.emoji}
+                  </div>
 
-              <div className={styles.text}>
-                <div className={styles.title}>{g.title}</div>
-                <div className={styles.meta}>
-                  <span>{g.createdAt}</span>
-                  <span className={styles.dot}>•</span>
-                  <span>{g.membersCount}명</span>
-                </div>
-              </div>
-            </div>
-          </button>
-        ))}
-      </main>
+                  <div className={styles.groupText}>
+                    <div className={styles.groupTitle}>{g.title}</div>
+                    <div className={styles.groupMeta}>
+                      <span>{g.createdAt}</span>
+                      <span className={styles.metaDot}>·</span>
+                      <span>{g.membersCount}명</span>
+                    </div>
+                  </div>
 
-      <button className={styles.fab} type="button" aria-label="새 그룹 만들기" onClick={openMenu}>
-        +
-      </button>
-      <button className={styles.fabLabel} type="button" onClick={openMenu}>
-        새 그룹 만들기
-      </button>
+                  <span className={`${styles.groupStatus} ${statusClass}`}>{statusLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+
+      <div className={styles.createAction}>
+        <button className={styles.createButton} type="button" aria-label="새 정산 만들기" onClick={openMenu}>
+          <span className={styles.createPlus}>+</span>
+        </button>
+        <button className={styles.createLabel} type="button" onClick={openMenu}>
+          새 정산 만들기
+        </button>
+      </div>
 
       {sheet !== "closed" && (
         <div className={styles.overlay} role="dialog" aria-modal="true">
@@ -197,7 +211,7 @@ export default function SettlementsPage() {
                     <span className={styles.iconLink}>🔗</span>
                   </div>
                   <div className={styles.sheetItemText}>
-                    <div className={styles.sheetItemTitle}>이미 있는 그룹에 참여하기</div>
+                    <div className={styles.sheetItemTitle}>이미 있는 그룹에 참여</div>
                     <div className={styles.sheetItemSub}>초대 링크로 그룹에 참여해요.</div>
                   </div>
                   <div className={styles.sheetChev}>›</div>
@@ -217,24 +231,24 @@ export default function SettlementsPage() {
               </div>
 
               <div className={styles.form}>
-                <div className={styles.sectionTitle}>제목</div>
+                <div className={styles.sectionTitle}>이름</div>
                 <div className={styles.rowField}>
                   <div className={styles.smallIconBox} aria-hidden="true">
-                    🏖️
+                    🏝️
                   </div>
                   <input
                     className={styles.input}
-                    placeholder="예: 제주 여행"
+                    placeholder="예: 여름 여행"
                     value={groupTitle}
                     onChange={(e) => setGroupTitle(e.target.value)}
                   />
                 </div>
 
-                <div className={styles.sectionTitle}>옵션</div>
+                <div className={styles.sectionTitle}>통화</div>
                 <div className={styles.rowField}>
-                  <div className={styles.rowLabel}>통화</div>
+                  <div className={styles.rowLabel}>선택</div>
                   <select className={styles.select} value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                    <option>대한민국 원 (KRW)</option>
+                    <option>원화 (KRW)</option>
                     <option>미국 달러 (USD)</option>
                     <option>유로 (EUR)</option>
                     <option>영국 파운드 (GBP)</option>
@@ -302,7 +316,7 @@ export default function SettlementsPage() {
                 </div>
                 <div className={styles.joinTitle}>그룹에 참여하기</div>
                 <div className={styles.joinDesc}>
-                  다른 참여자에게서 초대 링크를 받아 붙여넣어 주세요.
+                  초대 링크를 붙여넣으면 정산 그룹에 참여할 수 있어요.
                 </div>
 
                 <div className={styles.pasteRow}>
@@ -320,7 +334,7 @@ export default function SettlementsPage() {
                         const text = await navigator.clipboard.readText();
                         if (text) setInviteLink(text);
                       } catch {
-                        alert("클립보드 접근이 허용되지 않았어요. 직접 붙여넣어 주세요!");
+                        alert("클립보드 접근이 불가해요. 직접 붙여넣어 주세요.");
                       }
                     }}
                   >
