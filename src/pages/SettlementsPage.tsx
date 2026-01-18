@@ -216,22 +216,12 @@ export default function SettlementsPage() {
         )}
       </main>
 
-                  <span className={`${styles.groupStatus} ${statusClass}`}>{statusLabel}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      </div>
-
-      <div className={styles.createAction}>
-        <button className={styles.createButton} type="button" aria-label="새 정산 만들기" onClick={openMenu}>
-          <span className={styles.createPlus}>+</span>
-        </button>
-        <button className={styles.createLabel} type="button" onClick={openMenu}>
-          새 정산 만들기
-        </button>
-      </div>
+      <button className={styles.fab} type="button" aria-label="새 그룹 만들기" onClick={openMenu}>
+        +
+      </button>
+      <button className={styles.fabLabel} type="button" onClick={openMenu}>
+        새 그룹 만들기
+      </button>
 
       {sheet !== 'closed' && (
         <div className={styles.overlay} role="dialog" aria-modal="true">
