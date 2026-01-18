@@ -12,8 +12,8 @@ export function AchievementCard({ badges }: AchievementCardProps) {
     <section className={styles.card}>
       <div className={styles.header}>
         <div>
-          <div className={styles.title}>업적</div>
-          <div className={styles.sub}>활동으로 획득한 업적</div>
+          <div className={styles.title}>누적 업적</div>
+          <div className={styles.sub}>활동으로 얻는 누적 업적</div>
         </div>
         <span className={styles.chevron}>›</span>
       </div>
@@ -21,10 +21,10 @@ export function AchievementCard({ badges }: AchievementCardProps) {
       <div className={styles.list}>
         {achievements.length === 0 ? (
           <>
-            <Item label="첫 정산" value="-" icon="💰" />
-            <Item label="그룹장" value="-" icon="👑" />
-            <Item label="정산왕" value="-" icon="🏆" />
-            <Item label="파티광" value="-" icon="🎉" />
+            <Item label="첫 정산" value="-" icon="🏆" />
+            <Item label="그룹 리더" value="-" icon="🔥" />
+            <Item label="정산 고수" value="-" icon="⚖️" />
+            <Item label="모임 주최자" value="-" icon="🎪" />
           </>
         ) : (
           achievements.slice(0, 4).map((b) => (

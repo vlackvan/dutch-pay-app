@@ -64,12 +64,12 @@ function SettingsIcon() {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
-        stroke="#C9CDD3"
+        stroke="currentColor"
         strokeWidth="2"
       />
       <path
         d="M19.4 15a7.9 7.9 0 0 0 .1-1l2-1.2-2-3.5-2.3.6a8.2 8.2 0 0 0-1.7-1l-.3-2.4H10l-.3 2.4a8.2 8.2 0 0 0-1.7 1l-2.3-.6-2 3.5 2 1.2a7.9 7.9 0 0 0 .1 1 7.9 7.9 0 0 0-.1 1l-2 1.2 2 3.5 2.3-.6a8.2 8.2 0 0 0 1.7 1l.3 2.4h4.4l.3-2.4a8.2 8.2 0 0 0 1.7-1l2.3.6 2-3.5-2-1.2a7.9 7.9 0 0 0 .1-1Z"
-        stroke="#C9CDD3"
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinejoin="round"
       />
