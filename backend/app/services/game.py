@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.game import GameResult
 from app.models.settlement import Settlement, SettlementParticipant, SplitType
-from app.models.user import User
+from app.models.group import GroupParticipant
 from app.schemas.game import GameResultCreate
 
 
@@ -18,7 +18,7 @@ class GameService:
         The loser of the game becomes the payer for the settlement.
         """
         # Verify loser is in participants
-        if data.loser_id not in data.participants:
+        if data.loser_participant_id not in data.participants:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Loser must be one of the participants"
@@ -29,7 +29,7 @@ class GameService:
             group_id=data.group_id,
             game_type=data.game_type,
             participants=data.participants,
-            loser_id=data.loser_id,
+            loser_participant_id=data.loser_participant_id,
             amount=data.amount,
             game_data=data.game_data,
         )
@@ -39,7 +39,7 @@ class GameService:
         # Auto-create settlement: loser pays for all participants
         settlement = Settlement(
             group_id=data.group_id,
-            payer_id=data.loser_id,  # Loser pays
+            payer_participant_id=data.loser_participant_id,  # Loser pays
             title=f"미니게임 - {data.game_type.value}",
             description=f"게임 결과에 의한 자동 정산",
             total_amount=data.amount,
@@ -54,7 +54,7 @@ class GameService:
         for participant_id in data.participants:
             participant = SettlementParticipant(
                 settlement_id=settlement.id,
-                user_id=participant_id,
+                participant_id=participant_id,
                 amount_owed=amount_per_person,
             )
             self.db.add(participant)
@@ -66,7 +66,7 @@ class GameService:
         self.db.refresh(game_result)
 
         # Add loser name to response
-        loser = self.db.query(User).filter(User.id == data.loser_id).first()
+        loser = self.db.query(GroupParticipant).filter(GroupParticipant.id == data.loser_participant_id).first()
         game_result.loser_name = loser.name if loser else None
 
         return game_result

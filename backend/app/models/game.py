@@ -21,11 +21,11 @@ class GameResult(Base):
     # Game type
     game_type = Column(SQLEnum(GameType), nullable=False)
 
-    # Participants (JSON array of user IDs)
+    # Participants (JSON array of participant IDs)
     participants = Column(JSON, nullable=False)
 
     # Winner/Loser (the one who has to pay)
-    loser_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    loser_participant_id = Column(Integer, ForeignKey("group_participants.id"), nullable=False)
 
     # Amount at stake
     amount = Column(Numeric(12, 2), nullable=False)
@@ -40,5 +40,5 @@ class GameResult(Base):
 
     # Relationships
     group = relationship("Group")
-    loser = relationship("User")
+    loser = relationship("GroupParticipant")
     settlement = relationship("Settlement")

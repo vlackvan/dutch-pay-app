@@ -1,6 +1,13 @@
 import styles from './AchievementCard.module.css';
+import type { UserBadgeResponse } from '@/types/api.types';
 
-export function AchievementCard() {
+interface AchievementCardProps {
+  badges?: UserBadgeResponse[];
+}
+
+export function AchievementCard({ badges }: AchievementCardProps) {
+  const achievements = badges?.filter((b) => b.badge.badge_type === 'cumulative') || [];
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -12,20 +19,44 @@ export function AchievementCard() {
       </div>
 
       <div className={styles.list}>
-        <Item label="구독석" value="5" />
-        <Item label="150일" value="150일" />
-        <Item label="담합자" value="100" />
-        <Item label="파티광" value="50" />
+        {achievements.length === 0 ? (
+          <>
+            <Item label="첫 정산" value="-" icon="💰" />
+            <Item label="그룹장" value="-" icon="👑" />
+            <Item label="정산왕" value="-" icon="🏆" />
+            <Item label="파티광" value="-" icon="🎉" />
+          </>
+        ) : (
+          achievements.slice(0, 4).map((b) => (
+            <Item
+              key={b.id}
+              label={b.badge.name}
+              value={b.badge.icon}
+              icon={b.badge.icon}
+              isNew
+            />
+          ))
+        )}
       </div>
     </section>
   );
 }
 
-function Item({ label, value }: { label: string; value: string }) {
+function Item({
+  label,
+  value,
+  icon,
+  isNew,
+}: {
+  label: string;
+  value: string;
+  icon?: string;
+  isNew?: boolean;
+}) {
   return (
     <div className={styles.item}>
-      <div className={styles.circle} />
-      <span className={styles.tag}>신규</span>
+      <div className={styles.circle}>{icon}</div>
+      {isNew && <span className={styles.tag}>신규</span>}
       <div className={styles.value}>{value}</div>
       <div className={styles.label}>{label}</div>
     </div>

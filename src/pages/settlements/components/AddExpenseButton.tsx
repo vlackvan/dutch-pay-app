@@ -1,98 +1,94 @@
-import { useMemo, useRef, useState } from "react";
-import styles from "../SettlementDetailPage.module.css";
+import { useMemo, useRef, useState } from 'react';
+import styles from '../SettlementDetailPage.module.css';
+import { useCreateSettlement } from '@/hooks/queries/useSettlements';
+import type { GroupParticipantResponse, SplitType } from '@/types/api.types';
 
-type SplitMode = "equal" | "custom";
-type Member = { id: string; name: string; isMe?: boolean };
+type SplitMode = 'equal' | 'custom';
 
-const MEMBERS: Member[] = [
-  { id: "m1", name: "건희" },
-  { id: "m2", name: "상범" },
-  { id: "m3", name: "○○" },
-  { id: "m4", name: "예은 (나)", isMe: true },
-  { id: "m5", name: "준한" },
-];
+const EMOJIS = ['🍀', '🏖️', '🍻', '🍜', '☕', '🍰', '🎟️', '🚕', '🛒', '🏨'];
 
-const EMOJIS = ["🍀", "🏖️", "🍻", "🍜", "☕", "🍰", "🎟️", "🚕", "🛒", "🏨"];
+interface AddExpenseButtonProps {
+  groupId: number;
+  participants: GroupParticipantResponse[];
+  currentUserParticipantId?: number;
+  onBack: () => void;
+}
 
-export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
+export default function AddExpenseButton({
+  groupId,
+  participants,
+  currentUserParticipantId,
+  onBack,
+}: AddExpenseButtonProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const createSettlement = useCreateSettlement();
 
-  const [title, setTitle] = useState("");
-  const [emoji, setEmoji] = useState("🍀");
+  const [title, setTitle] = useState('');
+  const [emoji, setEmoji] = useState('🍀');
   const [emojiOpen, setEmojiOpen] = useState(false);
 
-  const [receiptName, setReceiptName] = useState<string>("");
+  const [receiptName, setReceiptName] = useState<string>('');
 
-  const [amount, setAmount] = useState<number | "">("");
-  const [payer, setPayer] = useState("예은 (나)");
+  const [amount, setAmount] = useState<number | ''>('');
+  const [payerId, setPayerId] = useState<number>(currentUserParticipantId || participants[0]?.id || 0);
   const [when, setWhen] = useState(() => {
     const d = new Date();
     const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
   });
 
-  const [splitMode, setSplitMode] = useState<SplitMode>("equal");
+  const [splitMode, setSplitMode] = useState<SplitMode>('equal');
 
-  // ✅ 체크 상태 (기본: 전원 선택)
-  const [selected, setSelected] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    MEMBERS.forEach((m) => (init[m.id] = true));
+  const [selected, setSelected] = useState<Record<number, boolean>>(() => {
+    const init: Record<number, boolean> = {};
+    participants.forEach((p) => (init[p.id] = true));
     return init;
   });
 
-  // ✅ 커스텀 입력값 (자동 대상 제외한 사람들만 입력)
-  const [custom, setCustom] = useState<Record<string, number | "">>(() => {
-    const init: Record<string, number | ""> = {};
-    MEMBERS.forEach((m) => (init[m.id] = ""));
+  const [custom, setCustom] = useState<Record<number, number | ''>>(() => {
+    const init: Record<number, number | ''> = {};
+    participants.forEach((p) => (init[p.id] = ''));
     return init;
   });
 
   const selectedIds = useMemo(
-    () => MEMBERS.filter((m) => selected[m.id]).map((m) => m.id),
-    [selected]
+    () => participants.filter((p) => selected[p.id]).map((p) => p.id),
+    [participants, selected]
   );
 
-  const amountNumber = typeof amount === "number" ? amount : 0;
+  const amountNumber = typeof amount === 'number' ? amount : 0;
 
-  // ===== equal =====
   const equalShare = useMemo(() => {
     const n = selectedIds.length || 1;
     return Math.round(amountNumber / n);
   }, [amountNumber, selectedIds.length]);
 
-  // ===== custom: 자동 대상 1명(기본: 나, 없으면 마지막 선택자) =====
   const autoTargetId = useMemo(() => {
-    return selectedIds.length ? selectedIds[selectedIds.length - 1] : MEMBERS[0].id;
-  }, [selected, selectedIds]);
+    return selectedIds.length ? selectedIds[selectedIds.length - 1] : participants[0]?.id;
+  }, [selectedIds, participants]);
 
-  // 자동 대상 제외한 입력 합
   const knownSum = useMemo(() => {
-    if (splitMode !== "custom") return 0;
+    if (splitMode !== 'custom') return 0;
     return selectedIds
       .filter((id) => id !== autoTargetId)
-      .reduce((sum, id) => sum + (typeof custom[id] === "number" ? custom[id] : 0), 0);
+      .reduce((sum, id) => sum + (typeof custom[id] === 'number' ? custom[id] : 0), 0);
   }, [custom, selectedIds, splitMode, autoTargetId]);
 
-  // 자동 대상 금액 = 총액 - 입력합 (음수면 0)
   const autoAmount = useMemo(() => {
-    if (splitMode !== "custom") return 0;
+    if (splitMode !== 'custom') return 0;
     const rest = amountNumber - knownSum;
     return rest < 0 ? 0 : rest;
   }, [amountNumber, knownSum, splitMode]);
 
-  const computedRowAmount = (id: string) => {
-    if (!selected[id]) return 0;
-
-    if (splitMode === "equal") return equalShare;
-
-    // custom
-    if (id === autoTargetId) return autoAmount;
-    return typeof custom[id] === "number" ? custom[id] : 0;
+  const computedRowAmount = (participantId: number) => {
+    if (!selected[participantId]) return 0;
+    if (splitMode === 'equal') return equalShare;
+    if (participantId === autoTargetId) return autoAmount;
+    return typeof custom[participantId] === 'number' ? custom[participantId] : 0;
   };
 
-  // ✅ 제출 가능 조건: 제목/금액/선택인원만 체크 (custom 합계 검증 X)
   const canSubmit = useMemo(() => {
     if (!title.trim()) return false;
     if (!(amountNumber > 0)) return false;
@@ -100,9 +96,52 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
     return true;
   }, [title, amountNumber, selectedIds.length]);
 
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+
+    const splitType: SplitType = splitMode === 'equal' ? 'equal' : 'amount';
+
+    const finalParticipantIds = selectedIds.includes(payerId)
+      ? selectedIds
+      : [...selectedIds, payerId];
+
+    const participantsPayload = finalParticipantIds.map((participantId) => {
+      if (splitMode === 'equal') {
+        return { participant_id: participantId };
+      }
+      return {
+        participant_id: participantId,
+        amount: computedRowAmount(participantId),
+      };
+    });
+
+    createSettlement.mutate(
+      {
+        group_id: groupId,
+        payer_participant_id: payerId,
+        title: title.trim(),
+        total_amount: amountNumber,
+        split_type: splitType,
+        icon: emoji,
+        participants: participantsPayload,
+      },
+      {
+        onSuccess: () => {
+          onBack();
+        },
+      }
+    );
+  };
+
+  const getParticipantName = (participantId: number) => {
+    const participant = participants.find((p) => p.id === participantId);
+    if (!participant) return 'Unknown';
+    const name = participant.name || participant.user_name;
+    return participantId === currentUserParticipantId ? `${name} (나)` : name;
+  };
+
   return (
     <div>
-      {/* 상단바 */}
       <header className={styles.addTop}>
         <button className={styles.addBack} onClick={onBack} type="button" aria-label="뒤로가기">
           ←
@@ -111,7 +150,6 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
       </header>
 
       <div className={styles.addFormWrap}>
-        {/* 제목 */}
         <div className={styles.blockTitle}>제목</div>
         <div className={styles.titleRow}>
           <input
@@ -121,7 +159,6 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
             placeholder="예: 술, 저녁, 택시"
           />
 
-          {/* 이모지 */}
           <div className={styles.iconBtnWrap}>
             <button
               type="button"
@@ -151,7 +188,6 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
             )}
           </div>
 
-          {/* 영수증 */}
           <button
             type="button"
             className={styles.squareIconBtn}
@@ -165,17 +201,16 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
             ref={fileRef}
             type="file"
             accept="image/*"
-            style={{ display: "none" }}
+            style={{ display: 'none' }}
             onChange={(e) => {
               const f = e.target.files?.[0];
-              setReceiptName(f ? f.name : "");
+              setReceiptName(f ? f.name : '');
             }}
           />
         </div>
 
         {receiptName ? <div className={styles.receiptHint}>선택된 영수증: {receiptName}</div> : null}
 
-        {/* 금액 */}
         <div className={styles.blockTitle}>금액</div>
         <div className={styles.amountBigRow}>
           <div className={styles.currencyBox}>₩</div>
@@ -183,20 +218,27 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
             className={styles.amountBigInput}
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
             placeholder="0"
           />
         </div>
 
-        {/* 결제자 / 날짜 */}
         <div className={styles.twoCol}>
           <div>
             <div className={styles.blockTitle}>결제자</div>
             <div className={styles.selectBox}>
-              <select className={styles.selectPlain} value={payer} onChange={(e) => setPayer(e.target.value)}>
-                {MEMBERS.map((m) => (
-                  <option key={m.id} value={m.name}>
-                    {m.name}
+              <select
+                className={styles.selectPlain}
+                value={payerId}
+                onChange={(e) => {
+                  const nextId = Number(e.target.value);
+                  setPayerId(nextId);
+                  setSelected((prev) => ({ ...prev, [nextId]: true }));
+                }}
+              >
+                {participants.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {getParticipantName(p.id)}
                   </option>
                 ))}
               </select>
@@ -207,70 +249,72 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
           <div>
             <div className={styles.blockTitle}>날짜</div>
             <div className={styles.selectBox}>
-              <input className={styles.dateInput} type="date" value={when} onChange={(e) => setWhen(e.target.value)} />
+              <input
+                className={styles.dateInput}
+                type="date"
+                value={when}
+                onChange={(e) => setWhen(e.target.value)}
+              />
               <span className={styles.selectChevron}>▾</span>
             </div>
           </div>
         </div>
 
-        {/* 분할 */}
         <div className={styles.splitHeader}>
           <div className={styles.blockTitle}>분할</div>
 
           <div className={styles.splitMode}>
             <button
               type="button"
-              className={`${styles.modeBtn} ${splitMode === "equal" ? styles.modeBtnActive : ""}`}
-              onClick={() => setSplitMode("equal")}
+              className={`${styles.modeBtn} ${splitMode === 'equal' ? styles.modeBtnActive : ''}`}
+              onClick={() => setSplitMode('equal')}
             >
               동일하게
             </button>
             <button
               type="button"
-              className={`${styles.modeBtn} ${splitMode === "custom" ? styles.modeBtnActive : ""}`}
-              onClick={() => setSplitMode("custom")}
+              className={`${styles.modeBtn} ${splitMode === 'custom' ? styles.modeBtnActive : ''}`}
+              onClick={() => setSplitMode('custom')}
             >
               직접 입력
             </button>
           </div>
         </div>
 
-        {/* 멤버 분할 리스트 */}
         <div className={styles.splitList}>
-          {MEMBERS.map((m) => {
-            const rowAmount = computedRowAmount(m.id);
+          {participants.map((p) => {
+            const rowAmount = computedRowAmount(p.id);
 
             return (
-              <div key={m.id} className={styles.splitRow}>
+              <div key={p.id} className={styles.splitRow}>
                 <label className={styles.splitLeft}>
                   <input
                     type="checkbox"
-                    checked={!!selected[m.id]}
+                    checked={!!selected[p.id]}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      setSelected((prev) => ({ ...prev, [m.id]: checked }));
+                      setSelected((prev) => ({ ...prev, [p.id]: checked }));
 
-                      // 체크 해제하면 입력값 초기화
                       if (!checked) {
-                        setCustom((prev) => ({ ...prev, [m.id]: "" }));
+                        setCustom((prev) => ({ ...prev, [p.id]: '' }));
                       }
                     }}
                   />
-                  <span className={styles.splitName}>{m.name}</span>
+                  <span className={styles.splitName}>{getParticipantName(p.id)}</span>
                 </label>
 
-                {splitMode === "custom" ? (
+                {splitMode === 'custom' ? (
                   <div className={styles.customInputWrap}>
                     <span className={styles.customWon}>₩</span>
                     <input
                       className={styles.customInput}
                       type="number"
-                      disabled={!selected[m.id] || m.id === autoTargetId}
-                      value={m.id === autoTargetId ? autoAmount : (custom[m.id] ?? "")}
+                      disabled={!selected[p.id] || p.id === autoTargetId}
+                      value={p.id === autoTargetId ? autoAmount : custom[p.id] ?? ''}
                       onChange={(e) =>
                         setCustom((prev) => ({
                           ...prev,
-                          [m.id]: e.target.value === "" ? "" : Number(e.target.value),
+                          [p.id]: e.target.value === '' ? '' : Number(e.target.value),
                         }))
                       }
                       placeholder="0"
@@ -285,22 +329,17 @@ export default function AddExpenseButton({ onBack }: { onBack: () => void }) {
         </div>
 
         <button
-          className={`${styles.addSubmitBtn} ${!canSubmit ? styles.addSubmitDisabled : ""}`}
+          className={`${styles.addSubmitBtn} ${!canSubmit || createSettlement.isPending ? styles.addSubmitDisabled : ''}`}
           type="button"
-          disabled={!canSubmit}
-          onClick={() => {
-            const participants = MEMBERS.filter((m) => selected[m.id]).map((m) => m.name).join(", ");
-
-            alert(
-              `추가됨(데모)\n제목: ${emoji} ${title}\n금액: ₩${amountNumber.toLocaleString()}\n결제자: ${payer}\n날짜: ${when}\n분할: ${
-                splitMode === "equal" ? "동일하게" : "직접 입력(1명 자동)"
-              }\n참여자: ${participants}`
-            );
-            onBack();
-          }}
+          disabled={!canSubmit || createSettlement.isPending}
+          onClick={handleSubmit}
         >
-          추가
+          {createSettlement.isPending ? '추가 중...' : '추가'}
         </button>
+
+        {createSettlement.isError && (
+          <div className={styles.errorMsg}>정산 추가에 실패했습니다. 다시 시도해주세요.</div>
+        )}
       </div>
     </div>
   );

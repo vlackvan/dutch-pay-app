@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import uuid
 
 from app.models.settlement import Settlement, SettlementParticipant, SettlementResult, SplitType
-from app.models.user import User
+from app.models.group import GroupParticipant
 from app.schemas.settlement import SettlementCreate, SettlementUpdate, GroupSettlementResults, SettlementResultResponse
 
 
@@ -13,11 +13,22 @@ class SettlementService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_settlement(self, data: SettlementCreate, payer_id: int) -> Settlement:
+    def create_settlement(self, data: SettlementCreate) -> Settlement:
         """Create a new settlement with participants."""
+        payer_participant = self.db.query(GroupParticipant).filter(
+            GroupParticipant.id == data.payer_participant_id,
+            GroupParticipant.group_id == data.group_id
+        ).first()
+        if not payer_participant:
+            raise HTTPException(status_code=400, detail="Invalid payer participant")
+
+        participant_ids = {p.participant_id for p in data.participants}
+        if data.payer_participant_id not in participant_ids:
+            raise HTTPException(status_code=400, detail="Payer must be included in participants")
+
         settlement = Settlement(
             group_id=data.group_id,
-            payer_id=payer_id,
+            payer_participant_id=data.payer_participant_id,
             title=data.title,
             description=data.description,
             total_amount=data.total_amount,
@@ -37,8 +48,17 @@ class SettlementService:
     def _add_participants(self, settlement: Settlement, participants, split_type: SplitType, total: Decimal):
         """Add participants and calculate their owed amounts."""
         participant_count = len(participants)
+        if participant_count == 0:
+            raise HTTPException(status_code=400, detail="At least one participant is required")
 
         for p in participants:
+            participant = self.db.query(GroupParticipant).filter(
+                GroupParticipant.id == p.participant_id,
+                GroupParticipant.group_id == settlement.group_id
+            ).first()
+            if not participant:
+                raise HTTPException(status_code=400, detail="Invalid participant")
+
             if split_type == SplitType.EQUAL:
                 amount_owed = total / participant_count
             elif split_type == SplitType.AMOUNT:
@@ -48,14 +68,14 @@ class SettlementService:
             else:
                 amount_owed = total / participant_count
 
-            participant = SettlementParticipant(
+            settlement_participant = SettlementParticipant(
                 settlement_id=settlement.id,
-                user_id=p.user_id,
+                participant_id=p.participant_id,
                 amount=p.amount,
                 ratio=p.ratio,
                 amount_owed=amount_owed,
             )
-            self.db.add(participant)
+            self.db.add(settlement_participant)
 
     def update_settlement(self, settlement_id: int, data: SettlementUpdate, user_id: int) -> Settlement:
         """Update settlement details."""
@@ -63,7 +83,10 @@ class SettlementService:
         if not settlement:
             raise HTTPException(status_code=404, detail="Settlement not found")
 
-        if settlement.payer_id != user_id:
+        payer_participant = self.db.query(GroupParticipant).filter(
+            GroupParticipant.id == settlement.payer_participant_id
+        ).first()
+        if not payer_participant or payer_participant.user_id != user_id:
             raise HTTPException(status_code=403, detail="Only the payer can update this settlement")
 
         # Update fields
@@ -105,7 +128,7 @@ class SettlementService:
         balances: Dict[int, Decimal] = {}
 
         for settlement in settlements:
-            payer_id = settlement.payer_id
+            payer_id = settlement.payer_participant_id
             total = settlement.total_amount
 
             # Payer paid the full amount, so they should receive their share back
@@ -115,14 +138,14 @@ class SettlementService:
 
             # Each participant owes their share
             for participant in settlement.participants:
-                user_id = participant.user_id
-                if user_id not in balances:
-                    balances[user_id] = Decimal("0")
-                balances[user_id] -= participant.amount_owed
+                participant_id = participant.participant_id
+                if participant_id not in balances:
+                    balances[participant_id] = Decimal("0")
+                balances[participant_id] -= participant.amount_owed
 
         # Separate into debtors (negative balance) and creditors (positive balance)
-        debtors = [(uid, -bal) for uid, bal in balances.items() if bal < 0]
-        creditors = [(uid, bal) for uid, bal in balances.items() if bal > 0]
+        debtors = [(pid, -bal) for pid, bal in balances.items() if bal < 0]
+        creditors = [(pid, bal) for pid, bal in balances.items() if bal > 0]
 
         # Sort by amount (descending)
         debtors.sort(key=lambda x: x[1], reverse=True)
@@ -143,8 +166,8 @@ class SettlementService:
                 # Check if this result already exists
                 existing = self.db.query(SettlementResult).filter(
                     SettlementResult.group_id == group_id,
-                    SettlementResult.debtor_id == debtor_id,
-                    SettlementResult.creditor_id == creditor_id,
+                    SettlementResult.debtor_participant_id == debtor_id,
+                    SettlementResult.creditor_participant_id == creditor_id,
                     SettlementResult.is_completed == False
                 ).first()
 
@@ -154,8 +177,8 @@ class SettlementService:
                 else:
                     result = SettlementResult(
                         group_id=group_id,
-                        debtor_id=debtor_id,
-                        creditor_id=creditor_id,
+                        debtor_participant_id=debtor_id,
+                        creditor_participant_id=creditor_id,
                         amount=transfer_amount,
                         calculation_batch=batch_id,
                     )
@@ -178,20 +201,22 @@ class SettlementService:
         # Build response with user names
         result_responses = []
         for r in results:
-            debtor = self.db.query(User).filter(User.id == r.debtor_id).first()
-            creditor = self.db.query(User).filter(User.id == r.creditor_id).first()
+            debtor = self.db.query(GroupParticipant).filter(GroupParticipant.id == r.debtor_participant_id).first()
+            creditor = self.db.query(GroupParticipant).filter(GroupParticipant.id == r.creditor_participant_id).first()
 
             result_responses.append(SettlementResultResponse(
                 id=r.id,
-                debtor_id=r.debtor_id,
-                creditor_id=r.creditor_id,
+                debtor_participant_id=r.debtor_participant_id,
+                creditor_participant_id=r.creditor_participant_id,
                 amount=r.amount,
                 is_completed=r.is_completed,
                 completed_at=r.completed_at,
                 debtor_name=debtor.name if debtor else None,
                 creditor_name=creditor.name if creditor else None,
-                creditor_payment_method=creditor.payment_method if creditor else None,
-                creditor_payment_account=creditor.payment_account if creditor else None,
+                debtor_user_id=debtor.user_id if debtor else None,
+                creditor_user_id=creditor.user_id if creditor else None,
+                creditor_payment_method=creditor.user.payment_method if creditor and creditor.user else None,
+                creditor_payment_account=creditor.user.payment_account if creditor and creditor.user else None,
             ))
 
         return GroupSettlementResults(

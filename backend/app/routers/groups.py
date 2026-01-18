@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -9,15 +10,29 @@ from app.schemas.group import (
     GroupResponse,
     GroupListResponse,
     GroupDetailResponse,
-    GroupMemberResponse,
+    GroupParticipantResponse,
     InviteCodeResponse,
     JoinGroupRequest,
+    InviteGroupResponse,
 )
 from app.schemas.settlement import SettlementResponse, GroupSettlementResults
 from app.services.auth import get_current_user
 from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/groups", tags=["Groups"])
+
+
+def _avatar_dict(user: User):
+    if not user or not user.avatar:
+        return None
+    avatar = user.avatar
+    return {
+        "id": avatar.id,
+        "user_id": avatar.user_id,
+        "head": avatar.head,
+        "face": avatar.face,
+        "hat": avatar.hat,
+    }
 
 
 @router.post("", response_model=GroupResponse, status_code=status.HTTP_201_CREATED)
@@ -27,7 +42,19 @@ def create_group(
     db: Session = Depends(get_db)
 ):
     """Create a new settlement group."""
-    from app.models.group import Group, GroupMember
+    from app.models.group import Group, GroupParticipant
+
+    participant_names = [name.strip() for name in group_data.participants or [] if name and name.strip()]
+    unique_names = []
+    seen = set()
+    for name in participant_names:
+        key = name.lower()
+        if key not in seen:
+            unique_names.append(name)
+            seen.add(key)
+
+    if not unique_names:
+        unique_names = [current_user.name]
 
     group = Group(
         name=group_data.name,
@@ -38,26 +65,51 @@ def create_group(
     db.add(group)
     db.flush()
 
-    # Add creator as admin member
-    member = GroupMember(
-        group_id=group.id,
-        user_id=current_user.id,
-        nickname=current_user.name,
-        is_admin=True
-    )
-    db.add(member)
+    # Create participants (first participant is the creator's claimed persona)
+    for idx, name in enumerate(unique_names):
+        is_creator = idx == 0
+        participant = GroupParticipant(
+            group_id=group.id,
+            name=name,
+            user_id=current_user.id if is_creator else None,
+            is_admin=is_creator
+        )
+        db.add(participant)
     db.commit()
     db.refresh(group)
-    return group
+    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group.id).all()
+
+    return GroupDetailResponse(
+        id=group.id,
+        name=group.name,
+        description=group.description,
+        icon=group.icon,
+        invite_code=group.invite_code,
+        owner_id=group.owner_id,
+        created_at=group.created_at,
+        participants=[
+            GroupParticipantResponse(
+                id=p.id,
+                name=p.name,
+                user_id=p.user_id,
+                is_admin=p.is_admin,
+                joined_at=p.joined_at,
+                user_name=p.user.name if p.user else None,
+                user_avatar=_avatar_dict(p.user),
+                is_claimed=bool(p.user_id),
+            )
+            for p in participants
+        ],
+    )
 
 
 @router.get("", response_model=List[GroupListResponse])
 def get_my_groups(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get all groups the current user belongs to with unsettled amounts."""
     # TODO: Implement with unsettled amount calculation
-    from app.models.group import Group, GroupMember
+    from app.models.group import Group, GroupParticipant
 
-    memberships = db.query(GroupMember).filter(GroupMember.user_id == current_user.id).all()
+    memberships = db.query(GroupParticipant).filter(GroupParticipant.user_id == current_user.id).all()
     groups = []
     for membership in memberships:
         group = membership.group
@@ -70,7 +122,7 @@ def get_my_groups(current_user: User = Depends(get_current_user), db: Session = 
             owner_id=group.owner_id,
             created_at=group.created_at,
             unsettled_amount=0,  # TODO: Calculate
-            member_count=len(group.members)
+            member_count=len(group.participants)
         ))
     return groups
 
@@ -82,35 +134,70 @@ def get_group(
     db: Session = Depends(get_db)
 ):
     """Get group details including members."""
-    from app.models.group import Group, GroupMember
+    from app.models.group import Group, GroupParticipant
 
     group = db.query(Group).filter(Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
 
     # Check membership
-    is_member = db.query(GroupMember).filter(
-        GroupMember.group_id == group_id,
-        GroupMember.user_id == current_user.id
+    is_member = db.query(GroupParticipant).filter(
+        GroupParticipant.group_id == group_id,
+        GroupParticipant.user_id == current_user.id
     ).first()
     if not is_member:
         raise HTTPException(status_code=403, detail="Not a member of this group")
 
-    return group
+    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
+
+    return GroupDetailResponse(
+        id=group.id,
+        name=group.name,
+        description=group.description,
+        icon=group.icon,
+        invite_code=group.invite_code,
+        owner_id=group.owner_id,
+        created_at=group.created_at,
+        participants=[
+            GroupParticipantResponse(
+                id=p.id,
+                name=p.name,
+                user_id=p.user_id,
+                is_admin=p.is_admin,
+                joined_at=p.joined_at,
+                user_name=p.user.name if p.user else None,
+                user_avatar=_avatar_dict(p.user),
+                is_claimed=bool(p.user_id),
+            )
+            for p in participants
+        ],
+    )
 
 
-@router.get("/{group_id}/members", response_model=List[GroupMemberResponse])
+@router.get("/{group_id}/members", response_model=List[GroupParticipantResponse])
 def get_group_members(
     group_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all members of a group with their badges."""
-    from app.models.group import GroupMember
+    from app.models.group import GroupParticipant
 
     # TODO: Verify membership and return members with badges
-    members = db.query(GroupMember).filter(GroupMember.group_id == group_id).all()
-    return members
+    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
+    return [
+        GroupParticipantResponse(
+            id=p.id,
+            name=p.name,
+            user_id=p.user_id,
+            is_admin=p.is_admin,
+            joined_at=p.joined_at,
+            user_name=p.user.name if p.user else None,
+            user_avatar=_avatar_dict(p.user),
+            is_claimed=bool(p.user_id),
+        )
+        for p in participants
+    ]
 
 
 @router.post("/{group_id}/invite", response_model=InviteCodeResponse)
@@ -120,7 +207,7 @@ def create_invite_code(
     db: Session = Depends(get_db)
 ):
     """Generate/get invite code for a group."""
-    from app.models.group import Group, GroupMember
+    from app.models.group import Group
 
     group = db.query(Group).filter(Group.id == group_id).first()
     if not group:
@@ -133,6 +220,39 @@ def create_invite_code(
     )
 
 
+@router.get("/invite/{invite_code}", response_model=InviteGroupResponse)
+def get_invite_group(
+    invite_code: str,
+    db: Session = Depends(get_db)
+):
+    """Get group info and participants by invite code."""
+    from app.models.group import Group, GroupParticipant
+
+    group = db.query(Group).filter(Group.invite_code == invite_code.upper()).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Invalid invite code")
+
+    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group.id).all()
+
+    return InviteGroupResponse(
+        invite_code=group.invite_code,
+        group_id=group.id,
+        group_name=group.name,
+        participants=[
+            GroupParticipantResponse(
+                id=p.id,
+                name=p.name,
+                user_id=p.user_id,
+                is_admin=p.is_admin,
+                joined_at=p.joined_at,
+                user_name=p.user.name if p.user else None,
+                user_avatar=_avatar_dict(p.user),
+                is_claimed=bool(p.user_id),
+            )
+            for p in participants
+        ],
+    )
+
 @router.post("/join", response_model=GroupResponse)
 def join_group(
     request: JoinGroupRequest,
@@ -140,26 +260,55 @@ def join_group(
     db: Session = Depends(get_db)
 ):
     """Join a group using invite code."""
-    from app.models.group import Group, GroupMember
+    from app.models.group import Group, GroupParticipant
 
     group = db.query(Group).filter(Group.invite_code == request.invite_code.upper()).first()
     if not group:
         raise HTTPException(status_code=404, detail="Invalid invite code")
 
+    if request.participant_id and request.participant_name:
+        raise HTTPException(status_code=400, detail="Choose existing participant or create a new one")
+
+    if not request.participant_id and not request.participant_name:
+        raise HTTPException(status_code=400, detail="Participant selection required")
+
     # Check if already a member
-    existing = db.query(GroupMember).filter(
-        GroupMember.group_id == group.id,
-        GroupMember.user_id == current_user.id
+    existing = db.query(GroupParticipant).filter(
+        GroupParticipant.group_id == group.id,
+        GroupParticipant.user_id == current_user.id
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Already a member of this group")
 
-    member = GroupMember(
-        group_id=group.id,
-        user_id=current_user.id,
-        nickname=request.nickname or current_user.name
-    )
-    db.add(member)
+    if request.participant_id:
+        participant = db.query(GroupParticipant).filter(
+            GroupParticipant.id == request.participant_id,
+            GroupParticipant.group_id == group.id
+        ).first()
+        if not participant:
+            raise HTTPException(status_code=404, detail="Participant not found")
+        if participant.user_id is not None:
+            raise HTTPException(status_code=400, detail="Participant already claimed")
+        participant.user_id = current_user.id
+    else:
+        participant_name = (request.participant_name or "").strip()
+        if not participant_name:
+            raise HTTPException(status_code=400, detail="Participant name required")
+
+        existing_name = db.query(GroupParticipant).filter(
+            GroupParticipant.group_id == group.id,
+            func.lower(GroupParticipant.name) == participant_name.lower()
+        ).first()
+        if existing_name:
+            raise HTTPException(status_code=400, detail="Participant name already exists")
+
+        participant = GroupParticipant(
+            group_id=group.id,
+            name=participant_name,
+            user_id=current_user.id,
+            is_admin=False
+        )
+        db.add(participant)
     db.commit()
     db.refresh(group)
     return group

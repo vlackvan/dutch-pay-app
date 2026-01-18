@@ -1,0 +1,490 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-background);
+  padding-bottom: 5rem;
+}
+
+.header {
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.content {
+  padding: 1rem;
+}
+
+.stepIndicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  width: 2rem;
+  height: 0.25rem;
+  background: var(--color-border);
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.stepActive {
+  background: var(--color-primary);
+}
+
+.stepCompleted {
+  background: var(--color-success);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+}
+
+.sectionDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Group Selection */
+.groupList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.groupCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s;
+}
+
+.groupCard:hover {
+  border-color: var(--color-primary-light);
+}
+
+.groupCardSelected {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.groupIcon {
+  font-size: 2rem;
+}
+
+.groupInfo {
+  flex: 1;
+}
+
+.groupName {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.groupMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.checkIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+}
+
+.checkIconSelected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Game Selection */
+.gameGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.gameCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gameCard:hover {
+  border-color: var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+.gameCardSelected {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.gameIcon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.gameName {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.gameDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+/* Play Screen */
+.playArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.rouletteContainer {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin-bottom: 2rem;
+}
+
+.roulette {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ef4444 0deg 72deg,
+    #f59e0b 72deg 144deg,
+    #10b981 144deg 216deg,
+    #3b82f6 216deg 288deg,
+    #8b5cf6 288deg 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+.rouletteInner {
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.roulettePointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 25px solid var(--color-text);
+}
+
+.spinBtn {
+  padding: 1rem 3rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.spinBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.spinBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Bomb Game */
+.bombGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  max-width: 300px;
+  margin: 0 auto 2rem;
+}
+
+.bombCard {
+  aspect-ratio: 1;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bombCard:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.bombCard:disabled {
+  cursor: not-allowed;
+}
+
+.bombRevealed {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.bombSafe {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+/* Amount Input */
+.amountSection {
+  margin-bottom: 1.5rem;
+}
+
+.amountInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+
+.amountInput input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.amountInput input:focus {
+  outline: none;
+}
+
+.amountInput span {
+  color: var(--color-text-secondary);
+}
+
+/* Participants */
+.participantsSection {
+  margin-bottom: 1.5rem;
+}
+
+.participantList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.participantChip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.participantChip:hover {
+  border-color: var(--color-primary-light);
+}
+
+.participantChipSelected {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.participantAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+}
+
+/* Result Screen */
+.resultCard {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.resultIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.resultTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+.resultLoser {
+  font-size: 1.125rem;
+  color: var(--color-error);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.resultAmount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.resultDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.5rem;
+}
+
+/* Buttons */
+.buttonRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.primaryBtn {
+  flex: 1;
+  padding: 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  flex: 1;
+  padding: 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.secondaryBtn:hover {
+  background: var(--color-background);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.backBtn:hover {
+  color: var(--color-text);
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+}

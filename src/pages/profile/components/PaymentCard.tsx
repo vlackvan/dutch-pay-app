@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SectionCard } from './SectionCard';
 import styles from './PaymentCard.module.css';
+import type { UserProfileResponse } from '@/types/api.types';
+import { useUpdateProfile } from '@/hooks/queries/useUser';
 
 type PaymentMethod = '카카오페이' | '토스' | '네이버페이' | '계좌이체' | '신용/체크카드';
 
@@ -11,13 +13,19 @@ const BANKS = [
   '카카오뱅크', '토스뱅크', '케이뱅크', '새마을금고', '우체국'
 ];
 
-export function PaymentCard() {
-  const [open, setOpen] = useState(false);
-  const [method, setMethod] = useState<PaymentMethod>('카카오페이');
+interface PaymentCardProps {
+  user?: UserProfileResponse;
+}
 
-  // 계좌이체 추가 입력
+export function PaymentCard({ user }: PaymentCardProps) {
+  const updateProfile = useUpdateProfile();
+  const [open, setOpen] = useState(false);
+  const [method, setMethod] = useState<PaymentMethod>(
+    (user?.payment_method as PaymentMethod) || '카카오페이'
+  );
+
   const [bank, setBank] = useState('');
-  const [account, setAccount] = useState('');
+  const [account, setAccount] = useState(user?.payment_account || '');
 
   const boxRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,13 +38,22 @@ export function PaymentCard() {
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
-  // 결제수단 바뀔 때 계좌이체 아니면 입력값 숨김(값 유지하고 싶으면 이 부분 제거)
   useEffect(() => {
     if (method !== '계좌이체') {
-      // setBank(''); setAccount(''); // 값까지 지우고 싶으면 주석 해제
       setOpen(false);
     }
   }, [method]);
+
+  const handleMethodChange = (newMethod: PaymentMethod) => {
+    setMethod(newMethod);
+    setOpen(false);
+    updateProfile.mutate({ payment_method: newMethod });
+  };
+
+  const handleAccountSave = () => {
+    const accountInfo = bank ? `${bank} ${account}` : account;
+    updateProfile.mutate({ payment_account: accountInfo });
+  };
 
   const methodLabel = useMemo(() => method ?? '', [method]);
 
@@ -65,10 +82,7 @@ export function PaymentCard() {
                   key={m}
                   type="button"
                   className={`${styles.menuItem} ${m === method ? styles.active : ''}`}
-                  onClick={() => {
-                    setMethod(m);
-                    setOpen(false);
-                  }}
+                  onClick={() => handleMethodChange(m)}
                 >
                   {m}
                 </button>
@@ -104,6 +118,7 @@ export function PaymentCard() {
               className={styles.input}
               value={account}
               onChange={(e) => setAccount(e.target.value)}
+              onBlur={handleAccountSave}
               placeholder="예) 110-123-456789"
               inputMode="numeric"
             />

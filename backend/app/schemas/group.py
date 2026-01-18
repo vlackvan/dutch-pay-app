@@ -11,7 +11,7 @@ class GroupBase(BaseModel):
 
 
 class GroupCreate(GroupBase):
-    pass
+    participants: List[str] = []
 
 
 class GroupUpdate(BaseModel):
@@ -20,16 +20,17 @@ class GroupUpdate(BaseModel):
     icon: Optional[str] = None
 
 
-class GroupMemberResponse(BaseModel):
+class GroupParticipantResponse(BaseModel):
     id: int
-    user_id: int
-    nickname: Optional[str] = None
+    name: str
+    user_id: Optional[int] = None
     is_admin: bool
     joined_at: datetime
 
     # User info
     user_name: Optional[str] = None
     user_avatar: Optional[dict] = None
+    is_claimed: bool = False
 
     class Config:
         from_attributes = True
@@ -52,7 +53,7 @@ class GroupListResponse(GroupResponse):
 
 
 class GroupDetailResponse(GroupResponse):
-    members: List[GroupMemberResponse] = []
+    participants: List[GroupParticipantResponse] = []
 
 
 class InviteCodeResponse(BaseModel):
@@ -63,4 +64,12 @@ class InviteCodeResponse(BaseModel):
 
 class JoinGroupRequest(BaseModel):
     invite_code: str
-    nickname: Optional[str] = None
+    participant_id: Optional[int] = None
+    participant_name: Optional[str] = None
+
+
+class InviteGroupResponse(BaseModel):
+    invite_code: str
+    group_id: int
+    group_name: str
+    participants: List[GroupParticipantResponse] = []

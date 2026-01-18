@@ -1,6 +1,13 @@
 import styles from './MonthlyBadgeCard.module.css';
+import type { UserBadgeResponse } from '@/types/api.types';
 
-export function MonthlyBadgeCard() {
+interface MonthlyBadgeCardProps {
+  badges?: UserBadgeResponse[];
+}
+
+export function MonthlyBadgeCard({ badges }: MonthlyBadgeCardProps) {
+  const monthlyBadges = badges?.filter((b) => b.badge.badge_type === 'monthly') || [];
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -12,19 +19,32 @@ export function MonthlyBadgeCard() {
       </div>
 
       <div className={styles.badges}>
-        <Badge label="Flex" />
-        <Badge label="올보" />
-        <Badge label="손등이" />
-        <Badge locked />
+        {monthlyBadges.length === 0 ? (
+          <>
+            <Badge locked />
+            <Badge locked />
+            <Badge locked />
+            <Badge locked />
+          </>
+        ) : (
+          <>
+            {monthlyBadges.slice(0, 3).map((b) => (
+              <Badge key={b.id} label={b.badge.name} icon={b.badge.icon} />
+            ))}
+            {monthlyBadges.length < 4 && <Badge locked />}
+          </>
+        )}
       </div>
     </section>
   );
 }
 
-function Badge({ label, locked }: { label?: string; locked?: boolean }) {
+function Badge({ label, icon, locked }: { label?: string; icon?: string; locked?: boolean }) {
   return (
     <div className={styles.badge}>
-      <div className={`${styles.circle} ${locked ? styles.locked : ''}`} />
+      <div className={`${styles.circle} ${locked ? styles.locked : ''}`}>
+        {!locked && icon}
+      </div>
       <div className={styles.label}>{locked ? '잠금' : label}</div>
     </div>
   );

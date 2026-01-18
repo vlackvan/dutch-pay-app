@@ -17,9 +17,15 @@ from app.models.user import User
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
-@router.get("/me", response_model=UserProfileResponse)
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current user's basic info."""
+    return current_user
+
+
+@router.get("/me/profile", response_model=UserProfileResponse)
 def get_my_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Get current user's profile including avatar and payment info."""
+    """Get current user's full profile including avatar, badges, and payment info."""
     # TODO: Implement full profile fetch with badges
     return current_user
 

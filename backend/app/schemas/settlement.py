@@ -13,19 +13,21 @@ class SplitType(str, Enum):
 
 # Participant Schemas
 class ParticipantInput(BaseModel):
-    user_id: int
+    participant_id: int
     amount: Optional[Decimal] = None  # For AMOUNT type
     ratio: Optional[Decimal] = None   # For RATIO type
 
 
 class ParticipantResponse(BaseModel):
     id: int
-    user_id: int
+    participant_id: int
     amount_owed: Decimal
     is_paid: bool
     paid_at: Optional[datetime] = None
 
-    # User info
+    # Participant info
+    participant_name: Optional[str] = None
+    user_id: Optional[int] = None
     user_name: Optional[str] = None
 
     class Config:
@@ -35,6 +37,7 @@ class ParticipantResponse(BaseModel):
 # Settlement Schemas
 class SettlementCreate(BaseModel):
     group_id: int
+    payer_participant_id: int
     title: str
     description: Optional[str] = None
     total_amount: Decimal
@@ -55,7 +58,7 @@ class SettlementUpdate(BaseModel):
 class SettlementResponse(BaseModel):
     id: int
     group_id: int
-    payer_id: int
+    payer_participant_id: int
     title: str
     description: Optional[str] = None
     total_amount: Decimal
@@ -67,6 +70,7 @@ class SettlementResponse(BaseModel):
 
     # Payer info
     payer_name: Optional[str] = None
+    payer_user_id: Optional[int] = None
 
     participants: List[ParticipantResponse] = []
 
@@ -78,15 +82,17 @@ class SettlementResponse(BaseModel):
 class SettlementResultResponse(BaseModel):
     """Single transfer instruction from greedy algorithm."""
     id: int
-    debtor_id: int
-    creditor_id: int
+    debtor_participant_id: int
+    creditor_participant_id: int
     amount: Decimal
     is_completed: bool
     completed_at: Optional[datetime] = None
 
-    # User names
+    # Participant names and optional claimed user info
     debtor_name: Optional[str] = None
     creditor_name: Optional[str] = None
+    debtor_user_id: Optional[int] = None
+    creditor_user_id: Optional[int] = None
     creditor_payment_method: Optional[str] = None
     creditor_payment_account: Optional[str] = None
 

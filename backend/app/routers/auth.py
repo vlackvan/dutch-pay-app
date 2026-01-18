@@ -5,11 +5,12 @@ from app.database import get_db
 from app.schemas.user import (
     SignUpRequest,
     LoginRequest,
-    KakaoLoginRequest,
+    GoogleLoginRequest,
+    GoogleCompleteProfileRequest,
     TokenResponse,
     UserResponse,
 )
-from app.services.auth import AuthService
+from app.services.auth import AuthService, get_current_user
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
@@ -28,8 +29,24 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     return service.login(request)
 
 
-@router.post("/kakao", response_model=TokenResponse)
-def kakao_login(request: KakaoLoginRequest, db: Session = Depends(get_db)):
-    """Login/Register with Kakao OAuth authorization code."""
+@router.post("/google", response_model=TokenResponse)
+def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
+    """Login/Register with Google OAuth authorization code."""
     service = AuthService(db)
-    return service.kakao_login(request.code)
+    return service.google_login(request.code, request.mode)
+
+
+@router.post("/google/complete-profile", response_model=UserResponse)
+def complete_google_profile(
+    request: GoogleCompleteProfileRequest,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Complete profile information for new Google users."""
+    service = AuthService(db)
+    return service.complete_google_profile(
+        current_user,
+        request.name,
+        request.payment_method,
+        request.payment_account
+    )

@@ -1,49 +1,51 @@
-import styles from "../SettlementDetailPage.module.css";
+import styles from '../SettlementDetailPage.module.css';
+import type { GroupParticipantResponse } from '@/types/api.types';
 
-type Member = {
-  id: string;
-  nickname: string;
-  name: string;
-  tags?: string[];
-};
+interface MembersTabProps {
+  participants: GroupParticipantResponse[];
+  groupId: number;
+  onCopyInviteCode: () => void;
+}
 
-const DUMMY_MEMBERS: Member[] = [
-  { id: "m1", nickname: "철수", name: "김철수", tags: ["그룹장", "💰 구두쇠", "🎮 게임 마스터"] },
-  { id: "m2", nickname: "영희", name: "이영희", tags: ["🎉 파티 플래너"] },
-  { id: "m3", nickname: "민수", name: "박민수" },
-  { id: "m4", nickname: "수진", name: "정수진", tags: ["💰 구두쇠"] },
-  { id: "m5", nickname: "동욱", name: "최동욱", tags: ["🍀 럭키 세븐"] },
-];
-
-export default function MembersTab() {
+export default function MembersTab({ participants, onCopyInviteCode }: MembersTabProps) {
   return (
     <>
       <div className={styles.membersTop}>
-        <button className={styles.inviteBtn} type="button">
+        <button className={styles.inviteBtn} type="button" onClick={onCopyInviteCode}>
           👤 멤버 초대
         </button>
       </div>
 
-      <main className={styles.memberList}>
-        {DUMMY_MEMBERS.map((m) => (
-          <div key={m.id} className={styles.memberCard}>
-            <div className={styles.avatar}>{m.nickname.slice(0, 1)}</div>
-            <div className={styles.memberInfo}>
-              <div className={styles.memberRow}>
-                <div className={styles.memberNickname}>{m.nickname}</div>
-                <div className={styles.tags}>
-                  {(m.tags ?? []).map((t) => (
-                    <span key={t} className={styles.tag}>
-                      {t}
-                    </span>
-                  ))}
+      {participants.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>👥</div>
+          <div className={styles.emptyText}>멤버가 없습니다</div>
+        </div>
+      ) : (
+        <main className={styles.memberList}>
+          {participants.map((m) => (
+            <div key={m.id} className={styles.memberCard}>
+              <div className={styles.avatar}>{m.name.slice(0, 1)}</div>
+              <div className={styles.memberInfo}>
+                <div className={styles.memberRow}>
+                  <div className={styles.memberNickname}>{m.name}</div>
+                  <div className={styles.tags}>
+                    {m.is_admin && (
+                      <span className={styles.tag}>그룹장</span>
+                    )}
+                    {m.is_claimed && (
+                      <span className={styles.tag}>Claimed</span>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.memberName}>
+                  {m.user_name || (m.is_claimed ? 'Claimed' : 'Unclaimed')}
                 </div>
               </div>
-              <div className={styles.memberName}>{m.name}</div>
             </div>
-          </div>
-        ))}
-      </main>
+          ))}
+        </main>
+      )}
     </>
   );
 }

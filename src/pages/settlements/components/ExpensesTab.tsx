@@ -1,29 +1,54 @@
-import styles from "../SettlementDetailPage.module.css";
+import { useNavigate } from 'react-router-dom';
+import styles from '../SettlementDetailPage.module.css';
+import type { SettlementResponse } from '@/types/api.types';
 
-type Expense = {
-  id: string;
-  title: string;
-  by: string;
-  amount: number;
-  icon: string;
-};
-
-const DUMMY_EXPENSES: Expense[] = [
-  { id: "e1", title: "Reimbursement", by: "Transferred by ○○", amount: 500, icon: "💳" },
-  { id: "e2", title: "어", by: "Paid by 준한", amount: 1000, icon: "💵" },
-  { id: "e3", title: "Reimbursement", by: "Transferred by 준한", amount: 49440, icon: "💳" },
-  { id: "e4", title: "어", by: "Paid by 예은 (me)", amount: 100000, icon: "💵" },
-  { id: "e5", title: "1000", by: "Paid by ○○", amount: 1000, icon: "💵" },
-  { id: "e6", title: "웅", by: "Paid by 준한", amount: 1010, icon: "💵" },
-];
-
-export default function ExpensesTab({
-  myExpenses,
-  totalExpenses,
-}: {
+interface ExpensesTabProps {
+  settlements: SettlementResponse[];
   myExpenses: number;
   totalExpenses: number;
-}) {
+  currentUserParticipantId?: number;
+  groupId: number;
+}
+
+export default function ExpensesTab({
+  settlements,
+  myExpenses,
+  totalExpenses,
+  currentUserParticipantId,
+  groupId,
+}: ExpensesTabProps) {
+  const navigate = useNavigate();
+
+  const formatAmount = (value: number) => {
+    return Math.round(value).toLocaleString();
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+  };
+
+  const groupedSettlements = settlements.reduce(
+    (groups, settlement) => {
+      const dateKey = formatDate(settlement.created_at);
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(settlement);
+      return groups;
+    },
+    {} as Record<string, SettlementResponse[]>
+  );
+
   return (
     <>
       <section className={styles.summary}>
@@ -37,24 +62,44 @@ export default function ExpensesTab({
         </div>
       </section>
 
-      <div className={styles.sectionTitle}>Today</div>
-
-      <main className={styles.expenseList}>
-        {DUMMY_EXPENSES.map((e) => (
-          <div key={e.id} className={styles.expenseCard}>
-            <div className={styles.expenseLeft}>
-              <div className={styles.expenseIcon} aria-hidden="true">
-                {e.icon}
-              </div>
-              <div className={styles.expenseText}>
-                <div className={styles.expenseTitle}>{e.title}</div>
-                <div className={styles.expenseSub}>{e.by}</div>
-              </div>
-            </div>
-            <div className={styles.expenseAmount}>₩{e.amount.toLocaleString()}</div>
+      {settlements.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>📝</div>
+          <div className={styles.emptyText}>아직 정산 내역이 없습니다</div>
+          <div className={styles.emptyHint}>첫 번째 정산을 추가해보세요</div>
+        </div>
+      ) : (
+        Object.entries(groupedSettlements).map(([date, daySettlements]) => (
+          <div key={date}>
+            <div className={styles.sectionTitle}>{date}</div>
+            <main className={styles.expenseList}>
+              {daySettlements.map((s) => (
+                <button
+                  key={s.id}
+                  className={styles.expenseCard}
+                  type="button"
+                  onClick={() => navigate(`/settlements/${groupId}/expense/${s.id}`)}
+                >
+                  <div className={styles.expenseLeft}>
+                    <div className={styles.expenseIcon} aria-hidden="true">
+                      {s.icon || '💵'}
+                    </div>
+                    <div className={styles.expenseText}>
+                      <div className={styles.expenseTitle}>{s.title}</div>
+                      <div className={styles.expenseSub}>
+                        {s.payer_participant_id === currentUserParticipantId
+                          ? `Paid by ${s.payer_name || 'Unknown'} (me)`
+                          : `Paid by ${s.payer_name || 'Unknown'}`}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.expenseAmount}>₩{s.total_amount.toLocaleString()}</div>
+                </button>
+              ))}
+            </main>
           </div>
-        ))}
-      </main>
+        ))
+      )}
     </>
   );
 }

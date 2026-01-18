@@ -8,7 +8,7 @@ from app.database import Base
 
 class AuthProvider(str, enum.Enum):
     EMAIL = "email"
-    KAKAO = "kakao"
+    GOOGLE = "google"
 
 
 class User(Base):
@@ -19,7 +19,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=True)  # Null for OAuth users
     name = Column(String(100), nullable=False)
     auth_provider = Column(SQLEnum(AuthProvider), default=AuthProvider.EMAIL)
-    kakao_id = Column(String(100), unique=True, nullable=True)
+    google_id = Column(String(100), unique=True, nullable=True)
 
     # Payment info
     payment_method = Column(String(50), nullable=True)  # kakaopay, toss, bank
@@ -31,7 +31,7 @@ class User(Base):
     # Relationships
     avatar = relationship("Avatar", back_populates="user", uselist=False)
     badges = relationship("UserBadge", back_populates="user")
-    group_memberships = relationship("GroupMember", back_populates="user")
+    group_participations = relationship("GroupParticipant", back_populates="user")
 
 
 class Avatar(Base):

@@ -739,4 +739,90 @@
   .groupTitle {
     font-size: 15px;
   }
+/* =========================
+   Loading & Empty & Error States
+   ========================= */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #EF4444;
+  font-size: 1rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.emptyHint {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.unsettled {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #EF4444;
+}
+
+.errorMsg {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #EF4444;
+  text-align: center;
+}
+
+/* Emoji Row for icon selection */
+.emojiRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.emojiBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid #E5E7EB;
+  background: #FFFFFF;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.emojiBtn:hover {
+  border-color: #2F86FF;
+}
+
+.emojiBtnActive {
+  border-color: #2F86FF;
+  background: rgba(47, 134, 255, 0.1);
 }

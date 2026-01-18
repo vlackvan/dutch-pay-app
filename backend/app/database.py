@@ -9,6 +9,7 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_recycle=300,
     echo=settings.DEBUG,
+    connect_args={"charset": "utf8mb4"}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -29,7 +30,7 @@ def init_db():
     """Initialize database tables."""
     from app.models import (
         User, Avatar, UserBadge,
-        Group, GroupMember,
+        Group, GroupParticipant,
         Settlement, SettlementParticipant, SettlementResult,
         Badge, GameResult
     )

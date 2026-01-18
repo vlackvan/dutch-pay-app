@@ -27,6 +27,8 @@ class SignUpRequest(BaseModel):
     email: EmailStr
     password: str
     name: str
+    payment_method: Optional[str] = None
+    payment_account: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -34,13 +36,22 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class KakaoLoginRequest(BaseModel):
-    code: str  # Kakao authorization code
+class GoogleLoginRequest(BaseModel):
+    code: str  # Google authorization code
+    mode: str = "login"  # "login" or "signup"
+
+
+class GoogleCompleteProfileRequest(BaseModel):
+    name: str
+    payment_method: str  # kakaopay, toss, bank
+    payment_account: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    is_new_user: bool = False
+    requires_profile_completion: bool = False
 
 
 # User Schemas

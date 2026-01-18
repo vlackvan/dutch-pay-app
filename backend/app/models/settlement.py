@@ -20,7 +20,7 @@ class Settlement(Base):
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
 
     # Who paid
-    payer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    payer_participant_id = Column(Integer, ForeignKey("group_participants.id"), nullable=False)
 
     # Payment details
     title = Column(String(200), nullable=False)
@@ -44,8 +44,16 @@ class Settlement(Base):
 
     # Relationships
     group = relationship("Group", back_populates="settlements")
-    payer = relationship("User")
+    payer_participant = relationship("GroupParticipant")
     participants = relationship("SettlementParticipant", back_populates="settlement")
+
+    @property
+    def payer_name(self):
+        return self.payer_participant.name if self.payer_participant else None
+
+    @property
+    def payer_user_id(self):
+        return self.payer_participant.user_id if self.payer_participant else None
 
 
 class SettlementParticipant(Base):
@@ -54,7 +62,7 @@ class SettlementParticipant(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     settlement_id = Column(Integer, ForeignKey("settlements.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    participant_id = Column(Integer, ForeignKey("group_participants.id"), nullable=False)
 
     # Share details (depends on split_type)
     amount = Column(Numeric(12, 2), nullable=True)  # For AMOUNT type
@@ -69,7 +77,19 @@ class SettlementParticipant(Base):
 
     # Relationships
     settlement = relationship("Settlement", back_populates="participants")
-    user = relationship("User")
+    participant = relationship("GroupParticipant")
+
+    @property
+    def participant_name(self):
+        return self.participant.name if self.participant else None
+
+    @property
+    def user_id(self):
+        return self.participant.user_id if self.participant else None
+
+    @property
+    def user_name(self):
+        return self.participant.user.name if self.participant and self.participant.user else None
 
 
 class SettlementResult(Base):
@@ -83,10 +103,10 @@ class SettlementResult(Base):
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
 
     # Debtor (who needs to pay)
-    debtor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    debtor_participant_id = Column(Integer, ForeignKey("group_participants.id"), nullable=False)
 
     # Creditor (who receives payment)
-    creditor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    creditor_participant_id = Column(Integer, ForeignKey("group_participants.id"), nullable=False)
 
     # Amount to transfer
     amount = Column(Numeric(12, 2), nullable=False)
@@ -102,5 +122,5 @@ class SettlementResult(Base):
 
     # Relationships
     group = relationship("Group")
-    debtor = relationship("User", foreign_keys=[debtor_id])
-    creditor = relationship("User", foreign_keys=[creditor_id])
+    debtor = relationship("GroupParticipant", foreign_keys=[debtor_participant_id])
+    creditor = relationship("GroupParticipant", foreign_keys=[creditor_participant_id])

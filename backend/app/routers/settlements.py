@@ -25,17 +25,27 @@ def create_settlement(
     db: Session = Depends(get_db)
 ):
     """Create a new settlement item (expense)."""
+    from app.models.group import GroupParticipant
+
+    is_member = db.query(GroupParticipant).filter(
+        GroupParticipant.group_id == settlement_data.group_id,
+        GroupParticipant.user_id == current_user.id
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
+
     service = SettlementService(db)
-    return service.create_settlement(settlement_data, current_user.id)
+    return service.create_settlement(settlement_data)
 
 
 @router.post("/upload", response_model=SettlementResponse, status_code=status.HTTP_201_CREATED)
 async def create_settlement_with_receipt(
     group_id: int = Form(...),
+    payer_participant_id: int = Form(...),
     title: str = Form(...),
     total_amount: Decimal = Form(...),
     split_type: SplitType = Form(SplitType.EQUAL),
-    participant_ids: str = Form(...),  # Comma-separated user IDs
+    participant_ids: str = Form(...),  # Comma-separated participant IDs
     description: Optional[str] = Form(None),
     icon: Optional[str] = Form(None),
     receipt: UploadFile = File(None),
@@ -44,15 +54,24 @@ async def create_settlement_with_receipt(
 ):
     """Create settlement with receipt image upload (Multipart form)."""
     from app.schemas.settlement import SettlementCreate, ParticipantInput
+    from app.models.group import GroupParticipant
+
+    is_member = db.query(GroupParticipant).filter(
+        GroupParticipant.group_id == group_id,
+        GroupParticipant.user_id == current_user.id
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
 
     # Parse participant IDs
     participants = [
-        ParticipantInput(user_id=int(uid.strip()))
+        ParticipantInput(participant_id=int(uid.strip()))
         for uid in participant_ids.split(",")
     ]
 
     settlement_data = SettlementCreate(
         group_id=group_id,
+        payer_participant_id=payer_participant_id,
         title=title,
         description=description,
         total_amount=total_amount,
@@ -62,7 +81,7 @@ async def create_settlement_with_receipt(
     )
 
     service = SettlementService(db)
-    settlement = service.create_settlement(settlement_data, current_user.id)
+    settlement = service.create_settlement(settlement_data)
 
     # TODO: Handle receipt upload to storage
     if receipt:
@@ -113,8 +132,9 @@ def mark_payment_complete(
     if not result:
         raise HTTPException(status_code=404, detail="Settlement result not found")
 
-    # Verify user is the debtor
-    if result.debtor_id != current_user.id:
+    # Verify user is the debtor participant
+    debtor = result.debtor
+    if not debtor or debtor.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the debtor can mark as paid")
 
     result.is_completed = True

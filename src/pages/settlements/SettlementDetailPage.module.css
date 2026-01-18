@@ -883,3 +883,68 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* =========================
+   Loading & Empty & Error States
+   ========================= */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #EF4444;
+  font-size: 1rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.emptyText {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.emptyHint {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.errorMsg {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #EF4444;
+  text-align: center;
+}
+
+.paymentInfo {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.btnDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

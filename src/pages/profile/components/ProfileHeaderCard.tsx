@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react';
 import styles from './ProfileHeaderCard.module.css';
+import type { UserProfileResponse } from '@/types/api.types';
+
+interface ProfileHeaderCardProps {
+  user?: UserProfileResponse;
+}
+
+export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 가입`;
+  };
 
 import { AvatarCanvas } from './avatar/AvatarCanvas';
 import { AvatarBuilderModal } from './avatar/AvatarBuilderModal';
@@ -53,9 +65,9 @@ export function ProfileHeaderCard() {
           </button>
         </div>
 
-        <div className={styles.name}>사용자</div>
-        <div className={styles.meta}>FET114695</div>
-        <div className={styles.meta2}>2026년 1월 7일 가입</div>
+        <div className={styles.name}>{user?.name || '사용자'}</div>
+        <div className={styles.meta}>{user?.email || ''}</div>
+        <div className={styles.meta2}>{formatDate(user?.created_at)}</div>
       </div>
 
       {/* ✅ 모달 */}
