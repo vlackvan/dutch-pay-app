@@ -7,7 +7,7 @@
   background:
     radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 60%),
     radial-gradient(140% 120% at 90% 10%, rgba(191,233,229,0.75) 0%, rgba(191,233,229,0) 55%),
-    linear-gradient(180deg, #dff3ef 0%, #cbe7e2 35%, #b9ded7 100%);
+    linear-gradient(180deg, #b9ded7 0%, #cbe7e2 55%, #dff3ef 100%);
   color: #2d3f3f;
   font-family: "Gowun Dodum", "Noto Sans KR", sans-serif;
   --bg: transparent;
@@ -37,7 +37,7 @@
 .page::after{
   content: "";
   position: absolute;
-  inset: auto -10% -5% -10%;
+  inset: 6% -10% auto -10%;
   height: 220px;
   background:
     radial-gradient(circle at 10% 30%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%),
@@ -51,7 +51,7 @@
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -61,19 +61,7 @@
   border-bottom: 1px solid rgba(215, 200, 171, 0.6);
 }
 
-.title{
-  font-family: "Nanum Myeongjo", serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: #2d3f3f;
-  letter-spacing: -0.6px;
-}
-
-.settingsBtn{
-  position: absolute;
-  right: var(--px-screen);
-  top: 50%;
-  transform: translateY(-50%);
+.backBtn{
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -84,6 +72,8 @@
   justify-content:center;
   color: #4e6a6a;
   cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .divider{

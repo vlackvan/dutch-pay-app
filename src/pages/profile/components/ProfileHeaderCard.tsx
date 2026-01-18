@@ -49,8 +49,10 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
   return (
     <section className={styles.card}>
       <div className={styles.header}>
-        <div className={styles.headerTitle}>비키니시티 주민등록증</div>
-        <div className={styles.headerSub}>Bikini City Resident ID</div>
+        <div className={styles.headerBox}>
+          <div className={styles.headerTitle}>비키니시티 주민등록증</div>
+          <div className={styles.headerSub}>Bikini City Resident ID</div>
+        </div>
       </div>
 
       <div className={styles.inner}>
@@ -76,25 +78,20 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
         </div>
 
         <div className={styles.info}>
-          <div className={styles.userLabel}>사용자</div>
-          <div className={styles.userName}>{user?.name || '사용자'}</div>
-
           <div className={styles.infoRows}>
             <div className={styles.infoRow}>
-              <span className={styles.infoKey}>주민번호</span>
-              <span className={styles.infoValue}>{formatResidentId(user?.id)}</span>
+              <span className={styles.infoKey}>이름</span>
+              <span className={styles.infoValue}>{user?.name || '사용자'}</span>
             </div>
             <div className={styles.infoRow}>
-              <span className={styles.infoKey}>등록일</span>
+              <span className={styles.infoKey}>이메일</span>
+              <span className={styles.infoValue}>{user?.email || '-'}</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoKey}>가입일</span>
               <span className={styles.infoValue}>{formatDate(user?.created_at) || '-'}</span>
             </div>
-            <div className={styles.infoRow}>
-              <span className={styles.infoKey}>소속</span>
-              <span className={styles.infoValue}>비키니시티</span>
-            </div>
           </div>
-
-          <div className={styles.meta}>{user?.email || ''}</div>
         </div>
       </div>
 
