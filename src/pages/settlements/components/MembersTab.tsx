@@ -33,13 +33,10 @@ export default function MembersTab({ participants, onCopyInviteCode }: MembersTa
                     {m.is_admin && (
                       <span className={styles.tag}>그룹장</span>
                     )}
-                    {m.is_claimed && (
-                      <span className={styles.tag}>Claimed</span>
-                    )}
                   </div>
                 </div>
                 <div className={styles.memberName}>
-                  {m.user_name || (m.is_claimed ? 'Claimed' : 'Unclaimed')}
+                  {m.user_name || 'Unclaimed'}
                 </div>
               </div>
             </div>

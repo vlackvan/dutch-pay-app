@@ -16,6 +16,7 @@ import {
   useSettlementResults,
   useGetInviteCode,
 } from '@/hooks/queries/useGroups';
+import { useMarkPaid } from '@/hooks/queries/useSettlements';
 import { useAuthStore } from '@/stores/auth.store';
 import type { GroupParticipantResponse, SettlementResponse } from '@/types/api.types';
 
@@ -33,6 +34,7 @@ export default function SettlementDetailPage() {
   const { data: settlements = [], isLoading: settlementsLoading } = useGroupSettlements(groupIdNum);
   const { data: resultsData } = useSettlementResults(groupIdNum);
   const inviteCodeMutation = useGetInviteCode(groupIdNum);
+  const markPaidMutation = useMarkPaid();
 
   const [tab, setTab] = useState<Tab>('expenses');
   const [panel, setPanel] = useState<Panel>('main');
@@ -49,11 +51,11 @@ export default function SettlementDetailPage() {
     let total = 0;
 
     settlements.forEach((s: SettlementResponse) => {
-      total += Number(s.total_amount);
+      total += Number(s.total_amount) || 0;
       if (!currentUserParticipantId) return;
       const myShare = s.participants.find((p) => p.participant_id === currentUserParticipantId);
       if (myShare) {
-        my += Number(myShare.amount_owed);
+        my += Number(myShare.amount_owed) || 0;
       }
     });
 
@@ -67,23 +69,34 @@ export default function SettlementDetailPage() {
     participants.forEach((p) => balanceMap.set(p.id, 0));
 
     resultsData.results.forEach((r) => {
-      balanceMap.set(r.debtor_participant_id, (balanceMap.get(r.debtor_participant_id) || 0) - r.amount);
-      balanceMap.set(r.creditor_participant_id, (balanceMap.get(r.creditor_participant_id) || 0) + r.amount);
+      const amount = Number(r.amount) || 0;
+      balanceMap.set(r.debtor_participant_id, (balanceMap.get(r.debtor_participant_id) || 0) - amount);
+      balanceMap.set(r.creditor_participant_id, (balanceMap.get(r.creditor_participant_id) || 0) + amount);
     });
 
     return participants.map((p) => ({
       id: `b${p.id}`,
-      name: p.name || p.user_name,
-      value: balanceMap.get(p.id) || 0,
+      name: p.name || p.user_name || 'Unknown',
+      value: Number(balanceMap.get(p.id)) || 0,
       me: p.id === currentUserParticipantId,
     }));
   }, [resultsData, participants, currentUserParticipantId]);
 
-  const owedAmount = useMemo(() => {
+  const netAmount = useMemo(() => {
     if (!resultsData?.results || !currentUserParticipantId) return 0;
-    return resultsData.results
+
+    // 내가 받아야 할 돈
+    const toReceive = resultsData.results
       .filter((r) => r.creditor_participant_id === currentUserParticipantId && !r.is_completed)
-      .reduce((sum, r) => sum + r.amount, 0);
+      .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+    // 내가 내야 할 돈
+    const toPay = resultsData.results
+      .filter((r) => r.debtor_participant_id === currentUserParticipantId && !r.is_completed)
+      .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+    // 받아야 할 돈 - 내야 할 돈
+    return toReceive - toPay;
   }, [resultsData, currentUserParticipantId]);
 
   const owedDetails = useMemo(() => {
@@ -96,13 +109,18 @@ export default function SettlementDetailPage() {
       )
       .map((r) => ({
         id: `o${r.id}`,
-        from: r.debtor_name,
+        resultId: r.id,
+        from:
+          r.debtor_participant_id === currentUserParticipantId
+            ? `${r.debtor_name || 'Unknown'} (me)`
+            : r.debtor_name || 'Unknown',
         to:
           r.creditor_participant_id === currentUserParticipantId
-            ? `${r.creditor_name} (me)`
-            : r.creditor_name,
-        amount: r.amount,
+            ? `${r.creditor_name || 'Unknown'} (me)`
+            : r.creditor_name || 'Unknown',
+        amount: Number(r.amount) || 0,
         isCompleted: r.is_completed,
+        isDebtor: r.debtor_participant_id === currentUserParticipantId,
         paymentMethod: r.creditor_payment_method,
         paymentAccount: r.creditor_payment_account,
       }));
@@ -115,6 +133,14 @@ export default function SettlementDetailPage() {
       alert(`초대 코드가 복사되었습니다: ${result.invite_code}`);
     } catch {
       alert('초대 코드를 가져오는데 실패했습니다.');
+    }
+  };
+
+  const handleMarkPaid = async (resultId: number) => {
+    try {
+      await markPaidMutation.mutateAsync(resultId);
+    } catch (error) {
+      alert('지불 완료 처리에 실패했습니다.');
     }
   };
 
@@ -178,7 +204,7 @@ export default function SettlementDetailPage() {
 
         <GroupHeader title={group.name} emoji={group.icon || '🧾'} />
 
-        <BalancesSheet owedAmount={owedAmount} balances={balances} onOpenOwed={() => setOwedOpen(true)} />
+        <BalancesSheet owedAmount={netAmount} balances={balances} onOpenOwed={() => setOwedOpen(true)} />
 
         {owedOpen && (
           <div className={styles.modalOverlay} role="dialog" aria-modal="true">
@@ -194,7 +220,7 @@ export default function SettlementDetailPage() {
               </button>
 
               <div className={styles.modalTitle}>정산 상세</div>
-              <div className={styles.pill}>₩{owedAmount.toLocaleString()}</div>
+              <div className={styles.pill}>₩{Math.round(Math.abs(netAmount) || 0).toLocaleString()}</div>
 
               <div className={styles.owedList}>
                 {owedDetails.map((o) => (
@@ -203,30 +229,28 @@ export default function SettlementDetailPage() {
                       <b>{o.from}</b> <span className={styles.gray}>가</span> <b>{o.to}</b>{' '}
                       <span className={styles.gray}>에게</span>
                     </div>
-                    <div className={styles.owedAmt}>₩{o.amount.toLocaleString()}</div>
+                    <div className={styles.owedAmt}>₩{Math.round(o.amount || 0).toLocaleString()}</div>
 
-                    {o.paymentMethod && (
+                    {o.isDebtor && o.paymentMethod && (
                       <div className={styles.paymentInfo}>
-                        {o.paymentMethod}: {o.paymentAccount}
+                        {o.paymentMethod} {o.paymentAccount}
                       </div>
                     )}
 
-                    <div className={styles.btnRow}>
-                      <button
-                        className={`${styles.btn} ${o.isCompleted ? styles.btnDisabled : styles.btnPrimary}`}
-                        type="button"
-                        disabled={o.isCompleted}
-                      >
-                        {o.isCompleted ? '완료됨' : '요청'}
-                      </button>
-                      <button
-                        className={`${styles.btn} ${o.isCompleted ? styles.btnDisabled : styles.btnGhost}`}
-                        type="button"
-                        disabled={o.isCompleted}
-                      >
-                        지불 완료
-                      </button>
-                    </div>
+                    <button
+                      className={`${styles.btn} ${styles.btnFullWidth} ${o.isCompleted ? styles.btnDisabled : styles.btnPrimary}`}
+                      type="button"
+                      disabled={o.isCompleted || markPaidMutation.isPending}
+                      style={{ marginTop: '12px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!o.isCompleted) {
+                          handleMarkPaid(o.resultId);
+                        }
+                      }}
+                    >
+                      {o.isCompleted ? '완료됨' : markPaidMutation.isPending ? '처리 중...' : '지불 완료'}
+                    </button>
                   </div>
                 ))}
               </div>

@@ -54,11 +54,11 @@ export default function ExpensesTab({
       <section className={styles.summary}>
         <div className={styles.summaryBox}>
           <div className={styles.summaryLabel}>내 지출</div>
-          <div className={styles.summaryValue}>₩{myExpenses.toLocaleString()}</div>
+          <div className={styles.summaryValue}>₩{Math.round(myExpenses || 0).toLocaleString()}</div>
         </div>
         <div className={styles.summaryBox}>
           <div className={styles.summaryLabel}>총 지출</div>
-          <div className={styles.summaryValue}>₩{totalExpenses.toLocaleString()}</div>
+          <div className={styles.summaryValue}>₩{Math.round(totalExpenses || 0).toLocaleString()}</div>
         </div>
       </section>
 
@@ -93,7 +93,7 @@ export default function ExpensesTab({
                       </div>
                     </div>
                   </div>
-                  <div className={styles.expenseAmount}>₩{s.total_amount.toLocaleString()}</div>
+                  <div className={styles.expenseAmount}>₩{Math.round(s.total_amount || 0).toLocaleString()}</div>
                 </button>
               ))}
             </main>

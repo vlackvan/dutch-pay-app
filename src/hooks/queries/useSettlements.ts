@@ -42,13 +42,14 @@ export function useCreateSettlementWithReceipt() {
   });
 }
 
-export function useUpdateSettlement(settlementId: number) {
+export function useUpdateSettlement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: SettlementUpdate) => settlementsApi.update(settlementId, data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: settlementKeys.detail(settlementId) });
+    mutationFn: ({ settlementId, data }: { settlementId: number; data: SettlementUpdate }) =>
+      settlementsApi.update(settlementId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: settlementKeys.detail(variables.settlementId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.settlements(data.group_id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.results(data.group_id) });
     },

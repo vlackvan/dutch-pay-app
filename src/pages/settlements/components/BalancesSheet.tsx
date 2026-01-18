@@ -13,15 +13,27 @@ export default function BalancesSheet({
     <>
       {/* ✅ triTabs(정산 내역/정산 결과/사진) 제거 */}
 
-      {/* You are owed 카드(한국어) */}
+      {/* 정산 상태 카드 */}
       <button className={styles.owedCard} type="button" onClick={onOpenOwed}>
         <div className={styles.owedLeft}>
           <div className={styles.owedEmoji} aria-hidden="true">
-            🤑
+            {owedAmount > 0 ? '🤑' : owedAmount < 0 ? '😭' : '😊'}
           </div>
           <div>
-            <div className={styles.owedTitle}>당신은 받을 돈이 있어요 ₩{owedAmount.toLocaleString()}</div>
-            <div className={styles.owedSub}>건희, 상범, ○○, 준한이 갚아야 해요</div>
+            <div className={styles.owedTitle}>
+              {owedAmount > 0
+                ? `내 돈 내놔! ₩${Math.round(owedAmount).toLocaleString()}`
+                : owedAmount < 0
+                ? `내가 빚쟁이라니... ₩${Math.round(Math.abs(owedAmount)).toLocaleString()}`
+                : '정산 완료! ₩0'}
+            </div>
+            <div className={styles.owedSub}>
+              {owedAmount > 0
+                ? '받아야 할 돈이 남았어요'
+                : owedAmount < 0
+                ? '내야 할 돈이 남았어요'
+                : '모든 정산이 완료되었어요'}
+            </div>
           </div>
         </div>
         <div className={styles.owedChev}>›</div>
@@ -50,8 +62,10 @@ export default function BalancesSheet({
               }`}
             >
               {b.value > 0
-                ? `+₩${Math.abs(b.value).toLocaleString()}`
-                : `-₩${Math.abs(b.value).toLocaleString()}`}
+                ? `+₩${Math.round(Math.abs(b.value) || 0).toLocaleString()}`
+                : b.value < 0
+                ? `-₩${Math.round(Math.abs(b.value) || 0).toLocaleString()}`
+                : '₩0'}
             </div>
           </div>
         ))}

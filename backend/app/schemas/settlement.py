@@ -44,15 +44,18 @@ class SettlementCreate(BaseModel):
     split_type: SplitType = SplitType.EQUAL
     icon: Optional[str] = None
     participants: List[ParticipantInput]
+    date: Optional[str] = None  # YYYY-MM-DD format
 
 
 class SettlementUpdate(BaseModel):
+    payer_participant_id: Optional[int] = None
     title: Optional[str] = None
     description: Optional[str] = None
     total_amount: Optional[Decimal] = None
     split_type: Optional[SplitType] = None
     icon: Optional[str] = None
     participants: Optional[List[ParticipantInput]] = None
+    date: Optional[str] = None  # YYYY-MM-DD format
 
 
 class SettlementResponse(BaseModel):

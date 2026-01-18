@@ -395,7 +395,7 @@ export default function GamesPage() {
               </div>
               <div className={styles.resultTitle}>게임 종료!</div>
               <div className={styles.resultLoser}>{gameResult.loserName}님이 당첨!</div>
-              <div className={styles.resultAmount}>₩{gameResult.amount.toLocaleString()}</div>
+              <div className={styles.resultAmount}>₩{Math.round(gameResult.amount || 0).toLocaleString()}</div>
               <div className={styles.resultDesc}>정산을 확정하면 자동으로 기록됩니다</div>
             </div>
 

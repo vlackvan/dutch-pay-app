@@ -209,7 +209,7 @@ export default function SettlementsPage() {
               </div>
 
               {g.unsettled_amount > 0 && (
-                <div className={styles.unsettled}>₩{g.unsettled_amount.toLocaleString()}</div>
+                <div className={styles.unsettled}>₩{Math.round(g.unsettled_amount || 0).toLocaleString()}</div>
               )}
             </button>
           ))
