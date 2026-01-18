@@ -196,42 +196,47 @@ export default function SettlementsPage() {
         </div>
       </header>
 
-      <main className={styles.list}>
-        {groups.length === 0 ? (
-          <div className={styles.empty}>
-            <div className={styles.emptyIcon}>📋</div>
-            <div className={styles.emptyText}>아직 참여한 그룹이 없습니다</div>
-            <div className={styles.emptyHint}>새 그룹을 만들거나 초대 코드로 참여해보세요</div>
-          </div>
-        ) : (
-          groups.map((g) => (
-            <button
-              key={g.id}
-              className={styles.card}
-              type="button"
-              onClick={() => navigate(`/settlements/${g.id}`)}
-            >
-              <div className={styles.left}>
-                <div className={styles.emoji} aria-hidden="true">
-                  {g.icon || '🧾'}
-                </div>
+            <main className={styles.list}>
+        <div className={styles.boardFrame}>
+          <div className={styles.paperPanel}>
 
-                <div className={styles.text}>
-                  <div className={styles.title}>{g.name}</div>
-                  <div className={styles.meta}>
-                    <span>{formatDate(g.created_at)}</span>
-                    <span className={styles.dot}>•</span>
-                    <span>{g.member_count}명</span>
-                  </div>
-                </div>
+            {groups.length === 0 ? (
+              <div className={styles.empty}>
+                <div className={styles.emptyIcon}>📋</div>
+                <div className={styles.emptyText}>아직 참여한 그룹이 없습니다</div>
+                <div className={styles.emptyHint}>새 그룹을 만들거나 초대 코드로 참여해보세요</div>
               </div>
+            ) : (
+              groups.map((g) => (
+                <button
+                  key={g.id}
+                  className={styles.card}
+                  type="button"
+                  onClick={() => navigate(`/settlements/${g.id}`)}
+                >
+                  <div className={styles.left}>
+                    <div className={styles.emoji} aria-hidden="true">
+                      {g.icon || '🧾'}
+                    </div>
 
-              {g.unsettled_amount > 0 && (
-                <div className={styles.unsettled}>₩{Math.round(g.unsettled_amount || 0).toLocaleString()}</div>
-              )}
-            </button>
-          ))
-        )}
+                    <div className={styles.text}>
+                      <div className={styles.title}>{g.name}</div>
+                      <div className={styles.meta}>
+                        <span>{formatDate(g.created_at)}</span>
+                        <span className={styles.dot}>•</span>
+                        <span>{g.member_count}명</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {g.unsettled_amount > 0 && (
+                    <div className={styles.unsettled}>₩{g.unsettled_amount.toLocaleString()}</div>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
       </main>
 
       <button className={styles.fab} type="button" aria-label="새 그룹 만들기" onClick={openMenu}>
