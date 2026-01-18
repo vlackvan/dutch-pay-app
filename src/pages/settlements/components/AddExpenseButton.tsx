@@ -165,6 +165,7 @@ export default function AddExpenseButton({
         {
           settlementId: initialData.id,
           data: {
+            payer_participant_id: payerId,
             title: title.trim(),
             total_amount: amountNumber,
             split_type: splitType,

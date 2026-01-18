@@ -187,6 +187,7 @@ export interface SettlementResponse {
 }
 
 export interface SettlementUpdate {
+  payer_participant_id?: number;
   title?: string;
   description?: string;
   total_amount?: number;
