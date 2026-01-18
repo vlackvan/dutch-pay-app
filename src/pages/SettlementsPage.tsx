@@ -5,7 +5,7 @@ import { useMyGroups, useCreateGroup, useJoinGroup, useGetInviteGroup } from '@/
 import { useAuthStore } from '@/stores/auth.store';
 import type { InviteGroupResponse } from '@/types/api.types';
 
-type SheetMode = 'closed' | 'menu' | 'create' | 'join';
+type SheetMode = 'closed' | 'menu' | 'create' | 'join' | 'invite';
 
 export default function SettlementsPage() {
   const navigate = useNavigate();
@@ -27,6 +27,10 @@ export default function SettlementsPage() {
   const [inviteGroup, setInviteGroup] = useState<InviteGroupResponse | null>(null);
   const [selectedParticipantId, setSelectedParticipantId] = useState<number | null>(null);
   const [newParticipantName, setNewParticipantName] = useState('');
+  const [createdGroupId, setCreatedGroupId] = useState<number | null>(null);
+  const [createdGroupName, setCreatedGroupName] = useState('');
+  const [createdInviteCode, setCreatedInviteCode] = useState('');
+  const [createdParticipants, setCreatedParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -47,6 +51,10 @@ export default function SettlementsPage() {
     setInviteGroup(null);
     setSelectedParticipantId(null);
     setNewParticipantName('');
+    setCreatedGroupId(null);
+    setCreatedGroupName('');
+    setCreatedInviteCode('');
+    setCreatedParticipants([]);
   };
 
   const closeAll = () => {
@@ -64,6 +72,13 @@ export default function SettlementsPage() {
     setSelectedParticipantId(null);
     setNewParticipantName('');
     setSheet('join');
+  };
+
+  const goToCreatedGroup = () => {
+    if (!createdGroupId) return;
+    const nextId = createdGroupId;
+    closeAll();
+    navigate(`/settlements/${nextId}`);
   };
 
   const updateParticipant = (index: number, value: string) => {
@@ -97,8 +112,11 @@ export default function SettlementsPage() {
       },
       {
         onSuccess: (newGroup) => {
-          closeAll();
-          navigate(`/settlements/${newGroup.id}`);
+          setCreatedGroupId(newGroup.id);
+          setCreatedGroupName(newGroup.name);
+          setCreatedInviteCode(newGroup.invite_code);
+          setCreatedParticipants(participantNames);
+          setSheet('invite');
         },
       }
     );
@@ -438,6 +456,47 @@ export default function SettlementsPage() {
                 {joinGroupMutation.isError && (
                   <div className={styles.errorMsg}>그룹 참여에 실패했습니다. 초대 코드를 확인해주세요.</div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {sheet === 'invite' && (
+            <div className={styles.sheetFull}>
+              <div className={styles.navBar}>
+                <button className={styles.navLeft} onClick={closeAll} type="button">
+                  닫기
+                </button>
+                <div className={styles.navTitle}>초대하기</div>
+                <div />
+              </div>
+
+              <div className={styles.inviteWrap}>
+                <div className={styles.inviteIcon} aria-hidden="true">
+                  🎉
+                </div>
+                <div className={styles.inviteTitle}>당신의 그룹은 사용할 준비가 되었습니다!</div>
+                <div className={styles.inviteDesc}>
+                  아래 초대 코드로 참여자를 초대하세요.
+                </div>
+
+                <div className={styles.sectionTitle}>Participants</div>
+                <div className={styles.participantsBox}>
+                  {createdParticipants.map((name, index) => (
+                    <div key={`created-${index}`} className={styles.participantRow}>
+                      <span className={styles.participantName}>{name}</span>
+                      {index === 0 && <span className={styles.meBadge}>Me</span>}
+                    </div>
+                  ))}
+                </div>
+
+                <div className={styles.sectionTitle}>초대 코드</div>
+                <div className={styles.inviteCodeBox}>
+                  <span className={styles.inviteCodeText}>{createdInviteCode}</span>
+                </div>
+
+                <button className={styles.primaryBtn} type="button" onClick={goToCreatedGroup}>
+                  {createdGroupName ? `${createdGroupName}로 이동` : '그룹으로 이동'}
+                </button>
               </div>
             </div>
           )}

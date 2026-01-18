@@ -691,6 +691,48 @@
   max-width: 320px;
 }
 
+.inviteWrap {
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inviteIcon {
+  font-size: 44px;
+  text-align: center;
+  margin-top: 18px;
+}
+
+.inviteTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1f4b52;
+  text-align: center;
+}
+
+.inviteDesc {
+  text-align: center;
+  color: #6f8583;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.inviteCodeBox {
+  background: #eef6f0;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: center;
+  border: 2px dashed rgba(88, 132, 129, 0.4);
+}
+
+.inviteCodeText {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1f4b52;
+  letter-spacing: 1px;
+}
+
 .pasteRow {
   margin-top: 14px;
   width: 100%;
