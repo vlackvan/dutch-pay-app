@@ -64,3 +64,10 @@
   font-size: 11px;
   color: var(--text-3);
 }
+
+.avatar {
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+}
