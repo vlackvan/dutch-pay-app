@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import styles from './ProfileHeaderCard.module.css';
 import type { UserProfileResponse } from '@/types/api.types';
+import { AvatarCanvas } from './avatar/AvatarCanvas';
+import { AvatarBuilderModal } from './avatar/AvatarBuilderModal';
+import { DEFAULT_AVATAR } from './avatar/avatar.presets';
+import type { AvatarConfig } from './avatar/avatar.types';
+
+const LS_CONFIG = 'dutchpay_avatar_config';
+const LS_PNG = 'dutchpay_avatar_png';
 
 interface ProfileHeaderCardProps {
   user?: UserProfileResponse;
@@ -12,16 +19,6 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
     const date = new Date(dateString);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 가입`;
   };
-
-import { AvatarCanvas } from './avatar/AvatarCanvas';
-import { AvatarBuilderModal } from './avatar/AvatarBuilderModal';
-import { DEFAULT_AVATAR } from './avatar/avatar.presets';
-import type { AvatarConfig } from './avatar/avatar.types';
-
-const LS_CONFIG = 'dutchpay_avatar_config';
-const LS_PNG = 'dutchpay_avatar_png';
-
-export function ProfileHeaderCard() {
   const [open, setOpen] = useState(false);
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [avatarPng, setAvatarPng] = useState<string | null>(null);
