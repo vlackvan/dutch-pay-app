@@ -1,5 +1,6 @@
 import styles from './AvatarBuilderModal.module.css';
 import { useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 
 import type { AvatarConfig } from './avatar.types';
@@ -15,9 +16,8 @@ type Props = {
 
 type Tab = 'body' | 'eyes' | 'mouth';
 
-/** ✅ (선택) 프리셋: 너가 원하면 더 추가하면 됨 */
 const PRESETS: { key: string; label: string; config: AvatarConfig }[] = [
-  { key: 'bored', label: '정석 심드렁', config: { body: 'brown_round', eyes: 'sleepy', mouth: 'original' } },
+  { key: 'bored', label: '녹초 모드', config: { body: 'brown_round', eyes: 'sleepy', mouth: 'original' } },
   { key: 'plain', label: '기본', config: { body: 'darkgreen_round', eyes: 'original', mouth: 'original' } },
   { key: 'worry', label: '불안', config: { body: 'yellow_round', eyes: 'worry', mouth: 'original' } },
 ];
@@ -28,11 +28,14 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
-  const options = useMemo(() => ({
-    body: ['brown_round', 'darkgreen_round', 'purple_tri', 'yellow_round'] as const,
-    eyes: ['original', 'sleepy', 'worry'] as const,
-    mouth: ['original'] as const, // mouth 늘어나면 여기만 추가
-  }), []);
+  const options = useMemo(
+    () => ({
+      body: ['brown_round', 'darkgreen_round', 'purple_tri', 'yellow_round'] as const,
+      eyes: ['original', 'sleepy', 'worry'] as const,
+      mouth: ['original'] as const,
+    }),
+    [],
+  );
 
   const randomize = () => {
     const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -46,16 +49,16 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
 
   if (!open) return null;
 
-  return (
+  const modal = (
     <div className={styles.backdrop} onMouseDown={onClose}>
       <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
-        {/* header */}
         <div className={styles.header}>
           <div className={styles.title}>아바타 만들기</div>
-          <button className={styles.iconBtn} onClick={onClose}>✕</button>
+          <button className={styles.iconBtn} onClick={onClose} type="button">
+            ✕
+          </button>
         </div>
 
-        {/* preview */}
         <div className={styles.preview}>
           <div className={styles.canvasWrap} ref={previewRef}>
             <AvatarCanvas config={config} size={260} />
@@ -68,6 +71,7 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
                 className={styles.presetBtn}
                 onClick={() => setConfig(p.config)}
                 title={p.label}
+                type="button"
               >
                 {p.label}
               </button>
@@ -75,14 +79,30 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
           </div>
         </div>
 
-        {/* tabs */}
         <div className={styles.tabs}>
-          <button className={tab === 'body' ? styles.tabActive : styles.tab} onClick={() => setTab('body')}>바디</button>
-          <button className={tab === 'eyes' ? styles.tabActive : styles.tab} onClick={() => setTab('eyes')}>눈</button>
-          <button className={tab === 'mouth' ? styles.tabActive : styles.tab} onClick={() => setTab('mouth')}>입</button>
+          <button
+            className={tab === 'body' ? styles.tabActive : styles.tab}
+            onClick={() => setTab('body')}
+            type="button"
+          >
+            바디
+          </button>
+          <button
+            className={tab === 'eyes' ? styles.tabActive : styles.tab}
+            onClick={() => setTab('eyes')}
+            type="button"
+          >
+            눈
+          </button>
+          <button
+            className={tab === 'mouth' ? styles.tabActive : styles.tab}
+            onClick={() => setTab('mouth')}
+            type="button"
+          >
+            입
+          </button>
         </div>
 
-        {/* panel */}
         <div className={styles.panel}>
           {tab === 'body' && (
             <Grid>
@@ -127,10 +147,17 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
           )}
         </div>
 
-        {/* footer */}
         <div className={styles.footer}>
-          <button className={styles.secondary} onClick={randomize}>랜덤</button>
-          <button className={styles.secondary} onClick={() => setConfig(DEFAULT_AVATAR)}>초기화</button>
+          <button className={styles.secondary} onClick={randomize} type="button">
+            랜덤
+          </button>
+          <button
+            className={styles.secondary}
+            onClick={() => setConfig(DEFAULT_AVATAR)}
+            type="button"
+          >
+            초기화
+          </button>
 
           <button
             className={styles.primary}
@@ -144,6 +171,7 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
 
               onSave(config, png);
             }}
+            type="button"
           >
             저장
           </button>
@@ -151,9 +179,10 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
       </div>
     </div>
   );
-}
 
-/* ---------- sub components ---------- */
+  if (typeof document === 'undefined') return modal;
+  return createPortal(modal, document.body);
+}
 
 function Grid({ children }: { children: React.ReactNode }) {
   return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>{children}</div>;
@@ -184,8 +213,17 @@ function ThumbButton({
       title={label}
       type="button"
     >
-      <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 10, background: '#f5f5f5', display: 'grid', placeItems: 'center' }}>
-        <img src={src} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '1 / 1',
+          borderRadius: 10,
+          background: '#f5f5f5',
+          display: 'grid',
+          placeItems: 'center',
+        }}
+      >
+        <img src={src} alt="" style={{ maxWidth: '100%', maxHeight: '100%' }} />
       </div>
       <div style={{ marginTop: 6, fontSize: 11, opacity: 0.7, textAlign: 'center' }}>
         {label}

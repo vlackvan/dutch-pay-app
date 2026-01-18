@@ -1,21 +1,25 @@
 .card{
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .header{
-  padding: 14px 14px 6px;
+  padding: 16px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .title{
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--text-1);
+  letter-spacing: -0.2px;
 }
 
 .body{
-  padding: 0 14px 14px;
+  padding: 0 16px 16px;
 }

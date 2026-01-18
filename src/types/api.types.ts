@@ -155,6 +155,7 @@ export interface SettlementCreate {
   split_type: SplitType;
   icon?: string;
   participants: ParticipantInput[];
+  date?: string; // YYYY-MM-DD format
 }
 
 export interface ParticipantResponse {
@@ -186,12 +187,14 @@ export interface SettlementResponse {
 }
 
 export interface SettlementUpdate {
+  payer_participant_id?: number;
   title?: string;
   description?: string;
   total_amount?: number;
   split_type?: SplitType;
   icon?: string;
   participants?: ParticipantInput[];
+  date?: string; // YYYY-MM-DD format
 }
 
 export interface SettlementResultResponse {

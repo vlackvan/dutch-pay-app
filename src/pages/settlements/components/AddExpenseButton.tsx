@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import styles from '../SettlementDetailPage.module.css';
-import { useCreateSettlement } from '@/hooks/queries/useSettlements';
-import type { GroupParticipantResponse, SplitType } from '@/types/api.types';
+import { useCreateSettlement, useUpdateSettlement } from '@/hooks/queries/useSettlements';
+import type { GroupParticipantResponse, SplitType, SettlementResponse } from '@/types/api.types';
 
 type SplitMode = 'equal' | 'custom';
 
@@ -12,6 +12,8 @@ interface AddExpenseButtonProps {
   participants: GroupParticipantResponse[];
   currentUserParticipantId?: number;
   onBack: () => void;
+  initialData?: SettlementResponse;
+  isEditMode?: boolean;
 }
 
 export default function AddExpenseButton({
@@ -19,9 +21,12 @@ export default function AddExpenseButton({
   participants,
   currentUserParticipantId,
   onBack,
+  initialData,
+  isEditMode = false,
 }: AddExpenseButtonProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const createSettlement = useCreateSettlement();
+  const updateSettlement = useUpdateSettlement();
 
   const [title, setTitle] = useState('');
   const [emoji, setEmoji] = useState('🍀');
@@ -52,6 +57,45 @@ export default function AddExpenseButton({
     participants.forEach((p) => (init[p.id] = ''));
     return init;
   });
+
+  // Initialize form with initialData when in edit mode
+  useEffect(() => {
+    if (initialData && isEditMode) {
+      setTitle(initialData.title || '');
+      setEmoji(initialData.icon || '🍀');
+      setAmount(Number(initialData.total_amount) || 0);
+      setPayerId(initialData.payer_participant_id);
+
+      // Set date from created_at
+      if (initialData.created_at) {
+        const date = new Date(initialData.created_at);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        setWhen(`${yyyy}-${mm}-${dd}`);
+      }
+
+      // Set selected participants
+      const newSelected: Record<number, boolean> = {};
+      participants.forEach((p) => (newSelected[p.id] = false));
+      initialData.participants.forEach((p) => {
+        newSelected[p.participant_id] = true;
+      });
+      setSelected(newSelected);
+
+      // Set custom amounts if split_type is 'amount'
+      if (initialData.split_type === 'amount') {
+        setSplitMode('custom');
+        const newCustom: Record<number, number | ''> = {};
+        initialData.participants.forEach((p) => {
+          newCustom[p.participant_id] = Number(p.amount_owed) || '';
+        });
+        setCustom(newCustom);
+      } else {
+        setSplitMode('equal');
+      }
+    }
+  }, [initialData, isEditMode, participants]);
 
   const selectedIds = useMemo(
     () => participants.filter((p) => selected[p.id]).map((p) => p.id),
@@ -115,22 +159,47 @@ export default function AddExpenseButton({
       };
     });
 
-    createSettlement.mutate(
-      {
-        group_id: groupId,
-        payer_participant_id: payerId,
-        title: title.trim(),
-        total_amount: amountNumber,
-        split_type: splitType,
-        icon: emoji,
-        participants: participantsPayload,
-      },
-      {
-        onSuccess: () => {
-          onBack();
+    if (isEditMode && initialData) {
+      // Update existing settlement
+      updateSettlement.mutate(
+        {
+          settlementId: initialData.id,
+          data: {
+            payer_participant_id: payerId,
+            title: title.trim(),
+            total_amount: amountNumber,
+            split_type: splitType,
+            icon: emoji,
+            participants: participantsPayload,
+            date: when || undefined,
+          },
         },
-      }
-    );
+        {
+          onSuccess: () => {
+            onBack();
+          },
+        }
+      );
+    } else {
+      // Create new settlement
+      createSettlement.mutate(
+        {
+          group_id: groupId,
+          payer_participant_id: payerId,
+          title: title.trim(),
+          total_amount: amountNumber,
+          split_type: splitType,
+          icon: emoji,
+          participants: participantsPayload,
+          date: when || undefined,
+        },
+        {
+          onSuccess: () => {
+            onBack();
+          },
+        }
+      );
+    }
   };
 
   const getParticipantName = (participantId: number) => {
@@ -146,7 +215,7 @@ export default function AddExpenseButton({
         <button className={styles.addBack} onClick={onBack} type="button" aria-label="뒤로가기">
           ←
         </button>
-        <div className={styles.addTitle}>정산 추가</div>
+        <div className={styles.addTitle}>{isEditMode ? '정산 수정' : '정산 추가'}</div>
       </header>
 
       <div className={styles.addFormWrap}>
@@ -321,7 +390,7 @@ export default function AddExpenseButton({
                     />
                   </div>
                 ) : (
-                  <div className={styles.splitRight}>₩{rowAmount.toLocaleString()}</div>
+                  <div className={styles.splitRight}>₩{Math.round(rowAmount || 0).toLocaleString()}</div>
                 )}
               </div>
             );
@@ -331,14 +400,22 @@ export default function AddExpenseButton({
         <button
           className={`${styles.addSubmitBtn} ${!canSubmit || createSettlement.isPending ? styles.addSubmitDisabled : ''}`}
           type="button"
-          disabled={!canSubmit || createSettlement.isPending}
+          disabled={!canSubmit || createSettlement.isPending || updateSettlement.isPending}
           onClick={handleSubmit}
         >
-          {createSettlement.isPending ? '추가 중...' : '추가'}
+          {isEditMode
+            ? updateSettlement.isPending
+              ? '수정 중...'
+              : '수정'
+            : createSettlement.isPending
+            ? '추가 중...'
+            : '추가'}
         </button>
 
-        {createSettlement.isError && (
-          <div className={styles.errorMsg}>정산 추가에 실패했습니다. 다시 시도해주세요.</div>
+        {(createSettlement.isError || updateSettlement.isError) && (
+          <div className={styles.errorMsg}>
+            {isEditMode ? '정산 수정에 실패했습니다.' : '정산 추가에 실패했습니다.'} 다시 시도해주세요.
+          </div>
         )}
       </div>
     </div>

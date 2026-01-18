@@ -15,6 +15,8 @@ class SettlementService:
 
     def create_settlement(self, data: SettlementCreate) -> Settlement:
         """Create a new settlement with participants."""
+        from datetime import datetime
+
         payer_participant = self.db.query(GroupParticipant).filter(
             GroupParticipant.id == data.payer_participant_id,
             GroupParticipant.group_id == data.group_id
@@ -35,6 +37,14 @@ class SettlementService:
             split_type=data.split_type,
             icon=data.icon,
         )
+
+        # Set custom date if provided
+        if data.date:
+            try:
+                settlement.created_at = datetime.fromisoformat(data.date)
+            except ValueError:
+                pass  # Use default if invalid date
+
         self.db.add(settlement)
         self.db.flush()
 
@@ -79,19 +89,30 @@ class SettlementService:
 
     def update_settlement(self, settlement_id: int, data: SettlementUpdate, user_id: int) -> Settlement:
         """Update settlement details."""
+        from datetime import datetime
+
         settlement = self.db.query(Settlement).filter(Settlement.id == settlement_id).first()
         if not settlement:
             raise HTTPException(status_code=404, detail="Settlement not found")
 
-        payer_participant = self.db.query(GroupParticipant).filter(
-            GroupParticipant.id == settlement.payer_participant_id
+        # Check if user is a member of the group
+        user_participant = self.db.query(GroupParticipant).filter(
+            GroupParticipant.group_id == settlement.group_id,
+            GroupParticipant.user_id == user_id
         ).first()
-        if not payer_participant or payer_participant.user_id != user_id:
-            raise HTTPException(status_code=403, detail="Only the payer can update this settlement")
+        if not user_participant:
+            raise HTTPException(status_code=403, detail="Only group members can update this settlement")
 
         # Update fields
-        for field, value in data.model_dump(exclude_unset=True, exclude={"participants"}).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"participants", "date"}).items():
             setattr(settlement, field, value)
+
+        # Update date if provided
+        if data.date:
+            try:
+                settlement.created_at = datetime.fromisoformat(data.date)
+            except ValueError:
+                pass  # Keep existing date if invalid
 
         # Update participants if provided
         if data.participants is not None:

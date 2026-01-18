@@ -553,6 +553,10 @@
   cursor: pointer;
 }
 
+.btnFullWidth{
+  width: 100%;
+}
+
 .btnPrimary{
   background: #2F86FF;
   color:#FFFFFF;

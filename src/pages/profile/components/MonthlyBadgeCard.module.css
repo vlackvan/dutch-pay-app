@@ -1,9 +1,9 @@
 .card{
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);
-  padding: 14px;
+  padding: 16px;
 }
 
 .header{
@@ -13,7 +13,7 @@
 }
 
 .title{
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -24,11 +24,11 @@
 
 .chevron{
   color: var(--text-3);
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .badges{
-  margin-top: 10px;
+  margin-top: 12px;
   display:flex;
   gap:14px;
 }
@@ -39,15 +39,19 @@
 }
 
 .circle{
-  width: 46px;
-  height: 46px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: #FEF08A;
-  border: 2px solid #FACC15;
-  margin-bottom: 4px;
+  background: radial-gradient(circle at 30% 30%, #ffe08a, #f7b85b);
+  border: 2px solid #e6b561;
+  margin-bottom: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
 }
 
 .locked{
-  background:#E5E7EB;
-  border-color:#D1D5DB;
+  background: radial-gradient(circle at 40% 40%, #f1f1f1, #d7d7d7);
+  border-color:#c9c9c9;
+  color: #9aa2a4;
 }

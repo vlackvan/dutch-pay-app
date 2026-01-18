@@ -124,21 +124,56 @@ def mark_payment_complete(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Mark a 1:1 transfer as completed."""
-    from app.models.settlement import SettlementResult
+    """Mark a 1:1 transfer as completed and create a repayment settlement."""
+    from app.models.settlement import SettlementResult, Settlement, SettlementParticipant
+    from app.services.settlement import SettlementService
     from datetime import datetime
+    from decimal import Decimal
 
     result = db.query(SettlementResult).filter(SettlementResult.id == detail_id).first()
     if not result:
         raise HTTPException(status_code=404, detail="Settlement result not found")
 
-    # Verify user is the debtor participant
+    # Verify user is either the debtor or creditor participant
     debtor = result.debtor
-    if not debtor or debtor.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the debtor can mark as paid")
+    creditor = result.creditor
+    is_debtor = debtor and debtor.user_id == current_user.id
+    is_creditor = creditor and creditor.user_id == current_user.id
 
+    if not (is_debtor or is_creditor):
+        raise HTTPException(status_code=403, detail="Only participants can mark as paid")
+
+    # Mark as completed
     result.is_completed = True
     result.completed_at = datetime.utcnow()
+
+    # Create a repayment settlement
+    repayment_settlement = Settlement(
+        group_id=result.group_id,
+        payer_participant_id=result.debtor_participant_id,
+        title="상환",
+        description=f"{debtor.name}이(가) {creditor.name}에게 상환",
+        total_amount=result.amount,
+        split_type="equal",
+        icon="💸"
+    )
+    db.add(repayment_settlement)
+    db.flush()
+
+    # Add creditor as the only participant (they receive the full amount)
+    repayment_participant = SettlementParticipant(
+        settlement_id=repayment_settlement.id,
+        participant_id=result.creditor_participant_id,
+        amount_owed=result.amount,
+        is_paid=True
+    )
+    db.add(repayment_participant)
+
     db.commit()
+
+    # Recalculate group balances
+    service = SettlementService(db)
+    service.calculate_settlement_results(result.group_id)
+
     db.refresh(result)
     return result
