@@ -1,11 +1,11 @@
 // src/pages/profile/components/avatar/AvatarCanvas.tsx
 import type { AvatarConfig } from './avatar.types';
 import styles from './AvatarCanvas.module.css';
-import { BODY_COMPONENTS, EYES_COMPONENTS, MOUTH_COMPONENTS } from './AvatarAssets';
+import { getBodyImagePath, getEyesImagePath, getMouthImagePath } from './AvatarAssets';
 
 const BASE = 512;
 
-// ✅ Figma 기준 좌표 (너가 잡은 값)
+// Figma reference coordinates for positioning
 const EYES = { x: 238, y: 58, w: 137, h: 137 };
 const MOUTH = { x: 256, y: 116, w: 108, h: 108 };
 
@@ -18,20 +18,19 @@ export function AvatarCanvas({
 }) {
   const scale = size / BASE;
 
-  // Get the appropriate components
-  const BodyComponent = BODY_COMPONENTS[config.body];
-  const EyesComponent = EYES_COMPONENTS[config.eyes];
-  const MouthComponent = MOUTH_COMPONENTS[config.mouth];
-
   return (
     <div className={styles.stage} style={{ width: size, height: size }}>
-      {/* body */}
-      <div className={styles.body}>
-        <BodyComponent size={BASE} />
-      </div>
+      {/* Body layer (bottom) - full size */}
+      <img
+        src={getBodyImagePath(config.body)}
+        alt="avatar body"
+        className={styles.body}
+      />
 
-      {/* eyes */}
-      <div
+      {/* Eyes layer (middle) - positioned */}
+      <img
+        src={getEyesImagePath(config.eyes)}
+        alt="avatar eyes"
         className={styles.eyes}
         style={{
           left: EYES.x * scale,
@@ -39,12 +38,12 @@ export function AvatarCanvas({
           width: EYES.w * scale,
           height: EYES.h * scale,
         }}
-      >
-        <EyesComponent size={EYES.w} />
-      </div>
+      />
 
-      {/* mouth */}
-      <div
+      {/* Mouth layer (top) - positioned */}
+      <img
+        src={getMouthImagePath(config.mouth)}
+        alt="avatar mouth"
         className={styles.mouth}
         style={{
           left: MOUTH.x * scale,
@@ -52,9 +51,7 @@ export function AvatarCanvas({
           width: MOUTH.w * scale,
           height: MOUTH.h * scale,
         }}
-      >
-        <MouthComponent size={MOUTH.w} />
-      </div>
+      />
     </div>
   );
 }

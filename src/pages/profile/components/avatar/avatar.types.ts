@@ -1,25 +1,38 @@
 // src/pages/profile/components/avatar/avatar.types.ts
 
 export type BodyId =
-  | 'round'
-  | 'square'
-  | 'bean'
-  | 'triangle'
-  | 'hexagon';
+  | 'brown_round'
+  | 'darkgreen_round'
+  | 'dress'
+  | 'hawaiian'
+  | 'light_blue'
+  | 'pink'
+  | 'purple'
+  | 'purple_tri'
+  | 'purpledress'
+  | 'red'
+  | 'red_short'
+  | 'redshirt'
+  | 'yellow_round';
 
 export type EyesId =
-  | 'round'
+  | 'confused'
+  | 'happy'
+  | 'love'
+  | 'Mad'
+  | 'original'
+  | 'pretty'
   | 'sleepy'
-  | 'wide'
-  | 'pixel'
-  | 'shades';
+  | 'surprised'
+  | 'worry';
 
 export type MouthId =
-  | 'smile'
-  | 'frown'
-  | 'open'
-  | 'smirk'
-  | 'teeth';
+  | 'angry'
+  | 'laugh'
+  | 'original'
+  | 'scared'
+  | 'sing'
+  | 'smile';
 
 export type AvatarConfig = {
   body: BodyId;
