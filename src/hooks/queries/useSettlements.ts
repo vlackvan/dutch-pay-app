@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { settlementsApi } from '@/lib/api';
 import type { SettlementCreate, SettlementUpdate } from '@/types/api.types';
 import { groupKeys } from './useGroups';
+import { userKeys } from './useUser';
 
 export const settlementKeys = {
   all: ['settlements'] as const,
@@ -64,6 +65,8 @@ export function useMarkPaid() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.all });
       queryClient.invalidateQueries({ queryKey: settlementKeys.all });
+      queryClient.invalidateQueries({ queryKey: userKeys.profile() });
+      queryClient.invalidateQueries({ queryKey: userKeys.badges() });
     },
   });
 }

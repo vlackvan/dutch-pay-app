@@ -14,6 +14,7 @@ import GamesPage from './pages/GamesPage';
 import ProfilePage from './pages/ProfilePage';
 import SettlementDetailPage from './pages/SettlementDetailPage';
 import ExpenseDetailPage from './pages/ExpenseDetailPage';
+import MonthlyBadgeInfoPage from './pages/profile/MonthlyBadgeInfoPage';
 
 function AppRoutes() {
   return (
@@ -32,6 +33,7 @@ function AppRoutes() {
           <Route path="/settlements/:groupId/expense/:expenseId" element={<ExpenseDetailPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/badges" element={<MonthlyBadgeInfoPage />} />
         </Route>
       </Route>
 

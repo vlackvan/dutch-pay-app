@@ -4,6 +4,12 @@
   color: var(--text-3);
 }
 
+.cardOpen{
+  overflow: visible;
+  position: relative;
+  z-index: 5;
+}
+
 .group{
   margin-top: 12px;
 }
@@ -17,6 +23,7 @@
 
 .selectWrap{
   position: relative;
+  z-index: 20;
 }
 
 .selectBtn{
@@ -49,7 +56,7 @@
   border-radius: 14px;
   box-shadow: 0 12px 20px rgba(70, 88, 96, 0.18);
   overflow: hidden;
-  z-index: 30;
+  z-index: 40;
 }
 
 .menuItem{

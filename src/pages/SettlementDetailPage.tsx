@@ -143,6 +143,14 @@ export default function SettlementDetailPage() {
         isDebtor: r.debtor_participant_id === currentUserParticipantId,
         paymentMethod: r.creditor_payment_method,
         paymentAccount: r.creditor_payment_account,
+        paymentInfo:
+          r.creditor_payment_method === 'kakaopay'
+            ? '카카오페이'
+            : r.creditor_payment_method === 'toss'
+              ? '토스'
+              : r.creditor_payment_method === 'bank'
+                ? r.creditor_payment_account || ''
+                : '',
       }));
   }, [resultsData, currentUserParticipantId]);
 
@@ -296,10 +304,8 @@ export default function SettlementDetailPage() {
                     </div>
                     <div className={styles.owedAmt}>₩{Math.round(o.amount || 0).toLocaleString()}</div>
 
-                    {o.isDebtor && o.paymentMethod && (
-                      <div className={styles.paymentInfo}>
-                        {o.paymentMethod} {o.paymentAccount}
-                      </div>
+                    {o.isDebtor && o.paymentInfo && (
+                      <div className={styles.paymentInfo}>{o.paymentInfo}</div>
                     )}
 
                     <button

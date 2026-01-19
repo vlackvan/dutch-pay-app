@@ -5,7 +5,6 @@ import { BasicInfoCard } from './profile/components/BasicInfoCard';
 import { PaymentCard } from './profile/components/PaymentCard';
 import { SpendingCard } from './profile/components/SpendingCard';
 import { MonthlyBadgeCard } from './profile/components/MonthlyBadgeCard';
-import { AchievementCard } from './profile/components/AchievementCard';
 import { useMyProfile } from '@/hooks/queries/useUser';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -58,7 +57,6 @@ export default function ProfilePage() {
         <PaymentCard user={profile} />
         <SpendingCard />
         <MonthlyBadgeCard badges={profile?.badges} />
-        <AchievementCard badges={profile?.badges} />
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
           로그아웃

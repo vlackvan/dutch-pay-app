@@ -22,6 +22,27 @@
   color: var(--text-3);
 }
 
+.infoBtn{
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--text-2);
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(70, 88, 96, 0.12);
+}
+
+.infoBtn:hover{
+  transform: translateY(-1px);
+}
+
 .chevron{
   color: var(--text-3);
   font-size: 22px;
@@ -31,6 +52,8 @@
   margin-top: 12px;
   display:flex;
   gap:14px;
+  flex-wrap: wrap;
+  row-gap: 12px;
 }
 
 .badge{
@@ -38,20 +61,9 @@
   font-size: 11px;
 }
 
-.circle{
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #ffe08a, #f7b85b);
-  border: 2px solid #e6b561;
+.icon{
+  width: 79px;
+  height: 79px;
+  object-fit: contain;
   margin-bottom: 6px;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-}
-
-.locked{
-  background: radial-gradient(circle at 40% 40%, #f1f1f1, #d7d7d7);
-  border-color:#c9c9c9;
-  color: #9aa2a4;
 }

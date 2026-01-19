@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styles from './MonthlyBadgeCard.module.css';
 import type { UserBadgeResponse } from '@/types/api.types';
 
@@ -6,7 +7,17 @@ interface MonthlyBadgeCardProps {
 }
 
 export function MonthlyBadgeCard({ badges }: MonthlyBadgeCardProps) {
-  const monthlyBadges = badges?.filter((b) => b.badge.badge_type === 'monthly') || [];
+  const navigate = useNavigate();
+  const monthlyBadges =
+    badges?.filter((b) => {
+      if (!b.earned_at) return false;
+      const earnedAt = new Date(b.earned_at);
+      const now = new Date();
+      return (
+        earnedAt.getFullYear() === now.getFullYear() &&
+        earnedAt.getMonth() === now.getMonth()
+      );
+    }) || [];
 
   return (
     <section className={styles.card}>
@@ -15,37 +26,29 @@ export function MonthlyBadgeCard({ badges }: MonthlyBadgeCardProps) {
           <div className={styles.title}>월간 주민 배지</div>
           <div className={styles.sub}>이번 달에 획득한 배지</div>
         </div>
-        <span className={styles.chevron}>›</span>
+        <button
+          className={styles.infoBtn}
+          type="button"
+          aria-label="월간 주민 배지 안내"
+          onClick={() => navigate('/profile/badges')}
+        >
+          i
+        </button>
       </div>
 
       <div className={styles.badges}>
-        {monthlyBadges.length === 0 ? (
-          <>
-            <Badge locked />
-            <Badge locked />
-            <Badge locked />
-            <Badge locked />
-          </>
-        ) : (
-          <>
-            {monthlyBadges.slice(0, 3).map((b) => (
-              <Badge key={b.id} label={b.badge.name} icon={b.badge.icon} />
-            ))}
-            {monthlyBadges.length < 4 && <Badge locked />}
-          </>
-        )}
+        {monthlyBadges.map((b) => (
+          <Badge key={b.id} label={b.badge.name} icon={b.badge.icon} />
+        ))}
       </div>
     </section>
   );
 }
 
-function Badge({ label, icon, locked }: { label?: string; icon?: string; locked?: boolean }) {
+function Badge({ label, icon }: { label?: string; icon?: string }) {
   return (
     <div className={styles.badge}>
-      <div className={`${styles.circle} ${locked ? styles.locked : ''}`}>
-        {!locked && icon}
-      </div>
-      <div className={styles.label}>{locked ? '잠김' : label}</div>
+      {icon && <img className={styles.icon} src={icon} alt={label || 'badge'} />}
     </div>
   );
 }
