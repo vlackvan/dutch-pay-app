@@ -1,6 +1,7 @@
 // src/pages/profile/components/avatar/AvatarCanvas.tsx
 import type { AvatarConfig } from './avatar.types';
 import styles from './AvatarCanvas.module.css';
+import { BODY_COMPONENTS, EYES_COMPONENTS, MOUTH_COMPONENTS } from './AvatarAssets';
 
 const BASE = 512;
 
@@ -17,43 +18,43 @@ export function AvatarCanvas({
 }) {
   const scale = size / BASE;
 
+  // Get the appropriate components
+  const BodyComponent = BODY_COMPONENTS[config.body];
+  const EyesComponent = EYES_COMPONENTS[config.eyes];
+  const MouthComponent = MOUTH_COMPONENTS[config.mouth];
+
   return (
     <div className={styles.stage} style={{ width: size, height: size }}>
       {/* body */}
-      <img
-        className={styles.body}
-        src={`/avatar/body/${config.body}.png`}
-        alt=""
-        draggable={false}
-      />
+      <div className={styles.body}>
+        <BodyComponent size={BASE} />
+      </div>
 
       {/* eyes */}
-      <img
+      <div
         className={styles.eyes}
-        src={`/avatar/eyes/${config.eyes}.png`}
-        alt=""
-        draggable={false}
         style={{
           left: EYES.x * scale,
           top: EYES.y * scale,
           width: EYES.w * scale,
           height: EYES.h * scale,
         }}
-      />
+      >
+        <EyesComponent size={EYES.w} />
+      </div>
 
       {/* mouth */}
-      <img
+      <div
         className={styles.mouth}
-        src={`/avatar/mouth/${config.mouth}.png`}
-        alt=""
-        draggable={false}
         style={{
           left: MOUTH.x * scale,
           top: MOUTH.y * scale,
           width: MOUTH.w * scale,
           height: MOUTH.h * scale,
         }}
-      />
+      >
+        <MouthComponent size={MOUTH.w} />
+      </div>
     </div>
   );
 }

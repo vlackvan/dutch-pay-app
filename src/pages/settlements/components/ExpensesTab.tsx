@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import styles from '../SettlementDetailPage.module.css';
 import type { SettlementResponse } from '@/types/api.types';
+import { IconDisplay } from '@/components/IconPicker/IconPicker';
+import { getSettlementIcon } from '@/constants/icons';
 
 interface ExpensesTabProps {
   settlements: SettlementResponse[];
@@ -82,7 +84,7 @@ export default function ExpensesTab({
                 >
                   <div className={styles.expenseLeft}>
                     <div className={styles.expenseIcon} aria-hidden="true">
-                      {s.icon || '💵'}
+                      <IconDisplay icon={getSettlementIcon(s.icon, s.title)} size="40px" />
                     </div>
                     <div className={styles.expenseText}>
                       <div className={styles.expenseTitle}>{s.title}</div>

@@ -4,6 +4,8 @@ import styles from './settlements/ExpenseDetailPage.module.css';
 import { useSettlement } from '@/hooks/queries/useSettlements';
 import { useGroup } from '@/hooks/queries/useGroups';
 import AddExpenseButton from './settlements/components/AddExpenseButton';
+import { IconDisplay } from '@/components/IconPicker/IconPicker';
+import { getSettlementIcon } from '@/constants/icons';
 
 export default function ExpenseDetailPage() {
   const { groupId, expenseId } = useParams<{ groupId: string; expenseId: string }>();
@@ -89,7 +91,7 @@ export default function ExpenseDetailPage() {
 
       <section className={styles.detailHeader}>
         <div className={styles.detailIcon} aria-hidden="true">
-          {settlement.icon || '💵'}
+          <IconDisplay icon={getSettlementIcon(settlement.icon, settlement.title)} size="64px" />
         </div>
         <div className={styles.detailTitle}>{settlement.title}</div>
         <div className={styles.detailPayer}>

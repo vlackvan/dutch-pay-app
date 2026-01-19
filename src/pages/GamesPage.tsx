@@ -7,6 +7,8 @@ import type { GroupListResponse, GameType, GroupParticipantResponse } from '@/ty
 import { groupsApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { IconDropdown } from '@/components/IconDropdown';
+import { DEFAULT_ICON } from '@/constants/icons';
 
 type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play' | 'result';
 type GameTypeOption = 'roulette' | 'bomb' | 'psychological';
@@ -30,8 +32,6 @@ const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; a
   { type: 'psychological', name: '심리 게임', icon: '🧠', desc: '죄수의 딜레마', apiType: 'PSYCHOLOGICAL' },
 ];
 
-const SETTLEMENT_ICONS = ['💰', '🍕', '🍔', '☕', '🎮', '🎬', '🎤', '🎸', '🏀', '⚽'];
-
 export default function GamesPage() {
   const currentUser = useAuthStore((state) => state.user);
   const { data: groups = [], isLoading: groupsLoading } = useMyGroups();
@@ -45,7 +45,7 @@ export default function GamesPage() {
   // Setup game state
   const [settlementTitle, setSettlementTitle] = useState<string>('');
   const [amount, setAmount] = useState<number>(10000);
-  const [settlementIcon, setSettlementIcon] = useState<string>('💰');
+  const [settlementIcon, setSettlementIcon] = useState<string>(DEFAULT_ICON);
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
 
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
@@ -82,7 +82,7 @@ export default function GamesPage() {
     setSelectedGameType(null);
     setSettlementTitle('');
     setAmount(10000);
-    setSettlementIcon('💰');
+    setSettlementIcon(DEFAULT_ICON);
     setSelectedParticipants([]);
     setGameResult(null);
     setIsSpinning(false);
@@ -542,17 +542,7 @@ export default function GamesPage() {
 
             <div className={styles.setupSection}>
               <h3 className={styles.subTitle}>아이콘</h3>
-              <div className={styles.iconGrid}>
-                {SETTLEMENT_ICONS.map((icon) => (
-                  <button
-                    key={icon}
-                    className={`${styles.iconBtn} ${settlementIcon === icon ? styles.iconBtnSelected : ''}`}
-                    onClick={() => setSettlementIcon(icon)}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
+              <IconDropdown selectedIcon={settlementIcon} onSelectIcon={setSettlementIcon} size="medium" />
             </div>
 
             <div className={styles.participantsSection}>

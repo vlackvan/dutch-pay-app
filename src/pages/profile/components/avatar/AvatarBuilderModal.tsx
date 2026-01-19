@@ -3,9 +3,10 @@ import { useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 
-import type { AvatarConfig } from './avatar.types';
+import type { AvatarConfig, BodyId, EyesId, MouthId } from './avatar.types';
 import { AvatarCanvas } from './AvatarCanvas';
 import { DEFAULT_AVATAR } from './avatar.presets';
+import { BODY_COMPONENTS, EYES_COMPONENTS, MOUTH_COMPONENTS } from './AvatarAssets';
 
 type Props = {
   open: boolean;
@@ -17,22 +18,22 @@ type Props = {
 type Tab = 'body' | 'eyes' | 'mouth';
 
 const PRESETS: { key: string; label: string; config: AvatarConfig }[] = [
-  { key: 'bored', label: '녹초 모드', config: { body: 'brown_round', eyes: 'sleepy', mouth: 'original' } },
-  { key: 'plain', label: '기본', config: { body: 'darkgreen_round', eyes: 'original', mouth: 'original' } },
-  { key: 'worry', label: '불안', config: { body: 'yellow_round', eyes: 'worry', mouth: 'original' } },
+  { key: 'happy', label: '행복', config: { body: 'round', eyes: 'round', mouth: 'smile' } },
+  { key: 'sleepy', label: '졸림', config: { body: 'bean', eyes: 'sleepy', mouth: 'frown' } },
+  { key: 'cool', label: '쿨함', config: { body: 'square', eyes: 'shades', mouth: 'smirk' } },
 ];
 
 export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
-  const [tab, setTab] = useState<Tab>('eyes');
+  const [tab, setTab] = useState<Tab>('body');
   const [config, setConfig] = useState<AvatarConfig>(initial ?? DEFAULT_AVATAR);
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   const options = useMemo(
     () => ({
-      body: ['brown_round', 'darkgreen_round', 'purple_tri', 'yellow_round'] as const,
-      eyes: ['original', 'sleepy', 'worry'] as const,
-      mouth: ['original'] as const,
+      body: ['round', 'square', 'bean', 'triangle', 'hexagon'] as const,
+      eyes: ['round', 'sleepy', 'wide', 'pixel', 'shades'] as const,
+      mouth: ['smile', 'frown', 'open', 'smirk', 'teeth'] as const,
     }),
     [],
   );
@@ -106,43 +107,52 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
         <div className={styles.panel}>
           {tab === 'body' && (
             <Grid>
-              {options.body.map((v) => (
-                <ThumbButton
-                  key={v}
-                  active={config.body === v}
-                  onClick={() => setConfig((c) => ({ ...c, body: v }))}
-                  src={`/avatar/body/${v}.png`}
-                  label={v}
-                />
-              ))}
+              {options.body.map((v) => {
+                const BodyComponent = BODY_COMPONENTS[v];
+                return (
+                  <ThumbButton
+                    key={v}
+                    active={config.body === v}
+                    onClick={() => setConfig((c) => ({ ...c, body: v }))}
+                    component={<BodyComponent />}
+                    label={v}
+                  />
+                );
+              })}
             </Grid>
           )}
 
           {tab === 'eyes' && (
             <Grid>
-              {options.eyes.map((v) => (
-                <ThumbButton
-                  key={v}
-                  active={config.eyes === v}
-                  onClick={() => setConfig((c) => ({ ...c, eyes: v }))}
-                  src={`/avatar/eyes/${v}.png`}
-                  label={v}
-                />
-              ))}
+              {options.eyes.map((v) => {
+                const EyesComponent = EYES_COMPONENTS[v];
+                return (
+                  <ThumbButton
+                    key={v}
+                    active={config.eyes === v}
+                    onClick={() => setConfig((c) => ({ ...c, eyes: v }))}
+                    component={<EyesComponent />}
+                    label={v}
+                  />
+                );
+              })}
             </Grid>
           )}
 
           {tab === 'mouth' && (
             <Grid>
-              {options.mouth.map((v) => (
-                <ThumbButton
-                  key={v}
-                  active={config.mouth === v}
-                  onClick={() => setConfig((c) => ({ ...c, mouth: v }))}
-                  src={`/avatar/mouth/${v}.png`}
-                  label={v}
-                />
-              ))}
+              {options.mouth.map((v) => {
+                const MouthComponent = MOUTH_COMPONENTS[v];
+                return (
+                  <ThumbButton
+                    key={v}
+                    active={config.mouth === v}
+                    onClick={() => setConfig((c) => ({ ...c, mouth: v }))}
+                    component={<MouthComponent />}
+                    label={v}
+                  />
+                );
+              })}
             </Grid>
           )}
         </div>
@@ -189,12 +199,12 @@ function Grid({ children }: { children: React.ReactNode }) {
 }
 
 function ThumbButton({
-  src,
+  component,
   label,
   active,
   onClick,
 }: {
-  src: string;
+  component: React.ReactNode;
   label: string;
   active: boolean;
   onClick: () => void;
@@ -221,9 +231,12 @@ function ThumbButton({
           background: '#f5f5f5',
           display: 'grid',
           placeItems: 'center',
+          overflow: 'hidden',
         }}
       >
-        <img src={src} alt="" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+        <div style={{ width: '85%', height: '85%' }}>
+          {component}
+        </div>
       </div>
       <div style={{ marginTop: 6, fontSize: 11, opacity: 0.7, textAlign: 'center' }}>
         {label}

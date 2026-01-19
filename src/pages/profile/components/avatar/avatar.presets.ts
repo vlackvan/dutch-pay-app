@@ -2,7 +2,7 @@
 import type { AvatarConfig } from './avatar.types';
 
 export const DEFAULT_AVATAR: AvatarConfig = {
-  body: 'brown_round',
-  eyes: 'sleepy',
-  mouth: 'original',
+  body: 'round',
+  eyes: 'round',
+  mouth: 'smile',
 };

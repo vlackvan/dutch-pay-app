@@ -4,39 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useMyGroups, useCreateGroup, useJoinGroup, useGetInviteGroup } from '@/hooks/queries/useGroups';
 import { useAuthStore } from '@/stores/auth.store';
 import type { InviteGroupResponse } from '@/types/api.types';
+import { IconDisplay } from '@/components/IconPicker/IconPicker';
+import { IconDropdown } from '@/components/IconDropdown';
+import { DEFAULT_ICON } from '@/constants/icons';
 
 type SheetMode = 'closed' | 'menu' | 'create' | 'join' | 'invite';
-
-const ICONS = [
-  '/icons/beers.png',
-  '/icons/bowling.png',
-  '/icons/bus.png',
-  '/icons/cake.png',
-  '/icons/drinks.png',
-  '/icons/food.png',
-  '/icons/friendship.png',
-  '/icons/fun.png',
-  '/icons/game.png',
-  '/icons/heart.png',
-  '/icons/home.png',
-  '/icons/money.png',
-  '/icons/mountain.png',
-  '/icons/movie.png',
-  '/icons/music.png',
-  '/icons/others.png',
-  '/icons/reimburse.png',
-  '/icons/relax.png',
-  '/icons/school.png',
-  '/icons/sea.png',
-  '/icons/shopping.png',
-  '/icons/shylove.png',
-  '/icons/taxi.png',
-  '/icons/travel.png',
-  '/icons/work.png',
-  '/icons/working_place.png',
-];
-
-const pickIcon = (id?: number) => ICONS[Math.abs(Number(id) || 0) % ICONS.length];
 
 export default function SettlementsPage() {
   const navigate = useNavigate();
@@ -50,7 +22,7 @@ export default function SettlementsPage() {
   const [sheet, setSheet] = useState<SheetMode>('closed');
 
   const [groupTitle, setGroupTitle] = useState('');
-  const [groupIcon, setGroupIcon] = useState('🏖️');
+  const [groupIcon, setGroupIcon] = useState(DEFAULT_ICON);
   const [groupDescription, setGroupDescription] = useState('');
   const [participants, setParticipants] = useState<string[]>([]);
 
@@ -75,7 +47,7 @@ export default function SettlementsPage() {
 
   const resetForms = () => {
     setGroupTitle('');
-    setGroupIcon('???');
+    setGroupIcon(DEFAULT_ICON);
     setGroupDescription('');
     setParticipants(user?.name ? [user.name] : ['']);
     setInviteCode('');
@@ -96,6 +68,7 @@ export default function SettlementsPage() {
   const goMenu = () => setSheet('menu');
   const goCreate = () => {
     setParticipants(user?.name ? [user.name] : ['']);
+    setGroupIcon(DEFAULT_ICON);
     setSheet('create');
   };
   const goJoin = () => {
@@ -231,8 +204,8 @@ export default function SettlementsPage() {
                 >
                   <div className={styles.left}>
                     <div className={styles.emoji} aria-hidden="true">
-                  <img className={styles.emojiImg} src={pickIcon(g.id)} alt="" />
-                </div>
+                      <IconDisplay icon={g.icon || undefined} className={styles.emojiImg} size="48px" />
+                    </div>
 
                     <div className={styles.text}>
                       <div className={styles.titleRow}>
@@ -314,7 +287,7 @@ export default function SettlementsPage() {
                 <div className={styles.sectionTitle}>이름</div>
                 <div className={styles.rowField}>
                   <div className={styles.smallIconBox} aria-hidden="true">
-                    {groupIcon}
+                    <IconDisplay icon={groupIcon} size="32px" />
                   </div>
                   <input
                     className={styles.input}
@@ -325,18 +298,7 @@ export default function SettlementsPage() {
                 </div>
 
                 <div className={styles.sectionTitle}>아이콘</div>
-                <div className={styles.emojiRow}>
-                  {['🏖️', '🍀', '🍻', '✈️', '🏠', '🎮', '🎉', '💼'].map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      className={`${styles.emojiBtn} ${groupIcon === icon ? styles.emojiBtnActive : ''}`}
-                      onClick={() => setGroupIcon(icon)}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+                <IconDropdown selectedIcon={groupIcon} onSelectIcon={setGroupIcon} size="medium" />
 
                 <div className={styles.sectionTitle}>설명 (선택)</div>
                 <input

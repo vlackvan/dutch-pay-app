@@ -2,10 +2,10 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import styles from '../SettlementDetailPage.module.css';
 import { useCreateSettlement, useUpdateSettlement } from '@/hooks/queries/useSettlements';
 import type { GroupParticipantResponse, SplitType, SettlementResponse } from '@/types/api.types';
+import { IconDropdown } from '@/components/IconDropdown';
+import { DEFAULT_ICON } from '@/constants/icons';
 
 type SplitMode = 'equal' | 'custom';
-
-const EMOJIS = ['🍀', '🏖️', '🍻', '🍜', '☕', '🍰', '🎟️', '🚕', '🛒', '🏨'];
 
 interface AddExpenseButtonProps {
   groupId: number;
@@ -29,8 +29,7 @@ export default function AddExpenseButton({
   const updateSettlement = useUpdateSettlement();
 
   const [title, setTitle] = useState('');
-  const [emoji, setEmoji] = useState('🍀');
-  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [emoji, setEmoji] = useState(DEFAULT_ICON);
 
   const [receiptName, setReceiptName] = useState<string>('');
 
@@ -62,7 +61,7 @@ export default function AddExpenseButton({
   useEffect(() => {
     if (initialData && isEditMode) {
       setTitle(initialData.title || '');
-      setEmoji(initialData.icon || '🍀');
+      setEmoji(initialData.icon || DEFAULT_ICON);
       setAmount(Number(initialData.total_amount) || 0);
       setPayerId(initialData.payer_participant_id);
 
@@ -229,32 +228,7 @@ export default function AddExpenseButton({
           />
 
           <div className={styles.iconBtnWrap}>
-            <button
-              type="button"
-              className={styles.squareIconBtn}
-              aria-label="이모지 선택"
-              onClick={() => setEmojiOpen((v) => !v)}
-            >
-              <span className={styles.squareIconText}>{emoji}</span>
-            </button>
-
-            {emojiOpen && (
-              <div className={styles.emojiPopover}>
-                {EMOJIS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    className={styles.emojiChoice}
-                    onClick={() => {
-                      setEmoji(e);
-                      setEmojiOpen(false);
-                    }}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            )}
+            <IconDropdown selectedIcon={emoji} onSelectIcon={setEmoji} size="small" />
           </div>
 
           <button
