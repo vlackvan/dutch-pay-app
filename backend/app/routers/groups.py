@@ -97,6 +97,7 @@ def create_group(
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
                 is_claimed=bool(p.user_id),
+                badges=[],
             )
             for p in participants
         ],
@@ -135,6 +136,8 @@ def get_group(
 ):
     """Get group details including members."""
     from app.models.group import Group, GroupParticipant
+    from app.models.user import UserBadge
+    from app.schemas.badge import UserBadgeResponse, BadgeResponse
 
     group = db.query(Group).filter(Group.id == group_id).first()
     if not group:
@@ -150,6 +153,49 @@ def get_group(
 
     participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
 
+    participant_responses = []
+    for p in participants:
+        badges = []
+        if p.user_id:
+            from sqlalchemy.orm import joinedload
+            user_badges = db.query(UserBadge).options(
+                joinedload(UserBadge.badge),
+                joinedload(UserBadge.group)
+            ).filter(
+                UserBadge.user_id == p.user_id,
+                UserBadge.group_id == group_id
+            ).all()
+            badges = [
+                UserBadgeResponse(
+                    id=ub.id,
+                    badge=BadgeResponse(
+                        id=ub.badge.id,
+                        name=ub.badge.name,
+                        description=ub.badge.description,
+                        icon=ub.badge.icon,
+                        badge_type=ub.badge.badge_type,
+                        condition_code=ub.badge.condition_code,
+                        created_at=ub.badge.created_at,
+                    ),
+                    group_id=ub.group_id,
+                    group_name=ub.group.name if ub.group else None,
+                    earned_at=ub.earned_at,
+                )
+                for ub in user_badges
+            ]
+
+        participant_responses.append(GroupParticipantResponse(
+            id=p.id,
+            name=p.name,
+            user_id=p.user_id,
+            is_admin=p.is_admin,
+            joined_at=p.joined_at,
+            user_name=p.user.name if p.user else None,
+            user_avatar=_avatar_dict(p.user),
+            is_claimed=bool(p.user_id),
+            badges=badges,
+        ))
+
     return GroupDetailResponse(
         id=group.id,
         name=group.name,
@@ -158,19 +204,7 @@ def get_group(
         invite_code=group.invite_code,
         owner_id=group.owner_id,
         created_at=group.created_at,
-        participants=[
-            GroupParticipantResponse(
-                id=p.id,
-                name=p.name,
-                user_id=p.user_id,
-                is_admin=p.is_admin,
-                joined_at=p.joined_at,
-                user_name=p.user.name if p.user else None,
-                user_avatar=_avatar_dict(p.user),
-                is_claimed=bool(p.user_id),
-            )
-            for p in participants
-        ],
+        participants=participant_responses,
     )
 
 
@@ -182,11 +216,52 @@ def get_group_members(
 ):
     """Get all members of a group with their badges."""
     from app.models.group import GroupParticipant
+    from app.models.user import UserBadge
+    from app.schemas.badge import UserBadgeResponse, BadgeResponse
 
-    # TODO: Verify membership and return members with badges
+    # Verify membership
+    is_member = db.query(GroupParticipant).filter(
+        GroupParticipant.group_id == group_id,
+        GroupParticipant.user_id == current_user.id
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
+
     participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
-    return [
-        GroupParticipantResponse(
+
+    result = []
+    for p in participants:
+        badges = []
+        if p.user_id:
+            # Fetch badges for this user in this group
+            from sqlalchemy.orm import joinedload
+            user_badges = db.query(UserBadge).options(
+                joinedload(UserBadge.badge),
+                joinedload(UserBadge.group)
+            ).filter(
+                UserBadge.user_id == p.user_id,
+                UserBadge.group_id == group_id
+            ).all()
+            badges = [
+                UserBadgeResponse(
+                    id=ub.id,
+                    badge=BadgeResponse(
+                        id=ub.badge.id,
+                        name=ub.badge.name,
+                        description=ub.badge.description,
+                        icon=ub.badge.icon,
+                        badge_type=ub.badge.badge_type,
+                        condition_code=ub.badge.condition_code,
+                        created_at=ub.badge.created_at,
+                    ),
+                    group_id=ub.group_id,
+                    group_name=ub.group.name if ub.group else None,
+                    earned_at=ub.earned_at,
+                )
+                for ub in user_badges
+            ]
+
+        result.append(GroupParticipantResponse(
             id=p.id,
             name=p.name,
             user_id=p.user_id,
@@ -195,9 +270,10 @@ def get_group_members(
             user_name=p.user.name if p.user else None,
             user_avatar=_avatar_dict(p.user),
             is_claimed=bool(p.user_id),
-        )
-        for p in participants
-    ]
+            badges=badges,
+        ))
+
+    return result
 
 
 @router.post("/{group_id}/invite", response_model=InviteCodeResponse)
@@ -248,6 +324,7 @@ def get_invite_group(
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
                 is_claimed=bool(p.user_id),
+                badges=[],
             )
             for p in participants
         ],

@@ -147,6 +147,14 @@ def mark_payment_complete(
     result.is_completed = True
     result.completed_at = datetime.utcnow()
 
+    # Award time-based badges
+    from app.services.badge import BadgeService
+    badge_service = BadgeService(db)
+    if debtor and debtor.user_id:
+        badge_service.check_and_award_payment_speed_badges(
+            result, debtor.user_id, result.group_id
+        )
+
     # Create a repayment settlement
     repayment_settlement = Settlement(
         group_id=result.group_id,

@@ -1,5 +1,6 @@
 import styles from '../SettlementDetailPage.module.css';
 import type { GroupParticipantResponse } from '@/types/api.types';
+import { MemberBadges } from './MemberBadges';
 
 interface MembersTabProps {
   participants: GroupParticipantResponse[];
@@ -27,16 +28,23 @@ export default function MembersTab({ participants, onCopyInviteCode }: MembersTa
             <div key={m.id} className={styles.memberCard}>
               <div className={styles.avatar}>{m.name.slice(0, 1)}</div>
               <div className={styles.memberInfo}>
-                <div className={styles.memberRow}>
-                  <div className={styles.memberNickname}>{m.name}</div>
-                  <div className={styles.tags}>
-                    {m.is_admin && (
-                      <span className={styles.tag}>그룹장</span>
-                    )}
+                <div className={styles.memberInfoRow}>
+                  <div className={styles.memberText}>
+                    <div className={styles.memberRow}>
+                      <div className={styles.memberNickname}>{m.name}</div>
+                      <div className={styles.tags}>
+                        {m.is_admin && (
+                          <span className={styles.tag}>그룹장</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.memberName}>
+                      {m.user_name || 'Unclaimed'}
+                    </div>
                   </div>
-                </div>
-                <div className={styles.memberName}>
-                  {m.user_name || 'Unclaimed'}
+                  {m.badges && m.badges.length > 0 && (
+                    <MemberBadges badges={m.badges} />
+                  )}
                 </div>
               </div>
             </div>

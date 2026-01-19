@@ -97,6 +97,7 @@ export interface GroupParticipantResponse {
   user_name: string | null;
   user_avatar: AvatarResponse | null;
   is_claimed: boolean;
+  badges?: UserBadgeResponse[];
 }
 
 export interface GroupResponse {
