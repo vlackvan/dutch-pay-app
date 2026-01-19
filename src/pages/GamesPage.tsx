@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import styles from './games/GamesPage.module.css';
 import { useMyGroups } from '@/hooks/queries/useGroups';
 import { useCreateGame } from '@/hooks/queries/useGames';
@@ -76,6 +76,14 @@ export default function GamesPage() {
   });
 
   const participants: GroupParticipantResponse[] = groupDetail?.participants || [];
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = step === 'selectGame' ? 'hidden' : 'auto';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [step]);
 
   const resetGame = useCallback(() => {
     setStep('selectGame');
@@ -400,32 +408,22 @@ export default function GamesPage() {
   if (groupsLoading) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.title}>사나이 클럽</div>
-        </header>
+        
         <div className={styles.loading}>로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.title}>사나이 클럽</div>
-      </header>
+    <div className={`${styles.page} ${step !== 'selectGame' ? styles.pageActive : ''}`}>
+      
 
       <div className={styles.content}>
+        {step === 'selectGame' && (
+          <img className={styles.bottomCharacter} src="/game-character.png" alt="" />
+        )}
         {/* Step Indicator */}
-        <div className={styles.stepIndicator}>
-          {['selectGame', 'selectGroup', 'setupGame', 'play', 'result'].map((s, i) => (
-            <div
-              key={s}
-              className={`${styles.step} ${
-                step === s ? styles.stepActive : i < ['selectGame', 'selectGroup', 'setupGame', 'play', 'result'].indexOf(step) ? styles.stepCompleted : ''
-              }`}
-            />
-          ))}
-        </div>
+        
 
         {step !== 'selectGame' && (
           <button className={styles.backBtn} onClick={goBack}>
@@ -435,37 +433,27 @@ export default function GamesPage() {
 
         {/* Step 1: Select Game */}
         {step === 'selectGame' && (
-          <>
-            <div className={styles.mainScreen}>
-              <div className={styles.angryFishBg}>🐟💢</div>
-              <h2 className={styles.mainTitle}>사나이 클럽</h2>
-              <p className={styles.mainDesc}>게임을 선택하세요</p>
-            </div>
-
+          <div className={styles.selectGameCenter}>
             <div className={styles.gameGrid}>
               {GAMES.map((game) => (
                 <button
                   key={game.type}
-                  className={`${styles.gameCard} ${selectedGameType === game.type ? styles.gameCardSelected : ''}`}
-                  onClick={() => setSelectedGameType(game.type)}
-                >
+                className={`${styles.gameCard} ${selectedGameType === game.type ? styles.gameCardSelected : ''}`}
+                onClick={() => {
+                  setSelectedGameType(game.type);
+                  window.setTimeout(() => {
+                    setStep('selectGroup');
+                  }, 120);
+                }}
+                type="button"
+              >
                   <div className={styles.gameIcon}>{game.icon}</div>
                   <div className={styles.gameName}>{game.name}</div>
                   <div className={styles.gameDesc}>{game.desc}</div>
                 </button>
               ))}
             </div>
-
-            <div className={styles.buttonRow}>
-              <button
-                className={styles.primaryBtn}
-                disabled={!canProceed}
-                onClick={() => setStep('selectGroup')}
-              >
-                다음
-              </button>
-            </div>
-          </>
+          </div>
         )}
 
         {/* Step 2: Select Group */}
