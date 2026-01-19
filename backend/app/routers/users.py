@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app.database import get_db
@@ -12,7 +12,7 @@ from app.schemas.user import (
 )
 from app.schemas.badge import UserBadgeResponse
 from app.services.auth import get_current_user
-from app.models.user import User
+from app.models.user import User, UserBadge
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
@@ -26,8 +26,15 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
 @router.get("/me/profile", response_model=UserProfileResponse)
 def get_my_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user's full profile including avatar, badges, and payment info."""
-    # TODO: Implement full profile fetch with badges
-    return current_user
+    return (
+        db.query(User)
+        .options(
+            joinedload(User.avatar),
+            joinedload(User.badges).joinedload(UserBadge.badge),
+        )
+        .filter(User.id == current_user.id)
+        .first()
+    )
 
 
 @router.patch("/me", response_model=UserResponse)

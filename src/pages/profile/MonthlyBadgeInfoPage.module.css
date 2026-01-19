@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@700;800&display=swap');
+
+.page{
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(140% 120% at 90% 10%, rgba(191,233,229,0.75) 0%, rgba(191,233,229,0) 55%),
+    linear-gradient(180deg, #b9ded7 0%, #cbe7e2 55%, #dff3ef 100%);
+  color: #2d3f3f;
+  font-family: "Gowun Dodum", "Noto Sans KR", sans-serif;
+  --bg: transparent;
+  --card: #f9f2e4;
+  --card-muted: #f4ead8;
+  --border: #d7c8ab;
+  --text-1: #2d3f3f;
+  --text-2: #5b6d6e;
+  --text-3: #7b8a8b;
+  --shadow: 0 16px 26px rgba(70, 88, 96, 0.18), 0 3px 0 rgba(226, 210, 183, 0.9);
+  --radius-card: 20px;
+  --px-screen: 18px;
+}
+
+.page::before{
+  content: "";
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 320px;
+  background:
+    radial-gradient(circle at 15% 60%, rgba(255,255,255,0.65), rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 40%, rgba(255,255,255,0.4), rgba(255,255,255,0) 55%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.page::after{
+  content: "";
+  position: absolute;
+  inset: 6% -10% auto -10%;
+  height: 220px;
+  background:
+    radial-gradient(circle at 10% 30%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%),
+    radial-gradient(circle at 45% 70%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 55%),
+    radial-gradient(circle at 85% 40%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 52%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.appBar{
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0 var(--px-screen);
+  background: rgba(252, 247, 238, 0.8);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(215, 200, 171, 0.6);
+}
+
+.backBtn{
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(171, 197, 195, 0.7);
+  background: rgba(255,255,255,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #4e6a6a;
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.appTitle{
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-1);
+}
+
+.divider{
+  height: 1px;
+  background: rgba(215, 200, 171, 0.45);
+  margin: 0 var(--px-screen);
+}
+
+.content{
+  padding: 18px var(--px-screen) 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.card{
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.item{
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(215, 200, 171, 0.6);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.icon{
+  width: 79px;
+  height: 79px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.text{
+  min-width: 0;
+}
+
+.name{
+  font-weight: 900;
+  color: var(--text-1);
+  font-size: 15px;
+}
+
+.desc{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.3;
+}
+
+.cond{
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+@media (min-width: 720px){
+  .grid{
+    grid-template-columns: 1fr 1fr;
+  }
+}

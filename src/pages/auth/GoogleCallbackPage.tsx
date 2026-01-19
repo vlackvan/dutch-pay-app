@@ -69,8 +69,7 @@ export function GoogleCallbackPage() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>💸</div>
-          <div className={styles.logoText}>Dutch Pay</div>
+          <div className={styles.logoText}>비키니시티 정산소</div>
         </div>
 
         <h1 className={styles.title}>구글 로그인</h1>

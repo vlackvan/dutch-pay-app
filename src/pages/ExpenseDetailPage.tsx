@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './settlements/ExpenseDetailPage.module.css';
 import { useSettlement } from '@/hooks/queries/useSettlements';
@@ -15,6 +15,11 @@ export default function ExpenseDetailPage() {
 
   const { data: settlement, isLoading } = useSettlement(expenseIdNum);
   const { data: group } = useGroup(groupIdNum);
+
+  // 페이지 로드 시 스크롤을 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [expenseId]);
 
   const handleBack = () => {
     navigate(`/settlements/${groupIdNum}`);

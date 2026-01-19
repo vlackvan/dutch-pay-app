@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
+from app.schemas.badge import UserBadgeResponse
+
 
 # Avatar Schemas
 class AvatarBase(BaseModel):
@@ -82,21 +84,7 @@ class UserResponse(UserBase):
 
 
 class UserProfileResponse(UserResponse):
-    badges: List["BadgeResponse"] = []
-
-    class Config:
-        from_attributes = True
-
-
-# Badge Schemas (basic reference)
-class BadgeResponse(BaseModel):
-    id: int
-    name: str
-    description: Optional[str] = None
-    icon: Optional[str] = None
-    badge_type: str
-    earned_at: Optional[datetime] = None
-    group_id: Optional[int] = None
+    badges: List[UserBadgeResponse] = []
 
     class Config:
         from_attributes = True

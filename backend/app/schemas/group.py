@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from app.schemas.badge import UserBadgeResponse
 
 
 class GroupBase(BaseModel):
@@ -31,6 +32,9 @@ class GroupParticipantResponse(BaseModel):
     user_name: Optional[str] = None
     user_avatar: Optional[dict] = None
     is_claimed: bool = False
+
+    # Badges earned in this group
+    badges: List[UserBadgeResponse] = []
 
     class Config:
         from_attributes = True

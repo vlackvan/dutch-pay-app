@@ -28,3 +28,11 @@ class Badge(Base):
 # - kakaopay_rich: 카카오페이 부자 (카카오페이로 10회 이상 정산)
 # - quick_settler: 빠른 정산러 (정산 요청 후 1시간 내 완료)
 # - group_founder: 그룹 창시자 (그룹 3개 이상 생성)
+
+# Group-specific badges
+GROUP_BADGE_SANDY = "sandy"
+GROUP_BADGE_GARY_SNAIL = "gary_snail"
+GROUP_BADGE_USE_MY_CARD = "use_my_card"
+GROUP_BADGE_MR_KRABS = "mr_krabs"
+GROUP_BADGE_KRABBY_PATTY_VIP = "krabby_patty_vip"
+GROUP_BADGE_NO_COIN_SQUIDWARD = "no_coin_squidward"

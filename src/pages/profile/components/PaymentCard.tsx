@@ -74,7 +74,7 @@ export function PaymentCard({ user }: PaymentCardProps) {
   );
 
   return (
-    <SectionCard title="결제 정보">
+    <SectionCard title="결제 정보" className={styles.cardOpen}>
       <div className={styles.desc}>주로 사용하는 결제 수단을 등록해 주세요</div>
 
       <div className={styles.group}>

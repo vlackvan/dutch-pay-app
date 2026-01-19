@@ -5,16 +5,33 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: var(--color-background);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(140% 120% at 90% 10%, rgba(191,233,229,0.75) 0%, rgba(191,233,229,0) 55%),
+    linear-gradient(180deg, #b9ded7 0%, #cbe7e2 55%, #dff3ef 100%);
+  color: #2d3f3f;
+  font-family: "Gowun Dodum", "Noto Sans KR", sans-serif;
+  --bg: transparent;
+  --card: #f9f2e4;
+  --card-muted: #f4ead8;
+  --border: #d7c8ab;
+  --text-1: #2d3f3f;
+  --text-2: #5b6d6e;
+  --text-3: #7b8a8b;
+  --shadow: 0 16px 26px rgba(70, 88, 96, 0.18), 0 3px 0 rgba(226, 210, 183, 0.9);
+  --radius-card: 20px;
 }
 
 .card {
   width: 100%;
   max-width: 400px;
-  background: var(--color-surface);
-  border-radius: 1rem;
+  background: var(--card);
+  border-radius: var(--radius-card);
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 2px solid var(--border);
 }
 
 .logo {
@@ -22,15 +39,10 @@
   margin-bottom: 2rem;
 }
 
-.logoIcon {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-}
-
 .logoText {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--text-1);
 }
 
 .title {
@@ -38,7 +50,7 @@
   font-weight: 600;
   text-align: center;
   margin-bottom: 1.5rem;
-  color: var(--color-text);
+  color: var(--text-1);
 }
 
 .form {
@@ -56,57 +68,57 @@
 .label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--text-2);
 }
 
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--border);
   border-radius: 0.5rem;
   font-size: 1rem;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: #fff7eb;
+  color: var(--text-1);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: rgba(171, 197, 195, 0.9);
+  box-shadow: 0 0 0 3px rgba(171, 197, 195, 0.2);
 }
 
 .input::placeholder {
-  color: var(--color-text-tertiary);
+  color: var(--text-3);
 }
 
 .inputError {
-  border-color: var(--color-error);
+  border-color: #EF4444;
 }
 
 .errorText {
   font-size: 0.75rem;
-  color: var(--color-error);
+  color: #EF4444;
 }
 
 .submitButton {
   width: 100%;
   padding: 0.875rem;
-  /* --color-primary가 없으면 파란색(#4f46e5)을 사용하도록 수정 */
-  background: var(--color-primary, #4f46e5); 
+  background: linear-gradient(180deg, #7bb7d0, #5a95b3);
   color: white;
   border: none;
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
   margin-top: 0.5rem;
+  box-shadow: 0 6px 0 rgba(75, 147, 175, 0.3);
 }
 
 .submitButton:hover:not(:disabled) {
-  /* 호버 시에도 대비책 색상 추가 */
-  background: var(--color-primary-dark, #4338ca);
+  box-shadow: 0 8px 0 rgba(75, 147, 175, 0.35);
+  transform: translateY(-1px);
 }
 
 .submitButton:disabled {
@@ -124,20 +136,20 @@
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: var(--color-border);
+  background: rgba(215, 200, 171, 0.7);
 }
 
 .dividerText {
   font-size: 0.875rem;
-  color: var(--color-text-tertiary);
+  color: var(--text-3);
 }
 
 .googleButton {
   width: 100%;
   padding: 0.875rem;
-  background: white;
-  color: #1f1f1f;
-  border: 1px solid #dadce0;
+  background: var(--card-muted);
+  color: var(--text-1);
+  border: 2px solid var(--border);
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
@@ -150,19 +162,19 @@
 }
 
 .googleButton:hover {
-  background: #f8f9fa;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 12px rgba(70, 88, 96, 0.12);
 }
 
 .footer {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--text-2);
 }
 
 .footerLink {
-  color: var(--color-primary);
+  color: #5a95b3;
   text-decoration: none;
   font-weight: 500;
 }
@@ -179,13 +191,13 @@
 }
 
 .alertError {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .alertSuccess {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--color-success);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
