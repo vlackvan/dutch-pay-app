@@ -8,6 +8,7 @@ import { groupsApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { IconDropdown } from '@/components/IconDropdown';
+import { IconDisplay } from '@/components/IconPicker/IconPicker';
 import { DEFAULT_ICON } from '@/constants/icons';
 
 type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play' | 'result';
@@ -486,7 +487,9 @@ export default function GamesPage() {
                     className={`${styles.groupCard} ${selectedGroup?.id === group.id ? styles.groupCardSelected : ''}`}
                     onClick={() => setSelectedGroup(group)}
                   >
-                    <div className={styles.groupIcon}>{group.icon || '🧾'}</div>
+                    <div className={styles.groupIcon}>
+                      <IconDisplay icon={group.icon || undefined} className={styles.groupIconImg} size="44px" />
+                    </div>
                     <div className={styles.groupInfo}>
                       <div className={styles.groupName}>{group.name}</div>
                       <div className={styles.groupMeta}>{group.member_count}명</div>
