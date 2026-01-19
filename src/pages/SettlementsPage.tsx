@@ -7,6 +7,37 @@ import type { InviteGroupResponse } from '@/types/api.types';
 
 type SheetMode = 'closed' | 'menu' | 'create' | 'join' | 'invite';
 
+const ICONS = [
+  '/icons/beers.png',
+  '/icons/bowling.png',
+  '/icons/bus.png',
+  '/icons/cake.png',
+  '/icons/drinks.png',
+  '/icons/food.png',
+  '/icons/friendship.png',
+  '/icons/fun.png',
+  '/icons/game.png',
+  '/icons/heart.png',
+  '/icons/home.png',
+  '/icons/money.png',
+  '/icons/mountain.png',
+  '/icons/movie.png',
+  '/icons/music.png',
+  '/icons/others.png',
+  '/icons/reimburse.png',
+  '/icons/relax.png',
+  '/icons/school.png',
+  '/icons/sea.png',
+  '/icons/shopping.png',
+  '/icons/shylove.png',
+  '/icons/taxi.png',
+  '/icons/travel.png',
+  '/icons/work.png',
+  '/icons/working_place.png',
+];
+
+const pickIcon = (id?: number) => ICONS[Math.abs(Number(id) || 0) % ICONS.length];
+
 export default function SettlementsPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -156,19 +187,10 @@ export default function SettlementsPage() {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-  };
-
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.logoRow}>
-            <div className={styles.logo}>Dutch Pay</div>
-          </div>
-        </header>
+        
         <div className={styles.loading}>로딩 중...</div>
       </div>
     );
@@ -177,11 +199,7 @@ export default function SettlementsPage() {
   if (error) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.logoRow}>
-            <div className={styles.logo}>Dutch Pay</div>
-          </div>
-        </header>
+        
         <div className={styles.error}>그룹을 불러오는데 실패했습니다.</div>
       </div>
     );
@@ -189,16 +207,13 @@ export default function SettlementsPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.logoRow}>
-          <div className={styles.logo}>Dutch Pay</div>
-          {user && <div className={styles.by}>{user.name}님</div>}
-        </div>
-      </header>
+      
+      <img className={styles.frameSign} src="/frame-sign.png" alt="" />
 
-            <main className={styles.list}>
+      <main className={styles.list}>
         <div className={styles.boardFrame}>
           <div className={styles.paperPanel}>
+            <div className={styles.paperScroll}>
 
             {groups.length === 0 ? (
               <div className={styles.empty}>
@@ -216,15 +231,13 @@ export default function SettlementsPage() {
                 >
                   <div className={styles.left}>
                     <div className={styles.emoji} aria-hidden="true">
-                      {g.icon || '🧾'}
-                    </div>
+                  <img className={styles.emojiImg} src={pickIcon(g.id)} alt="" />
+                </div>
 
                     <div className={styles.text}>
-                      <div className={styles.title}>{g.name}</div>
-                      <div className={styles.meta}>
-                        <span>{formatDate(g.created_at)}</span>
-                        <span className={styles.dot}>•</span>
-                        <span>{g.member_count}명</span>
+                      <div className={styles.titleRow}>
+                        <div className={styles.title}>{g.name}</div>
+                        <div className={styles.memberCount}>{`${g.member_count}명`}</div>
                       </div>
                     </div>
                   </div>
@@ -235,6 +248,7 @@ export default function SettlementsPage() {
                 </button>
               ))
             )}
+            </div>
           </div>
         </div>
       </main>

@@ -5,6 +5,9 @@
   font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
   color: #224048;
   position: relative;
+  --bg-w: 1015;
+  --bg-h: 1756;
+  --bg-scale: max(calc(100vw / var(--bg-w)), calc(100vh / var(--bg-h)));
 }
 
 .page::before {
@@ -43,22 +46,33 @@
 }
 
 .list {
-  padding: 0 16px 180px;
+  padding: 0 16px 120px;
   display: flex;
   justify-content: center;
 }
 
+.frameSign {
+  position: absolute;
+  top: calc(var(--bg-scale) * -18);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(var(--bg-scale) * 640);
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .boardFrame {
   --bg-w: 1015;
-  --bg-h: 1756;
+  --bg-h: 1956;
   --board-w: 1103;
-  --board-h: 1654;
-  --board-top: 279;
+  --board-h: 1954;
+  --board-top: 350;
   --paper-w: 1006;
-  --paper-h: 1508;
-  --paper-top: 0;
+  --paper-h: 1758;
+  --paper-top: 40;
   --paper-left: 47;
-  --board-scale: 1.12;
+  --board-scale: 3.6;
   --bg-scale: max(calc(100vw / var(--bg-w)), calc(100vh / var(--bg-h)));
   width: calc(var(--bg-scale) * var(--board-w) * var(--board-scale));
   background: url("/board.png") center / 100% 100% no-repeat;
@@ -77,25 +91,34 @@
   width: calc(100% * var(--paper-w) / var(--board-w));
   aspect-ratio: var(--paper-w) / var(--paper-h);
   background: url("/paper.png") center / 100% 100% no-repeat;
-  padding: 22px 18px 26px;
+  padding: 78px 22px 30px;
+  display: flex;
+}
+
+.paperScroll {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: calc(100% - 0px);
+  padding-right: 4px;
 }
 
 .card {
-  width: 100%;
+  width: 84%;
   border: none;
   background: rgba(255, 255, 255, 0.65);
-  border-radius: 16px;
-  padding: 12px 14px;
+  border-radius: 14px;
+  padding: 4px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   text-align: left;
   box-shadow: inset 0 0 0 1px rgba(170, 150, 120, 0.4);
+  align-self: center;
 }
 
 .card:active {
@@ -111,23 +134,30 @@
 }
 
 .emoji {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.8);
+  width: 52px;
+  height: 52px;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  box-shadow: inset 0 0 0 1px rgba(170, 150, 120, 0.3);
+  font-size: 26px;
+  box-shadow: none;
+}
+
+.emojiImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .text {
   min-width: 0;
+  flex: 1;
 }
 
 .title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: #3a3a3a;
   white-space: nowrap;
@@ -135,22 +165,25 @@
   text-overflow: ellipsis;
 }
 
-.meta {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #6b6154;
+.titleRow {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
-.dot {
-  opacity: 0.6;
+.memberCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6154;
+  margin-left: auto;
+  text-align: right;
 }
 
 .unsettled {
   margin-left: auto;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   color: #ef4444;
 }
