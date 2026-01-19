@@ -25,6 +25,9 @@ class User(Base):
     payment_method = Column(String(50), nullable=True)  # kakaopay, toss, bank
     payment_account = Column(String(100), nullable=True)
 
+    # Profile photo (cropped avatar)
+    profile_photo_url = Column(String(255), nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -40,10 +43,10 @@ class Avatar(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
 
-    # SpongeBob fish avatar parts (3 customizable elements)
-    head = Column(String(50), default="default")
-    face = Column(String(50), default="default")
-    hat = Column(String(50), default="none")
+    # Avatar parts (3 customizable elements)
+    body = Column(String(50), default="yellow_round")
+    eyes = Column(String(50), default="original")
+    mouth = Column(String(50), default="original")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

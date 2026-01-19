@@ -7,9 +7,9 @@ from app.schemas.badge import UserBadgeResponse
 
 # Avatar Schemas
 class AvatarBase(BaseModel):
-    head: str = "default"
-    face: str = "default"
-    hat: str = "none"
+    body: str = "yellow_round"
+    eyes: str = "original"
+    mouth: str = "original"
 
 
 class AvatarUpdate(AvatarBase):
@@ -76,6 +76,7 @@ class UserResponse(UserBase):
     id: int
     payment_method: Optional[str] = None
     payment_account: Optional[str] = None
+    profile_photo_url: Optional[str] = None
     avatar: Optional[AvatarResponse] = None
     created_at: datetime
 

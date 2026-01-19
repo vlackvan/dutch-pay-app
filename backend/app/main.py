@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from app.config import settings
 from app.database import init_db
@@ -33,6 +35,11 @@ app.include_router(settlements.router)
 app.include_router(games.router)
 app.include_router(badges.router)
 app.include_router(ai.router)
+
+# Mount static files for uploaded avatars
+uploads_dir = Path("uploads")
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.on_event("startup")

@@ -22,7 +22,9 @@ export type EyesId =
   | 'Mad'
   | 'original'
   | 'pretty'
+  | 'roundglasses'
   | 'sleepy'
+  | 'squareglasses'
   | 'surprised'
   | 'worry';
 

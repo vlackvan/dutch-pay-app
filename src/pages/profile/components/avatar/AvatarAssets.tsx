@@ -28,7 +28,9 @@ export const EYES_IMAGES: readonly EyesId[] = [
   'Mad',
   'original',
   'pretty',
+  'roundglasses',
   'sleepy',
+  'squareglasses',
   'surprised',
   'worry',
 ];

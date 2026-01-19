@@ -1,7 +1,6 @@
 import styles from './AvatarBuilderModal.module.css';
 import { useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { toPng } from 'html-to-image';
 
 import type { AvatarConfig } from './avatar.types';
 import { AvatarCanvas } from './AvatarCanvas';
@@ -14,6 +13,8 @@ import {
   getEyesImagePath,
   getMouthImagePath,
 } from './AvatarAssets';
+import { cropAvatarToBlob, cropAvatarToDataURL } from './avatarCrop';
+import { usersApi } from '@/lib/api/users.api';
 
 type Props = {
   open: boolean;
@@ -169,14 +170,24 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
           <button
             className={styles.primary}
             onClick={async () => {
-              if (!previewRef.current) return;
+              try {
+                // Generate cropped avatar image
+                const croppedDataURL = await cropAvatarToDataURL(config);
+                const croppedBlob = await cropAvatarToBlob(config);
 
-              const png = await toPng(previewRef.current, {
-                backgroundColor: 'transparent',
-                pixelRatio: 2,
-              });
+                // Upload to backend using API client (includes auth token automatically)
+                await usersApi.uploadAvatar(croppedBlob, {
+                  body: config.body,
+                  eyes: config.eyes,
+                  mouth: config.mouth,
+                });
 
-              onSave(config, png);
+                // Call the original onSave callback with data URL for local display
+                onSave(config, croppedDataURL);
+              } catch (error) {
+                console.error('Error saving avatar:', error);
+                alert('Failed to save avatar. Please try again.');
+              }
             }}
             type="button"
           >

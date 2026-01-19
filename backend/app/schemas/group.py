@@ -31,6 +31,7 @@ class GroupParticipantResponse(BaseModel):
     # User info
     user_name: Optional[str] = None
     user_avatar: Optional[dict] = None
+    user_profile_photo_url: Optional[str] = None
     is_claimed: bool = False
 
     # Badges earned in this group

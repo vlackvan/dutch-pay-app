@@ -26,7 +26,17 @@ export default function MembersTab({ participants, onCopyInviteCode }: MembersTa
         <main className={styles.memberList}>
           {participants.map((m) => (
             <div key={m.id} className={styles.memberCard}>
-              <div className={styles.avatar}>{m.name.slice(0, 1)}</div>
+              <div className={styles.avatar}>
+                {m.user_profile_photo_url ? (
+                  <img
+                    src={`http://localhost:8000${m.user_profile_photo_url}`}
+                    alt={m.name}
+                    className={styles.avatarImage}
+                  />
+                ) : (
+                  m.name.slice(0, 1)
+                )}
+              </div>
               <div className={styles.memberInfo}>
                 <div className={styles.memberInfoRow}>
                   <div className={styles.memberText}>
