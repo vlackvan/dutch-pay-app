@@ -12,7 +12,7 @@ const completeProfileSchema = z
   .object({
     name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다'),
     paymentMethod: z.enum(['kakaopay', 'toss', 'bank'], {
-      invalid_type_error: '희망 입금 방식을 선택해주세요',
+      message: '희망 입금 방식을 선택해주세요',
     }),
     paymentAccount: z.string().optional(),
   })
