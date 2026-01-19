@@ -220,7 +220,7 @@ export interface GroupSettlementResults {
 }
 
 // Game Types
-export type GameType = 'PINBALL_ROULETTE' | 'BOMB';
+export type GameType = 'PINBALL_ROULETTE' | 'BOMB' | 'PSYCHOLOGICAL';
 
 export interface GameResultCreate {
   group_id: number;

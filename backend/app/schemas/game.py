@@ -8,6 +8,7 @@ from enum import Enum
 class GameType(str, Enum):
     PINBALL_ROULETTE = "pinball_roulette"
     BOMB = "bomb"
+    PSYCHOLOGICAL = "psychological"
 
 
 class GameResultCreate(BaseModel):

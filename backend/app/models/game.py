@@ -9,6 +9,7 @@ from app.database import Base
 class GameType(str, enum.Enum):
     PINBALL_ROULETTE = "pinball_roulette"  # 핀볼 룰렛
     BOMB = "bomb"                           # 폭탄 게임
+    PSYCHOLOGICAL = "psychological"         # 심리 게임 (죄수의 딜레마)
 
 
 class GameResult(Base):
