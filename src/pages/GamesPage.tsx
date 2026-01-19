@@ -547,7 +547,8 @@ export default function GamesPage() {
                     onClick={() => toggleParticipant(member.id)}
                   >
                     <div className={styles.participantAvatar}>
-                      {(member.name || member.user_name).slice(0, 1)}
+                      {(member.name ?? member.user_name ?? '').slice(0, 1)}
+
                     </div>
                     <span>{member.name || member.user_name}</span>
                     {member.user_id === currentUser?.id && <span>(나)</span>}
