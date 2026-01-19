@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app.database import get_db
@@ -29,9 +29,9 @@ def _avatar_dict(user: User):
     return {
         "id": avatar.id,
         "user_id": avatar.user_id,
-        "head": avatar.head,
-        "face": avatar.face,
-        "hat": avatar.hat,
+        "body": avatar.body,
+        "eyes": avatar.eyes,
+        "mouth": avatar.mouth,
     }
 
 
@@ -77,7 +77,7 @@ def create_group(
         db.add(participant)
     db.commit()
     db.refresh(group)
-    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group.id).all()
+    participants = db.query(GroupParticipant).options(joinedload(GroupParticipant.user)).filter(GroupParticipant.group_id == group.id).all()
 
     return GroupDetailResponse(
         id=group.id,
@@ -96,6 +96,7 @@ def create_group(
                 joined_at=p.joined_at,
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
+                user_profile_photo_url=p.user.profile_photo_url if p.user else None,
                 is_claimed=bool(p.user_id),
                 badges=[],
             )
@@ -151,13 +152,12 @@ def get_group(
     if not is_member:
         raise HTTPException(status_code=403, detail="Not a member of this group")
 
-    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
+    participants = db.query(GroupParticipant).options(joinedload(GroupParticipant.user)).filter(GroupParticipant.group_id == group_id).all()
 
     participant_responses = []
     for p in participants:
         badges = []
         if p.user_id:
-            from sqlalchemy.orm import joinedload
             user_badges = db.query(UserBadge).options(
                 joinedload(UserBadge.badge),
                 joinedload(UserBadge.group)
@@ -192,6 +192,7 @@ def get_group(
             joined_at=p.joined_at,
             user_name=p.user.name if p.user else None,
             user_avatar=_avatar_dict(p.user),
+            user_profile_photo_url=p.user.profile_photo_url if p.user else None,
             is_claimed=bool(p.user_id),
             badges=badges,
         ))
@@ -227,14 +228,13 @@ def get_group_members(
     if not is_member:
         raise HTTPException(status_code=403, detail="Not a member of this group")
 
-    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group_id).all()
+    participants = db.query(GroupParticipant).options(joinedload(GroupParticipant.user)).filter(GroupParticipant.group_id == group_id).all()
 
     result = []
     for p in participants:
         badges = []
         if p.user_id:
             # Fetch badges for this user in this group
-            from sqlalchemy.orm import joinedload
             user_badges = db.query(UserBadge).options(
                 joinedload(UserBadge.badge),
                 joinedload(UserBadge.group)
@@ -269,6 +269,7 @@ def get_group_members(
             joined_at=p.joined_at,
             user_name=p.user.name if p.user else None,
             user_avatar=_avatar_dict(p.user),
+            user_profile_photo_url=p.user.profile_photo_url if p.user else None,
             is_claimed=bool(p.user_id),
             badges=badges,
         ))
@@ -308,7 +309,7 @@ def get_invite_group(
     if not group:
         raise HTTPException(status_code=404, detail="Invalid invite code")
 
-    participants = db.query(GroupParticipant).filter(GroupParticipant.group_id == group.id).all()
+    participants = db.query(GroupParticipant).options(joinedload(GroupParticipant.user)).filter(GroupParticipant.group_id == group.id).all()
 
     return InviteGroupResponse(
         invite_code=group.invite_code,
@@ -323,6 +324,7 @@ def get_invite_group(
                 joined_at=p.joined_at,
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
+                user_profile_photo_url=p.user.profile_photo_url if p.user else None,
                 is_claimed=bool(p.user_id),
                 badges=[],
             )

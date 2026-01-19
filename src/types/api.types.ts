@@ -34,9 +34,9 @@ export interface GoogleCompleteProfileRequest {
 export interface AvatarResponse {
   id: number;
   user_id: number;
-  head: string;
-  face: string;
-  hat: string | null;
+  body: string;
+  eyes: string;
+  mouth: string;
 }
 
 export interface UserResponse {
@@ -45,6 +45,7 @@ export interface UserResponse {
   name: string;
   payment_method: string | null;
   payment_account: string | null;
+  profile_photo_url: string | null;
   avatar: AvatarResponse | null;
   created_at: string;
 }
@@ -75,9 +76,9 @@ export interface UpdateUserRequest {
 }
 
 export interface UpdateAvatarRequest {
-  head?: string;
-  face?: string;
-  hat?: string | null;
+  body?: string;
+  eyes?: string;
+  mouth?: string;
 }
 
 // Group Types
@@ -96,6 +97,7 @@ export interface GroupParticipantResponse {
   joined_at: string;
   user_name: string | null;
   user_avatar: AvatarResponse | null;
+  user_profile_photo_url: string | null;
   is_claimed: boolean;
   badges?: UserBadgeResponse[];
 }

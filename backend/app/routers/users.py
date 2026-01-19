@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
 from sqlalchemy.orm import Session, joinedload
 from typing import List
+import os
+import uuid
+from pathlib import Path
 
 from app.database import get_db
 from app.schemas.user import (
@@ -77,3 +80,67 @@ def get_my_badges(current_user: User = Depends(get_current_user), db: Session = 
     """Get all badges earned by the current user across all groups."""
     # TODO: Implement badge retrieval with group info
     return []
+
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    body: str = Form(...),
+    eyes: str = Form(...),
+    mouth: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload a cropped avatar image and update avatar configuration.
+    Accepts FormData with:
+    - file: The cropped PNG image (230x200px)
+    - body: The body ID
+    - eyes: The eyes ID
+    - mouth: The mouth ID
+    """
+    from app.models.user import Avatar
+
+    # Validate file type
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be an image"
+        )
+
+    # Create uploads directory if it doesn't exist
+    upload_dir = Path("uploads")
+    upload_dir.mkdir(exist_ok=True)
+
+    # Generate unique filename
+    file_extension = os.path.splitext(file.filename)[1] if file.filename else ".png"
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = upload_dir / unique_filename
+
+    # Save the file
+    try:
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save file: {str(e)}"
+        )
+
+    # Update or create avatar configuration
+    if current_user.avatar:
+        current_user.avatar.body = body
+        current_user.avatar.eyes = eyes
+        current_user.avatar.mouth = mouth
+    else:
+        avatar = Avatar(user_id=current_user.id, body=body, eyes=eyes, mouth=mouth)
+        db.add(avatar)
+
+    # Update user's profile photo URL
+    current_user.profile_photo_url = f"/uploads/{unique_filename}"
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user

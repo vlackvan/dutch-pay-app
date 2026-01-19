@@ -33,6 +33,21 @@ export const usersApi = {
     const response = await apiClient.get<UserBadgeResponse[]>('/users/me/badges');
     return response.data;
   },
+
+  uploadAvatar: async (file: Blob, avatarConfig: { body: string; eyes: string; mouth: string }): Promise<UserResponse> => {
+    const formData = new FormData();
+    formData.append('file', file, 'avatar.png');
+    formData.append('body', avatarConfig.body);
+    formData.append('eyes', avatarConfig.eyes);
+    formData.append('mouth', avatarConfig.mouth);
+
+    const response = await apiClient.post<UserResponse>('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
 
 export default usersApi;
