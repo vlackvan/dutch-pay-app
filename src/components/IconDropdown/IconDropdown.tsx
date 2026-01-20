@@ -7,9 +7,10 @@ interface IconDropdownProps {
   selectedIcon: string;
   onSelectIcon: (iconPath: string) => void;
   size?: 'small' | 'medium';
+  className?: string;
 }
 
-export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small' }: IconDropdownProps) {
+export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small', className }: IconDropdownProps) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,7 +33,7 @@ export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small
   const buttonClass = size === 'small' ? styles.selectBtnSmall : styles.selectBtn;
 
   return (
-    <div className={styles.selectWrap} ref={boxRef}>
+    <div className={`${styles.selectWrap} ${className || ''}`} ref={boxRef}>
       <button
         type="button"
         className={buttonClass}
