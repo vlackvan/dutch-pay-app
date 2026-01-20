@@ -220,6 +220,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
 
             {/* Platforms and Choices */}
             <div className={styles.platformsContainer}>
+                <img src="/fightingfish.png" alt="" className={styles.fightingFish} />
                 {/* Left Platform */}
                 <motion.div
                     className={styles.platformWrapper}

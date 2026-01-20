@@ -42,10 +42,35 @@
     transition: transform 0.3s;
     margin-left: -60px;
     /* Force overlap */
+    animation: fallAndBounce 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .sceneAvatar:first-child {
     margin-left: 0;
+}
+
+.sceneAvatar:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.sceneAvatar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.sceneAvatar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.sceneAvatar:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.sceneAvatar:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.sceneAvatar:nth-child(6) {
+    animation-delay: 0.5s;
 }
 
 .sceneAvatar:hover {
@@ -263,5 +288,40 @@
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@keyframes fallAndBounce {
+    0% {
+        transform: translateY(-800px);
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    50% {
+        transform: translateY(0);
+    }
+
+    65% {
+        transform: translateY(-40px);
+    }
+
+    75% {
+        transform: translateY(0);
+    }
+
+    85% {
+        transform: translateY(-20px);
+    }
+
+    92% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(0);
     }
 }
