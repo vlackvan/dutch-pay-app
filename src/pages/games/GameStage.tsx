@@ -36,6 +36,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const [result, setResult] = useState<{ winner: Platform; explanation: string } | null>(null);
     const [showOverlay, setShowOverlay] = useState(false);
 
+    const stageRef = useRef<HTMLDivElement>(null);
     const leftPlatformRef = useRef<HTMLDivElement>(null);
     const rightPlatformRef = useRef<HTMLDivElement>(null);
 
@@ -83,16 +84,23 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
         }, 300);
     };
 
-    const handleDragEnd = (participantId: number, _event: any, info: PanInfo) => {
+    const handleDragEnd = (participantId: number, currentPlatform: Platform, _event: any, info: PanInfo) => {
         if (phase !== 'playing') return;
 
+        const stageRect = stageRef.current?.getBoundingClientRect();
         const leftRect = leftPlatformRef.current?.getBoundingClientRect();
         const rightRect = rightPlatformRef.current?.getBoundingClientRect();
         const dropPoint = { x: info.point.x, y: info.point.y };
 
         let assignedPlatform: Platform = 'dock';
 
-        if (leftRect &&
+        if (stageRect) {
+            const midX = (stageRect.left + stageRect.right) / 2;
+            if (dropPoint.x >= stageRect.left && dropPoint.x <= stageRect.right &&
+                dropPoint.y >= stageRect.top && dropPoint.y <= stageRect.bottom) {
+                assignedPlatform = dropPoint.x < midX ? 'left' : 'right';
+            }
+        } else if (leftRect &&
             dropPoint.x >= leftRect.left &&
             dropPoint.x <= leftRect.right &&
             dropPoint.y >= leftRect.top &&
@@ -108,6 +116,9 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
 
         setAssignments(prev => {
             const next = prev.filter(a => a.participant.id !== participantId);
+            if (assignedPlatform === 'dock' && currentPlatform !== 'dock') {
+                assignedPlatform = currentPlatform;
+            }
             if (assignedPlatform !== 'dock') {
                 const participant = participants.find(p => p.id === participantId);
                 if (participant) {
@@ -144,7 +155,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     };
 
     return (
-        <div className={styles.gameStage}>
+        <div className={styles.gameStage} ref={stageRef}>
             {/* Background */}
             <div className={styles.background} />
 
@@ -225,8 +236,24 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     {/* Left team avatars */}
                     <div className={styles.platformAvatars}>
                         {leftParticipants.map((p) => (
-                            <div key={p.id} className={styles.assignedAvatar}>
-                                <span className={styles.avatarNameTop}>{p.name}</span>
+                            <motion.div
+                                key={p.id}
+                                className={styles.assignedAvatar}
+                                drag
+                                dragSnapToOrigin
+                                whileDrag={{ scale: 1.05, zIndex: 200 }}
+                                style={{ zIndex: 5 }}
+                                onDragEnd={(event, info) => handleDragEnd(p.id, 'left', event, info)}
+                            >
+                                <span
+                                    className={
+                                        normalizeUrl(p.fullBodyPhoto)
+                                            ? `${styles.avatarNameTop} ${styles.avatarNameTopTight}`
+                                            : styles.avatarNameTop
+                                    }
+                                >
+                                    {p.name}
+                                </span>
                                 {normalizeUrl(p.fullBodyPhoto) ? (
                                     <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
                                 ) : normalizeUrl(p.profilePhoto) ? (
@@ -234,7 +261,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                                 ) : (
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </motion.div>
@@ -255,8 +282,24 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     {/* Right team avatars */}
                     <div className={styles.platformAvatars}>
                         {rightParticipants.map((p) => (
-                            <div key={p.id} className={styles.assignedAvatar}>
-                                <span className={styles.avatarNameTop}>{p.name}</span>
+                            <motion.div
+                                key={p.id}
+                                className={styles.assignedAvatar}
+                                drag
+                                dragSnapToOrigin
+                                whileDrag={{ scale: 1.05, zIndex: 200 }}
+                                style={{ zIndex: 5 }}
+                                onDragEnd={(event, info) => handleDragEnd(p.id, 'right', event, info)}
+                            >
+                                <span
+                                    className={
+                                        normalizeUrl(p.fullBodyPhoto)
+                                            ? `${styles.avatarNameTop} ${styles.avatarNameTopTight}`
+                                            : styles.avatarNameTop
+                                    }
+                                >
+                                    {p.name}
+                                </span>
                                 {normalizeUrl(p.fullBodyPhoto) ? (
                                     <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
                                 ) : normalizeUrl(p.profilePhoto) ? (
@@ -264,7 +307,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                                 ) : (
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </motion.div>
@@ -278,10 +321,19 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                         className={styles.draggableAvatar}
                         drag
                         dragSnapToOrigin
-                        whileDrag={{ scale: 1.1, zIndex: 100 }}
-                        onDragEnd={(event, info) => handleDragEnd(p.id, event, info)}
+                        whileDrag={{ scale: 1.1, zIndex: 200 }}
+                        style={{ zIndex: 5 }}
+                        onDragEnd={(event, info) => handleDragEnd(p.id, 'dock', event, info)}
                     >
-                        <span className={styles.avatarNameTop}>{p.name}</span>
+                        <span
+                            className={
+                                normalizeUrl(p.fullBodyPhoto)
+                                    ? `${styles.avatarNameTop} ${styles.avatarNameTopTight}`
+                                    : styles.avatarNameTop
+                            }
+                        >
+                            {p.name}
+                        </span>
                         {normalizeUrl(p.fullBodyPhoto) ? (
                             <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
                         ) : normalizeUrl(p.profilePhoto) ? (
