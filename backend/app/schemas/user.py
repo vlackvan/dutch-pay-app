@@ -77,6 +77,7 @@ class UserResponse(UserBase):
     payment_method: Optional[str] = None
     payment_account: Optional[str] = None
     profile_photo_url: Optional[str] = None
+    full_body_photo_url: Optional[str] = None
     avatar: Optional[AvatarResponse] = None
     created_at: datetime
 

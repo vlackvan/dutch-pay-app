@@ -99,6 +99,7 @@ export default function SettlementDetailPage() {
       name: p.name || p.user_name || 'Unknown',
       value: Number(balanceMap.get(p.id)) || 0,
       me: p.id === currentUserParticipantId,
+      profileUrl: p.user_profile_photo_url,
     }));
   }, [resultsData, participants, currentUserParticipantId]);
 

@@ -34,9 +34,16 @@ export const usersApi = {
     return response.data;
   },
 
-  uploadAvatar: async (file: Blob, avatarConfig: { body: string; eyes: string; mouth: string }): Promise<UserResponse> => {
+  uploadAvatar: async (
+    file: Blob,
+    avatarConfig: { body: string; eyes: string; mouth: string },
+    fullBodyBlob?: Blob
+  ): Promise<UserResponse> => {
     const formData = new FormData();
     formData.append('file', file, 'avatar.png');
+    if (fullBodyBlob) {
+      formData.append('full_body_file', fullBodyBlob, 'full_avatar.png');
+    }
     formData.append('body', avatarConfig.body);
     formData.append('eyes', avatarConfig.eyes);
     formData.append('mouth', avatarConfig.mouth);

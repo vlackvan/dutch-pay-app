@@ -31,20 +31,34 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [avatarPng, setAvatarPng] = useState<string | null>(null);
 
+  // Sync with user data from DB, fallback to localStorage or default
   useEffect(() => {
-    const raw = localStorage.getItem(LS_CONFIG);
-    const png = localStorage.getItem(LS_PNG);
-
-    if (raw) {
-      try {
-        setAvatar(JSON.parse(raw));
-      } catch {
-        // ignore
+    if (user) {
+      if (user.profile_photo_url) {
+        setAvatarPng(user.profile_photo_url);
       }
+      if (user.avatar) {
+        setAvatar({
+          body: user.avatar.body as any,
+          eyes: user.avatar.eyes as any,
+          mouth: user.avatar.mouth as any,
+        });
+      }
+    } else {
+      // If user data not yet loaded, try local storage (legacy/optimistic)
+      const raw = localStorage.getItem(LS_CONFIG);
+      const png = localStorage.getItem(LS_PNG);
+      if (raw) {
+        try {
+          setAvatar(JSON.parse(raw));
+        } catch { }
+      }
+      if (png) setAvatarPng(png);
     }
+  }, [user]);
 
-    if (png) setAvatarPng(png);
-  }, []);
+  // If no avatar is set (no URL and no custom config), we can show a placeholder or the default
+  const hasAvatar = !!avatarPng || (user?.avatar !== null && user?.avatar !== undefined);
 
   return (
     <section className={styles.card}>
@@ -60,7 +74,7 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
           <div className={styles.avatarRing} aria-hidden="true">
             <div className={styles.avatar}>
               {avatarPng ? (
-                <img src={avatarPng} alt="" width={86} height={86} />
+                <img src={avatarPng} alt="Profile" width={86} height={86} style={{ objectFit: 'cover' }} />
               ) : (
                 <AvatarCanvas config={avatar} size={86} />
               )}

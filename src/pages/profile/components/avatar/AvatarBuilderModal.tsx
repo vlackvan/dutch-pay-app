@@ -13,8 +13,8 @@ import {
   getEyesImagePath,
   getMouthImagePath,
 } from './AvatarAssets';
-import { cropAvatarToBlob, cropAvatarToDataURL } from './avatarCrop';
-import { usersApi } from '@/lib/api/users.api';
+import { cropAvatarToBlob, cropAvatarToDataURL, generateFullAvatarBlob } from './avatarCrop';
+import { useUploadAvatar } from '@/hooks/queries/useUser';
 
 type Props = {
   open: boolean;
@@ -34,6 +34,7 @@ const PRESETS: { key: string; label: string; config: AvatarConfig }[] = [
 export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
   const [tab, setTab] = useState<Tab>('body');
   const [config, setConfig] = useState<AvatarConfig>(initial ?? DEFAULT_AVATAR);
+  const uploadAvatarMutation = useUploadAvatar();
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
@@ -171,15 +172,22 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
             className={styles.primary}
             onClick={async () => {
               try {
-                // Generate cropped avatar image
+                // Generate cropped avatar image and full body image
                 const croppedDataURL = await cropAvatarToDataURL(config);
-                const croppedBlob = await cropAvatarToBlob(config);
+                const [croppedBlob, fullBodyBlob] = await Promise.all([
+                  cropAvatarToBlob(config),
+                  generateFullAvatarBlob(config),
+                ]);
 
-                // Upload to backend using API client (includes auth token automatically)
-                await usersApi.uploadAvatar(croppedBlob, {
-                  body: config.body,
-                  eyes: config.eyes,
-                  mouth: config.mouth,
+                // Use the mutation for upload (handles query invalidation)
+                await uploadAvatarMutation.mutateAsync({
+                  file: croppedBlob,
+                  fullBodyBlob,
+                  config: {
+                    body: config.body,
+                    eyes: config.eyes,
+                    mouth: config.mouth,
+                  },
                 });
 
                 // Call the original onSave callback with data URL for local display
@@ -190,8 +198,9 @@ export function AvatarBuilderModal({ open, initial, onClose, onSave }: Props) {
               }
             }}
             type="button"
+            disabled={uploadAvatarMutation.isPending}
           >
-            저장
+            {uploadAvatarMutation.isPending ? '저장 중...' : '저장'}
           </button>
         </div>
       </div>

@@ -34,34 +34,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
  * @returns A Promise that resolves with a Blob containing the cropped PNG
  */
 export async function cropAvatarToBlob(config: AvatarConfig): Promise<Blob> {
-  // Create a hidden canvas at full resolution
-  const canvas = document.createElement('canvas');
-  canvas.width = BASE;
-  canvas.height = BASE;
-  const ctx = canvas.getContext('2d');
+  const canvas = await generateFullAvatarCanvas(config);
 
-  if (!ctx) {
-    throw new Error('Failed to get 2D context');
-  }
-
-  // Load all three layers
-  const [bodyImg, eyesImg, mouthImg] = await Promise.all([
-    loadImage(getBodyImagePath(config.body)),
-    loadImage(getEyesImagePath(config.eyes)),
-    loadImage(getMouthImagePath(config.mouth)),
-  ]);
-
-  // Draw layers in Z-order: Body -> Eyes -> Mouth
-  // Body layer (full size)
-  ctx.drawImage(bodyImg, 0, 0, BASE, BASE);
-
-  // Eyes layer (positioned)
-  ctx.drawImage(eyesImg, EYES.x, EYES.y, EYES.w, EYES.h);
-
-  // Mouth layer (positioned)
-  ctx.drawImage(mouthImg, MOUTH.x, MOUTH.y, MOUTH.w, MOUTH.h);
-
-  // Create a second canvas for the crop
   const cropCanvas = document.createElement('canvas');
   cropCanvas.width = CROP_WIDTH;
   cropCanvas.height = CROP_HEIGHT;
@@ -71,7 +45,6 @@ export async function cropAvatarToBlob(config: AvatarConfig): Promise<Blob> {
     throw new Error('Failed to get 2D context for crop canvas');
   }
 
-  // Extract the crop region from the flattened avatar
   cropCtx.drawImage(
     canvas,
     CROP_X,
@@ -84,7 +57,6 @@ export async function cropAvatarToBlob(config: AvatarConfig): Promise<Blob> {
     CROP_HEIGHT
   );
 
-  // Convert to blob with transparency preserved
   return new Promise((resolve, reject) => {
     cropCanvas.toBlob(
       (blob) => {
@@ -100,11 +72,6 @@ export async function cropAvatarToBlob(config: AvatarConfig): Promise<Blob> {
   });
 }
 
-/**
- * Flattens the avatar layers and crops the specified region, returning a data URL
- * @param config - The avatar configuration
- * @returns A Promise that resolves with a PNG data URL
- */
 export async function cropAvatarToDataURL(config: AvatarConfig): Promise<string> {
   const blob = await cropAvatarToBlob(config);
   return new Promise((resolve, reject) => {
@@ -113,4 +80,44 @@ export async function cropAvatarToDataURL(config: AvatarConfig): Promise<string>
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+}
+
+export async function generateFullAvatarBlob(config: AvatarConfig): Promise<Blob> {
+  const canvas = await generateFullAvatarCanvas(config);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to create full avatar blob'));
+        }
+      },
+      'image/png',
+      1.0
+    );
+  });
+}
+
+async function generateFullAvatarCanvas(config: AvatarConfig): Promise<HTMLCanvasElement> {
+  const canvas = document.createElement('canvas');
+  canvas.width = BASE;
+  canvas.height = BASE;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    throw new Error('Failed to get 2D context');
+  }
+
+  const [bodyImg, eyesImg, mouthImg] = await Promise.all([
+    loadImage(getBodyImagePath(config.body)),
+    loadImage(getEyesImagePath(config.eyes)),
+    loadImage(getMouthImagePath(config.mouth)),
+  ]);
+
+  ctx.drawImage(bodyImg, 0, 0, BASE, BASE);
+  ctx.drawImage(eyesImg, EYES.x, EYES.y, EYES.w, EYES.h);
+  ctx.drawImage(mouthImg, MOUTH.x, MOUTH.y, MOUTH.w, MOUTH.h);
+
+  return canvas;
 }
