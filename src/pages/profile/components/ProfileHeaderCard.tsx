@@ -80,9 +80,18 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
           <div className={styles.avatarRing} aria-hidden="true">
             <div className={styles.avatar}>
               {avatarPng ? (
-                <img src={avatarPng} alt="Profile" width={86} height={86} style={{ objectFit: 'cover' }} />
+                <img
+                  src={avatarPng}
+                  alt="Profile"
+                  width={86}
+                  height={86}
+                  className={styles.avatarImage}
+                  style={{ objectFit: 'cover' }}
+                />
               ) : (
-                <AvatarCanvas config={avatar} size={86} />
+                <div className={styles.avatarImage}>
+                  <AvatarCanvas config={avatar} size={86} />
+                </div>
               )}
             </div>
           </div>
