@@ -1,9 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_V1_BASE = API_BASE_URL.endsWith('/api') ? `${API_BASE_URL}/v1` : `${API_BASE_URL}/api/v1`;
 
 export const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: API_V1_BASE,
   headers: {
     'Content-Type': 'application/json',
   },

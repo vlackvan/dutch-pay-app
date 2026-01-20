@@ -1,0 +1,21 @@
+{/* Step 1: Select Game */}
+        {step === 'selectGame' && (
+          <>
+            <div className={styles.mainScreen}>
+              <div className={styles.angryFishBg}>🐟💢</div>
+              <h2 className={styles.mainTitle}>사나이 클럽</h2>
+              <p className={styles.mainDesc}>게임을 선택하세요</p>
+            </div>
+
+            <div className={styles.gameGrid}>
+              {GAMES.map((game) => (
+                <button
+                  key={game.type}
+                  className={`${styles.gameCard} ${selectedGameType === game.type ? styles.gameCardSelected : ''}`}
+                  onClick={() => setSelectedGameType(game.type)}
+                >
+                  <div className={styles.gameIcon}>{game.icon}</div>
+                  <div className={styles.gameName}>{game.name}</div>
+                  <div className={styles.gameDesc}>{game.desc}</div>
+                </button>
+     
