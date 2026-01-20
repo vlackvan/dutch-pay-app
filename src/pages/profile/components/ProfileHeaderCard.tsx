@@ -14,6 +14,12 @@ interface ProfileHeaderCardProps {
 }
 
 export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
+  const normalizeProfileUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `http://localhost:8000${url}`;
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -35,7 +41,7 @@ export function ProfileHeaderCard({ user }: ProfileHeaderCardProps) {
   useEffect(() => {
     if (user) {
       if (user.profile_photo_url) {
-        setAvatarPng(user.profile_photo_url);
+        setAvatarPng(normalizeProfileUrl(user.profile_photo_url));
       }
       if (user.avatar) {
         setAvatar({
