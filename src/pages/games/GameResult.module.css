@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@700;800&display=swap');
+
 .resultPage {
     position: fixed;
     inset: 0;
@@ -10,6 +12,7 @@
     z-index: 100;
     overflow: hidden;
     padding-bottom: 2rem;
+    font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
 }
 
 .background {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import styles from './games/GamesPage.module.css';
 import { useMyGroups } from '@/hooks/queries/useGroups';
 
@@ -37,6 +37,8 @@ export default function GamesPage() {
   const [settlementIcon, setSettlementIcon] = useState<string>(DEFAULT_ICON);
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
   const [selectedPayerId, setSelectedPayerId] = useState<number | null>(null);
+  const [payerOpen, setPayerOpen] = useState(false);
+  const payerBoxRef = useRef<HTMLDivElement | null>(null);
   const [showIntro, setShowIntro] = useState(true);
   const [gameResult, setGameResult] = useState<{
     winner: 'left' | 'right';
@@ -61,6 +63,17 @@ export default function GamesPage() {
       document.body.style.overflow = prev;
     };
   }, [step]);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!payerBoxRef.current) return;
+      if (!payerBoxRef.current.contains(e.target as Node)) {
+        setPayerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
   // Default payer to current user when participants load
   useEffect(() => {
@@ -137,6 +150,13 @@ export default function GamesPage() {
     if (step === 'setupGame') return selectedParticipants.length >= 2 && amount > 0 && settlementTitle.trim() !== '';
     return false;
   }, [step, selectedGroup, selectedGameType, selectedParticipants.length, amount, settlementTitle]);
+
+  const payerLabel = useMemo(() => {
+    const payer = participants.find((p) => p.id === selectedPayerId);
+    if (!payer) return 'Select payer';
+    const name = payer.name || payer.user_name || 'Unknown';
+    return `${name}${payer.user_id === currentUser?.id ? ' (me)' : ''}`;
+  }, [participants, selectedPayerId, currentUser?.id]);
 
   if (groupsLoading) {
     return (
@@ -279,18 +299,43 @@ export default function GamesPage() {
 
             <div className={styles.setupSection}>
               <h3 className={styles.subTitle}>결제자</h3>
-              <select
-                className={styles.titleInput}
-                value={selectedPayerId || ''}
-                onChange={(e) => setSelectedPayerId(Number(e.target.value))}
-                style={{ appearance: 'auto', paddingRight: '1rem' }} // basic style override
-              >
-                {participants.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name || p.user_name} {p.user_id === currentUser?.id ? '(나)' : ''}
-                  </option>
-                ))}
-              </select>
+              <div className={styles.payerSelectWrap} ref={payerBoxRef}>
+                <button
+                  type="button"
+                  className={styles.payerSelectBtn}
+                  onClick={() => setPayerOpen((v) => !v)}
+                  aria-expanded={payerOpen}
+                  aria-label="Select payer"
+                >
+                  <span className={styles.payerSelectValue}>{payerLabel}</span>
+                  <span className={styles.payerSelectChevron}>v</span>
+                </button>
+
+                {payerOpen && (
+                  <div className={styles.payerMenu} role="listbox" aria-label="Select payer">
+                    {participants.map((p) => {
+                      const name = p.name || p.user_name || 'Unknown';
+                      const label = `${name}${p.user_id === currentUser?.id ? ' (me)' : ''}`;
+                      const isSelected = p.id === selectedPayerId;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={`${styles.payerMenuItem} ${isSelected ? styles.payerMenuItemActive : ''}`}
+                          onClick={() => {
+                            setSelectedPayerId(p.id);
+                            setPayerOpen(false);
+                          }}
+                          role="option"
+                          aria-selected={isSelected}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
 
@@ -306,8 +351,15 @@ export default function GamesPage() {
                     onClick={() => toggleParticipant(member.id)}
                   >
                     <div className={styles.participantAvatar}>
-                      {(member.name ?? member.user_name ?? '').slice(0, 1)}
-
+                      {member.user_profile_photo_url ? (
+                        <img
+                          src={`http://localhost:8000${member.user_profile_photo_url}`}
+                          alt={member.name || member.user_name || 'Participant'}
+                          className={styles.participantAvatarImg}
+                        />
+                      ) : (
+                        (member.name ?? member.user_name ?? '').slice(0, 1)
+                      )}
                     </div>
                     <span>{member.name || member.user_name}</span>
                     {member.user_id === currentUser?.id && <span>(나)</span>}
