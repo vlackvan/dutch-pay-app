@@ -84,7 +84,7 @@ export default function ExpensesTab({
                 >
                   <div className={styles.expenseLeft}>
                     <div className={styles.expenseIcon} aria-hidden="true">
-                      <IconDisplay icon={getSettlementIcon(s.icon, s.title)} size="40px" />
+                      <IconDisplay icon={getSettlementIcon(s.icon, s.title)} size="48px" />
                     </div>
                     <div className={styles.expenseText}>
                       <div className={styles.expenseTitle}>{s.title}</div>

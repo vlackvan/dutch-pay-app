@@ -43,6 +43,14 @@ export default function SettlementsPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   const openMenu = () => setSheet('menu');
 
   const resetForms = () => {

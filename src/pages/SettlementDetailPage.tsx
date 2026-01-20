@@ -71,7 +71,9 @@ export default function SettlementDetailPage() {
     let total = 0;
 
     settlements.forEach((s: SettlementResponse) => {
-      total += Number(s.total_amount) || 0;
+      if (s.title !== '상환') {
+        total += Number(s.total_amount) || 0;
+      }
       if (!currentUserParticipantId) return;
       const myShare = s.participants.find((p) => p.participant_id === currentUserParticipantId);
       if (myShare) {

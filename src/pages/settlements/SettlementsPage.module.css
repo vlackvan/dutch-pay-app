@@ -66,13 +66,13 @@
   --bg-w: 1015;
   --bg-h: 1956;
   --board-w: 1103;
-  --board-h: 1954;
-  --board-top: 350;
+  --board-h: 1985;
+  --board-top: 370;
   --paper-w: 1006;
   --paper-h: 1758;
-  --paper-top: 40;
+  --paper-top: 45;
   --paper-left: 47;
-  --board-scale: 3.6;
+  --board-scale: 4.9;
   --bg-scale: max(calc(100vw / var(--bg-w)), calc(100vh / var(--bg-h)));
   width: calc(var(--bg-scale) * var(--board-w) * var(--board-scale));
   background: url("/board.png") center / 100% 100% no-repeat;
@@ -174,11 +174,12 @@
 }
 
 .memberCount {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: #6b6154;
   margin-left: auto;
   text-align: right;
+  align-self: center;
 }
 
 .unsettled {
@@ -414,7 +415,7 @@
   display: grid;
   grid-template-columns: 60px 1fr auto;
   align-items: center;
-  column-gap: 14px;
+  column-gap: 3px;
   cursor: pointer;
   text-align: left;
   box-shadow:
@@ -451,7 +452,7 @@
 }
 
 .groupTitle {
-  font-size: 18px;
+  font-size: 30px;
   font-weight: 800;
   color: #3a3a3a;
   white-space: nowrap;
@@ -461,7 +462,7 @@
 
 .groupMeta {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 15px;
   color: #6b6154;
   display: flex;
   align-items: center;
