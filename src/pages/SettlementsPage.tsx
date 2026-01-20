@@ -171,7 +171,7 @@ export default function SettlementsPage() {
   if (isLoading) {
     return (
       <div className={styles.page}>
-        
+
         <div className={styles.loading}>로딩 중...</div>
       </div>
     );
@@ -180,7 +180,7 @@ export default function SettlementsPage() {
   if (error) {
     return (
       <div className={styles.page}>
-        
+
         <div className={styles.error}>그룹을 불러오는데 실패했습니다.</div>
       </div>
     );
@@ -188,7 +188,7 @@ export default function SettlementsPage() {
 
   return (
     <div className={styles.page}>
-      
+
       <img className={styles.frameSign} src="/frame-sign.png" alt="" />
 
       <main className={styles.list}>
@@ -196,38 +196,38 @@ export default function SettlementsPage() {
           <div className={styles.paperPanel}>
             <div className={styles.paperScroll}>
 
-            {groups.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIcon}>📋</div>
-                <div className={styles.emptyText}>아직 참여한 그룹이 없어요.</div>
-              </div>
-            ) : (
-              groups.map((g) => (
-                <button
-                  key={g.id}
-                  className={styles.card}
-                  type="button"
-                  onClick={() => navigate(`/settlements/${g.id}`)}
-                >
-                  <div className={styles.left}>
-                    <div className={styles.emoji} aria-hidden="true">
-                      <IconDisplay icon={g.icon || undefined} className={styles.emojiImg} size="48px" />
-                    </div>
+              {groups.length === 0 ? (
+                <div className={styles.empty}>
+                  <div className={styles.emptyIcon}>📋</div>
+                  <div className={styles.emptyText}>아직 참여한 그룹이 없어요.</div>
+                </div>
+              ) : (
+                groups.map((g) => (
+                  <button
+                    key={g.id}
+                    className={styles.card}
+                    type="button"
+                    onClick={() => navigate(`/settlements/${g.id}`)}
+                  >
+                    <div className={styles.left}>
+                      <div className={styles.emoji} aria-hidden="true">
+                        <IconDisplay icon={g.icon || undefined} className={styles.emojiImg} size="48px" />
+                      </div>
 
-                    <div className={styles.text}>
-                      <div className={styles.titleRow}>
-                        <div className={styles.title}>{g.name}</div>
-                        <div className={styles.memberCount}>{`${g.member_count}명`}</div>
+                      <div className={styles.text}>
+                        <div className={styles.titleRow}>
+                          <div className={styles.title}>{g.name}</div>
+                          <div className={styles.memberCount}>{`${g.member_count}명`}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {g.unsettled_amount > 0 && (
-                    <div className={styles.unsettled}>₩{g.unsettled_amount.toLocaleString()}</div>
-                  )}
-                </button>
-              ))
-            )}
+                    {g.unsettled_amount > 0 && (
+                      <div className={styles.unsettled}>₩{g.unsettled_amount.toLocaleString()}</div>
+                    )}
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -293,19 +293,14 @@ export default function SettlementsPage() {
               <div className={styles.form}>
                 <div className={styles.sectionTitle}>이름</div>
                 <div className={styles.rowField}>
-                  <div className={styles.smallIconBox} aria-hidden="true">
-                    <IconDisplay icon={groupIcon} size="32px" />
-                  </div>
                   <input
                     className={styles.input}
                     placeholder="예: 여름 여행"
                     value={groupTitle}
                     onChange={(e) => setGroupTitle(e.target.value)}
                   />
+                  <IconDropdown selectedIcon={groupIcon} onSelectIcon={setGroupIcon} size="medium" />
                 </div>
-
-                <div className={styles.sectionTitle}>아이콘</div>
-                <IconDropdown selectedIcon={groupIcon} onSelectIcon={setGroupIcon} size="medium" />
 
                 <div className={styles.sectionTitle}>설명 (선택)</div>
                 <input
@@ -315,7 +310,7 @@ export default function SettlementsPage() {
                   onChange={(e) => setGroupDescription(e.target.value)}
                 />
 
-                <div className={styles.sectionTitle}>Participants</div>
+                <div className={styles.sectionTitle}>멤버</div>
                 <div className={styles.participantsBox}>
                   {participants.map((name, index) => (
                     <div key={`p-${index}`} className={styles.participantRow}>
@@ -326,7 +321,7 @@ export default function SettlementsPage() {
                         onChange={(e) => updateParticipant(index, e.target.value)}
                       />
                       {index === 0 ? (
-                        <span className={styles.meBadge}>Me</span>
+                        <span className={styles.meBadge}>나</span>
                       ) : (
                         <button
                           type="button"
@@ -340,7 +335,7 @@ export default function SettlementsPage() {
                     </div>
                   ))}
                   <button type="button" className={styles.addAnother} onClick={addParticipant}>
-                    Add another participant
+                    멤버 추가
                   </button>
                 </div>
 
@@ -467,12 +462,12 @@ export default function SettlementsPage() {
                   아래 초대 코드로 참여자를 초대하세요.
                 </div>
 
-                <div className={styles.sectionTitle}>Participants</div>
+                <div className={styles.sectionTitle}>멤버</div>
                 <div className={styles.participantsBox}>
                   {createdParticipants.map((name, index) => (
                     <div key={`created-${index}`} className={styles.participantRow}>
                       <span className={styles.participantName}>{name}</span>
-                      {index === 0 && <span className={styles.meBadge}>Me</span>}
+                      {index === 0 && <span className={styles.meBadge}>나</span>}
                     </div>
                   ))}
                 </div>

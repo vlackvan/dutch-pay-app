@@ -34,7 +34,7 @@ export default function ExpenseDetailPage() {
           <button className={styles.back} onClick={handleBack} aria-label="뒤로가기" type="button">
             ‹
           </button>
-          <div className={styles.topTitle}>Dutch Pay</div>
+          <div className={styles.topTitle}></div>
         </header>
         <div className={styles.loading}>로딩 중...</div>
       </div>
@@ -48,7 +48,7 @@ export default function ExpenseDetailPage() {
           <button className={styles.back} onClick={handleBack} aria-label="뒤로가기" type="button">
             ‹
           </button>
-          <div className={styles.topTitle}>Dutch Pay</div>
+          <div className={styles.topTitle}></div>
         </header>
         <div className={styles.error}>정산 항목을 찾을 수 없습니다.</div>
       </div>
@@ -76,7 +76,7 @@ export default function ExpenseDetailPage() {
         <button className={styles.back} onClick={handleBack} aria-label="뒤로가기" type="button">
           ‹
         </button>
-        <div className={styles.topTitle}>Dutch Pay</div>
+        <div className={styles.topTitle}></div>
         {settlement.title !== '상환' && (
           <button
             className={styles.editBtn}
@@ -95,7 +95,7 @@ export default function ExpenseDetailPage() {
         </div>
         <div className={styles.detailTitle}>{settlement.title}</div>
         <div className={styles.detailPayer}>
-          Paid by: <span className={styles.payerName}>{settlement.payer_name || 'Unknown'}</span>
+          결제자: <span className={styles.payerName}>{settlement.payer_name || 'Unknown'}</span>
         </div>
         <div className={styles.detailAmount}>₩{Math.round(settlement.total_amount || 0).toLocaleString()}</div>
       </section>

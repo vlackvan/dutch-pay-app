@@ -90,8 +90,8 @@ export default function ExpensesTab({
                       <div className={styles.expenseTitle}>{s.title}</div>
                       <div className={styles.expenseSub}>
                         {s.payer_participant_id === currentUserParticipantId
-                          ? `Paid by ${s.payer_name || 'Unknown'} (me)`
-                          : `Paid by ${s.payer_name || 'Unknown'}`}
+                          ? `결제자 ${s.payer_name || 'Unknown'} (나)`
+                          : `결제자 ${s.payer_name || 'Unknown'}`}
                       </div>
                     </div>
                   </div>

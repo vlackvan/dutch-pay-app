@@ -135,11 +135,11 @@ export default function SettlementDetailPage() {
         resultId: r.id,
         from:
           r.debtor_participant_id === currentUserParticipantId
-            ? `${r.debtor_name || 'Unknown'} (me)`
+            ? `${r.debtor_name || 'Unknown'} (나)`
             : r.debtor_name || 'Unknown',
         to:
           r.creditor_participant_id === currentUserParticipantId
-            ? `${r.creditor_name || 'Unknown'} (me)`
+            ? `${r.creditor_name || 'Unknown'} (나)`
             : r.creditor_name || 'Unknown',
         amount: Number(r.amount) || 0,
         isCompleted: r.is_completed,
@@ -225,7 +225,7 @@ export default function SettlementDetailPage() {
       <button className={styles.back} onClick={onBack} aria-label="뒤로가기" type="button">
         ‹
       </button>
-      <div className={styles.topTitle}>Dutch Pay</div>
+      <div className={styles.topTitle}></div>
       <div className={styles.topRight}>
         <button
           className={styles.iconBtn}

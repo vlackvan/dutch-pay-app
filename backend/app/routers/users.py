@@ -78,8 +78,42 @@ def update_avatar(
 @router.get("/me/badges", response_model=List[UserBadgeResponse])
 def get_my_badges(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get all badges earned by the current user across all groups."""
-    # TODO: Implement badge retrieval with group info
-    return []
+    from app.models.user import UserBadge
+    from app.models.badge import Badge
+    from app.models.group import Group
+    from app.schemas.badge import UserBadgeResponse, BadgeResponse
+
+    user_badges = db.query(UserBadge).filter(
+        UserBadge.user_id == current_user.id
+    ).all()
+
+    result = []
+    for ub in user_badges:
+        badge = db.query(Badge).filter(Badge.id == ub.badge_id).first()
+        if not badge:
+            continue
+
+        group_name = None
+        if ub.group_id:
+            group = db.query(Group).filter(Group.id == ub.group_id).first()
+            group_name = group.name if group else None
+
+        result.append(UserBadgeResponse(
+            id=ub.id,
+            badge=BadgeResponse(
+                id=badge.id,
+                name=badge.name,
+                description=badge.description,
+                icon=badge.icon,
+                badge_type=badge.badge_type,
+                condition_code=badge.condition_code
+            ),
+            group_id=ub.group_id,
+            group_name=group_name,
+            earned_at=ub.earned_at
+        ))
+
+    return result
 
 
 @router.post("/me/avatar", response_model=UserResponse)

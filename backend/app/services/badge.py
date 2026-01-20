@@ -15,18 +15,22 @@ class BadgeService:
         self, settlement_result, user_id: int, group_id: int
     ):
         """
-        Calculate time diff between settlement_result.created_at and completed_at
+        Calculate time diff between settlement_result.debt_updated_at (or created_at) and completed_at
         - If <= 5 min: Award Sandy badge
         - If > 48 hours: Award GarySnail badge
         """
         print(f"[BADGE DEBUG] Checking payment speed badges for user_id={user_id}, group_id={group_id}")
-        print(f"[BADGE DEBUG] completed_at={settlement_result.completed_at}, created_at={settlement_result.created_at}")
 
-        if not settlement_result.completed_at or not settlement_result.created_at:
+        # Use debt_updated_at if available, otherwise fall back to created_at
+        debt_time = settlement_result.debt_updated_at or settlement_result.created_at
+
+        print(f"[BADGE DEBUG] completed_at={settlement_result.completed_at}, debt_time={debt_time}")
+
+        if not settlement_result.completed_at or not debt_time:
             print(f"[BADGE DEBUG] Missing timestamps, skipping")
             return
 
-        time_diff = settlement_result.completed_at - settlement_result.created_at
+        time_diff = settlement_result.completed_at - debt_time
         time_diff_seconds = time_diff.total_seconds()
         time_diff_minutes = time_diff_seconds / 60
         time_diff_hours = time_diff_seconds / 3600

@@ -1,5 +1,6 @@
 from decimal import Decimal
 from typing import List, Dict
+from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import uuid
@@ -15,8 +16,6 @@ class SettlementService:
 
     def create_settlement(self, data: SettlementCreate) -> Settlement:
         """Create a new settlement with participants."""
-        from datetime import datetime
-
         payer_participant = self.db.query(GroupParticipant).filter(
             GroupParticipant.id == data.payer_participant_id,
             GroupParticipant.group_id == data.group_id
@@ -89,8 +88,6 @@ class SettlementService:
 
     def update_settlement(self, settlement_id: int, data: SettlementUpdate, user_id: int) -> Settlement:
         """Update settlement details."""
-        from datetime import datetime
-
         settlement = self.db.query(Settlement).filter(Settlement.id == settlement_id).first()
         if not settlement:
             raise HTTPException(status_code=404, detail="Settlement not found")
@@ -194,6 +191,7 @@ class SettlementService:
 
                 if existing:
                     existing.amount = transfer_amount
+                    existing.debt_updated_at = datetime.utcnow()
                     result = existing
                 else:
                     result = SettlementResult(
@@ -202,6 +200,7 @@ class SettlementService:
                         creditor_participant_id=creditor_id,
                         amount=transfer_amount,
                         calculation_batch=batch_id,
+                        debt_updated_at=datetime.utcnow(),
                     )
                     self.db.add(result)
 

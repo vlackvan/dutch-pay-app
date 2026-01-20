@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import styles from '../SettlementDetailPage.module.css';
 import { useCreateSettlement, useUpdateSettlement } from '@/hooks/queries/useSettlements';
 import type { GroupParticipantResponse, SplitType, SettlementResponse } from '@/types/api.types';
@@ -24,14 +24,11 @@ export default function AddExpenseButton({
   initialData,
   isEditMode = false,
 }: AddExpenseButtonProps) {
-  const fileRef = useRef<HTMLInputElement | null>(null);
   const createSettlement = useCreateSettlement();
   const updateSettlement = useUpdateSettlement();
 
   const [title, setTitle] = useState('');
   const [emoji, setEmoji] = useState(DEFAULT_ICON);
-
-  const [receiptName, setReceiptName] = useState<string>('');
 
   const [amount, setAmount] = useState<number | ''>('');
   const [payerId, setPayerId] = useState<number>(currentUserParticipantId || participants[0]?.id || 0);
@@ -228,29 +225,7 @@ export default function AddExpenseButton({
           <div className={styles.iconBtnWrap}>
             <IconDropdown selectedIcon={emoji} onSelectIcon={setEmoji} size="small" />
           </div>
-
-            <button
-              type="button"
-              className={styles.squareIconBtn}
-              aria-label="영수증 선택"
-              onClick={() => fileRef.current?.click()}
-            >
-              <span className={styles.squareIconGlyph}>📷</span>
-            </button>
-
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              setReceiptName(f ? f.name : '');
-            }}
-          />
         </div>
-
-        {receiptName ? <div className={styles.receiptHint}>선택된 영수증: {receiptName}</div> : null}
 
         <div className={styles.blockTitle}>금액</div>
         <div className={styles.amountBigRow}>
@@ -380,8 +355,8 @@ export default function AddExpenseButton({
               ? '수정 중...'
               : '수정'
             : createSettlement.isPending
-            ? '추가 중...'
-            : '추가'}
+              ? '추가 중...'
+              : '추가'}
         </button>
 
         {(createSettlement.isError || updateSettlement.isError) && (

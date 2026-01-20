@@ -120,6 +120,9 @@ class SettlementResult(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # Track when this debt was last calculated/updated (for badge timing)
+    debt_updated_at = Column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     group = relationship("Group")
     debtor = relationship("GroupParticipant", foreign_keys=[debtor_participant_id])
