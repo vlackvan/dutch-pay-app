@@ -11,6 +11,7 @@ import { IconDropdown } from '@/components/IconDropdown';
 import { IconDisplay } from '@/components/IconPicker/IconPicker';
 import { DEFAULT_ICON } from '@/constants/icons';
 import { GameIntro } from './games/GameIntro';
+import { GameStage } from './games/GameStage';
 
 type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play';
 type GameTypeOption = string;
@@ -102,6 +103,12 @@ export default function GamesPage() {
 
   const handleIntroComplete = () => {
     setShowIntro(false);
+  };
+
+  const handleJudgmentReady = (leftTeam: { id: number; name: string }[], rightTeam: { id: number; name: string }[]) => {
+    console.log('Judgment ready!', { leftTeam, rightTeam });
+    // TODO: Implement judgment phase
+    alert(`판정 시작!\n왼쪽 팀: ${leftTeam.map(p => p.name).join(', ')}\n오른쪽 팀: ${rightTeam.map(p => p.name).join(', ')}`);
   };
 
 
@@ -283,14 +290,20 @@ export default function GamesPage() {
         {/* Step 4: Play - Game Stage */}
         {step === 'play' && (
           <>
-            {/* Game Intro Overlay */}
-            {showIntro && <GameIntro onComplete={handleIntroComplete} />}
+            {/* Game Stage - always rendered so background is visible */}
+            <GameStage
+              participants={participants
+                .filter(p => selectedParticipants.includes(p.id))
+                .map(p => ({
+                  id: p.id,
+                  name: p.name || p.user_name || 'Unknown',
+                  profilePhoto: p.user_profile_photo_url,
+                }))}
+              onJudgmentReady={handleJudgmentReady}
+            />
 
-            {/* Game Stage */}
-            <div className={styles.gameStage}>
-              <img className={styles.gameStageTreeLeft} src="/game-stage-tree-1.png" alt="" />
-              <img className={styles.gameStageTreeRight} src="/game-stage-tree-2.png" alt="" />
-            </div>
+            {/* Game Intro Overlay - on top of game stage */}
+            {showIntro && <GameIntro onComplete={handleIntroComplete} />}
           </>
         )}
 
