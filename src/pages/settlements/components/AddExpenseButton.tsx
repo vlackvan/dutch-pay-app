@@ -144,9 +144,7 @@ export default function AddExpenseButton({
 
     const splitType: SplitType = splitMode === 'equal' ? 'equal' : 'amount';
 
-    const finalParticipantIds = selectedIds.includes(payerId)
-      ? selectedIds
-      : [...selectedIds, payerId];
+    const finalParticipantIds = selectedIds;
 
     const participantsPayload = finalParticipantIds.map((participantId) => {
       if (splitMode === 'equal') {
