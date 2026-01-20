@@ -28,9 +28,7 @@ interface PsychologicalChoice {
 }
 
 const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; apiType: GameType }[] = [
-  { type: 'bomb', name: '폭탄 게임', icon: '💣', desc: '스위치를 선택하라!', apiType: 'BOMB' },
-  { type: 'roulette', name: '룰렛 돌리기', icon: '🎡', desc: '운명의 룰렛', apiType: 'PINBALL_ROULETTE' },
-  { type: 'psychological', name: '심리 게임', icon: '🧠', desc: '죄수의 딜레마', apiType: 'PSYCHOLOGICAL' },
+  { type: 'roulette', name: '게임장 입장', icon: '', desc: '', apiType: 'PINBALL_ROULETTE' },
 ];
 
 export default function GamesPage() {
@@ -438,18 +436,18 @@ export default function GamesPage() {
               {GAMES.map((game) => (
                 <button
                   key={game.type}
-                className={`${styles.gameCard} ${selectedGameType === game.type ? styles.gameCardSelected : ''}`}
-                onClick={() => {
-                  setSelectedGameType(game.type);
-                  window.setTimeout(() => {
-                    setStep('selectGroup');
-                  }, 120);
-                }}
-                type="button"
-              >
-                  <div className={styles.gameIcon}>{game.icon}</div>
-                  <div className={styles.gameName}>{game.name}</div>
-                  <div className={styles.gameDesc}>{game.desc}</div>
+                  className={`${styles.gameCard} ${selectedGameType === game.type ? styles.gameCardSelected : ''}`}
+                  onClick={() => {
+                    setSelectedGameType(game.type);
+                    window.setTimeout(() => {
+                      setStep('selectGroup');
+                    }, 120);
+                  }}
+                  type="button"
+                >
+                                    <div className={styles.gameInfo}>
+                    <div className={styles.gameName}>{game.name}</div>
+                  </div>
                 </button>
               ))}
             </div>
@@ -574,43 +572,10 @@ export default function GamesPage() {
 
         {/* Step 4: Play - Roulette */}
         {step === 'play' && selectedGameType === 'roulette' && (
-          <>
-            <h2 className={styles.sectionTitle}>룰렛 돌리기</h2>
-            <p className={styles.sectionDesc}>버튼을 눌러 룰렛을 돌리세요!</p>
-            <div className={styles.playArea}>
-              <div className={styles.rouletteContainer}>
-                <div className={styles.roulettePointer} />
-                <div
-                  className={styles.roulette}
-                  style={{ transform: `rotate(${rouletteRotation}deg)` }}
-                >
-                  <div className={styles.rouletteInner}>
-                    {selectedParticipants.map((pid, i) => {
-                      const member = participants.find((m) => m.id === pid);
-                      return (
-                        <div
-                          key={pid}
-                          className={styles.rouletteSegment}
-                          style={{
-                            transform: `rotate(${(360 / selectedParticipants.length) * i}deg)`,
-                          }}
-                        >
-                          {member?.name || member?.user_name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-              <button
-                className={styles.spinBtn}
-                onClick={spinRoulette}
-                disabled={isSpinning}
-              >
-                {isSpinning ? '돌아가는 중...' : '돌리기!'}
-              </button>
-            </div>
-          </>
+          <div className={styles.gameStage}>
+            <img className={styles.gameStageTreeLeft} src="/game-stage-tree-1.png" alt="" />
+            <img className={styles.gameStageTreeRight} src="/game-stage-tree-2.png" alt="" />
+          </div>
         )}
 
         {/* Step 4: Play - Bomb */}
@@ -777,7 +742,7 @@ export default function GamesPage() {
           <>
             <div className={styles.resultCard}>
               <div className={styles.resultIcon}>
-                {selectedGameType === 'roulette' ? '🎡' : selectedGameType === 'bomb' ? '💥' : '🧠'}
+                {selectedGameType === 'roulette' ? '🔥' : selectedGameType === 'bomb' ? '💥' : '🧠'}
               </div>
               <div className={styles.resultTitle}>게임 종료!</div>
 
