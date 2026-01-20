@@ -12,12 +12,10 @@ import { IconDisplay } from '@/components/IconPicker/IconPicker';
 import { DEFAULT_ICON } from '@/constants/icons';
 import { GameIntro } from './games/GameIntro';
 import { GameStage } from './games/GameStage';
+import { GameResult } from './games/GameResult';
 
-type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play';
+type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play' | 'result';
 type GameTypeOption = string;
-
-
-
 
 
 const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; apiType: GameType }[] = [
@@ -39,6 +37,11 @@ export default function GamesPage() {
   const [settlementIcon, setSettlementIcon] = useState<string>(DEFAULT_ICON);
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
   const [showIntro, setShowIntro] = useState(true);
+  const [gameResult, setGameResult] = useState<{
+    winner: 'left' | 'right';
+    leftTeam: { id: number; name: string }[];
+    rightTeam: { id: number; name: string }[];
+  } | null>(null);
 
 
 
@@ -66,6 +69,7 @@ export default function GamesPage() {
     setAmount(10000);
     setSettlementIcon(DEFAULT_ICON);
     setSelectedParticipants([]);
+    setGameResult(null);
   }, []);
 
   const goBack = useCallback(() => {
@@ -105,10 +109,17 @@ export default function GamesPage() {
     setShowIntro(false);
   };
 
-  const handleJudgmentReady = (leftTeam: { id: number; name: string }[], rightTeam: { id: number; name: string }[]) => {
-    console.log('Judgment ready!', { leftTeam, rightTeam });
-    // TODO: Implement judgment phase
-    alert(`판정 시작!\n왼쪽 팀: ${leftTeam.map(p => p.name).join(', ')}\n오른쪽 팀: ${rightTeam.map(p => p.name).join(', ')}`);
+  const handleJudgmentReady = (
+    leftTeam: { id: number; name: string }[],
+    rightTeam: { id: number; name: string }[],
+    winner: 'left' | 'right'
+  ) => {
+    setGameResult({
+      winner,
+      leftTeam,
+      rightTeam
+    });
+    setStep('result');
   };
 
 
@@ -140,7 +151,7 @@ export default function GamesPage() {
         {/* Step Indicator */}
 
 
-        {step !== 'selectGame' && (
+        {step !== 'selectGame' && step !== 'play' && step !== 'result' && (
           <button className={styles.backBtn} onClick={goBack}>
             ← 뒤로
           </button>
@@ -308,6 +319,15 @@ export default function GamesPage() {
           </>
         )}
 
+        {/* Step 5: Result */}
+        {step === 'result' && gameResult && (
+          <GameResult
+            winner={gameResult.winner}
+            leftTeam={gameResult.leftTeam}
+            rightTeam={gameResult.rightTeam}
+            onBack={resetGame}
+          />
+        )}
 
       </div>
     </div>

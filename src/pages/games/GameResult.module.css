@@ -1,0 +1,106 @@
+.resultPage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    z-index: 100;
+}
+
+.background {
+    position: absolute;
+    inset: 0;
+    background: url("/game-stage-bg.jpg") center / cover no-repeat;
+    filter: brightness(0.4);
+    z-index: 0;
+}
+
+.contentContainer {
+    position: relative;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 3rem;
+    border-radius: 1.5rem;
+    border: 3px solid #00BFFF;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(0, 191, 255, 0.3);
+    backdrop-filter: blur(10px);
+    max-width: 90%;
+    width: 400px;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #FFD700;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
+.winnerSection {
+    margin-bottom: 3rem;
+}
+
+.teamList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.winnerName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0, 191, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #00BFFF;
+}
+
+.subText {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.loserSection {
+    opacity: 0.7;
+    margin-bottom: 3rem;
+}
+
+.loserTitle {
+    color: #ff4444;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.loserName {
+    font-size: 1.1rem;
+    color: #ccc;
+    text-decoration: line-through;
+}
+
+.finishBtn {
+    background: linear-gradient(135deg, #00BFFF, #0099CC);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.finishBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 191, 255, 0.6);
+}
+
+.finishBtn:active {
+    transform: translateY(0);
+}

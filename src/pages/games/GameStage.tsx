@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, type PanInfo } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence, type Variants } from 'framer-motion';
 import { getRandomQuestion, type QuizQuestion } from '@/data/quizQuestions';
 import styles from './GameStage.module.css';
 
@@ -19,7 +19,7 @@ interface Participant {
 
 interface GameStageProps {
     participants: Participant[];
-    onJudgmentReady: (leftTeam: Participant[], rightTeam: Participant[]) => void;
+    onJudgmentReady: (leftTeam: Participant[], rightTeam: Participant[], winner: 'left' | 'right') => void;
 }
 
 type Platform = 'left' | 'right' | 'dock';
@@ -32,83 +32,189 @@ interface ParticipantAssignment {
 export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const [question, setQuestion] = useState<QuizQuestion | null>(null);
     const [assignments, setAssignments] = useState<ParticipantAssignment[]>([]);
+    const [phase, setPhase] = useState<'playing' | 'judging' | 'completed'>('playing');
+    const [result, setResult] = useState<{ winner: Platform; explanation: string } | null>(null);
+    const [showOverlay, setShowOverlay] = useState(false);
 
     const leftPlatformRef = useRef<HTMLDivElement>(null);
     const rightPlatformRef = useRef<HTMLDivElement>(null);
 
+    // Initial load
     useEffect(() => {
-        // Get a random question on mount
         setQuestion(getRandomQuestion());
+    }, []);
 
-        // Initialize all participants in dock
-        setAssignments(
-            participants.map((p) => ({
-                participant: p,
-                platform: 'dock' as Platform,
-            }))
-        );
-    }, [participants]);
 
-    const getParticipantsByPlatform = (platform: Platform) => {
-        return assignments.filter((a) => a.platform === platform).map((a) => a.participant);
+
+    // Check assignments
+    useEffect(() => {
+        if (participants.length > 0 && assignments.length === participants.length && phase === 'playing') {
+            handleJudgment();
+        }
+    }, [assignments, participants, phase]);
+
+    const handleJudgment = () => {
+        if (!question) return;
+
+        setPhase('judging');
+
+        // Determine winner based on toughAnswer (1 = left/answer1, 2 = right/answer2)
+        const winningPlatform = question.toughAnswer === 1 ? 'left' : 'right';
+
+        // Wait a small moment before showing result animation (Drop/Highlight)
+        setTimeout(() => {
+            setResult({
+                winner: winningPlatform,
+                explanation: question.explanation
+            });
+
+            // 2 seconds later, show the Cinematic Overlay with Guard
+            setTimeout(() => {
+                setShowOverlay(true);
+
+                // After reading time in overlay, complete
+                setTimeout(() => {
+                    setPhase('completed');
+                    const leftTeam = assignments.filter(a => a.platform === 'left').map(a => a.participant);
+                    const rightTeam = assignments.filter(a => a.platform === 'right').map(a => a.participant);
+                    onJudgmentReady(leftTeam, rightTeam, winningPlatform);
+                }, 6000); // 6 seconds to read explanation
+            }, 2000); // 2 second delay for overlay
+        }, 300);
     };
 
-    const handleDragEnd = (participantId: number, _event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const handleDragEnd = (participantId: number, _event: any, info: PanInfo) => {
+        if (phase !== 'playing') return;
+
         const leftRect = leftPlatformRef.current?.getBoundingClientRect();
         const rightRect = rightPlatformRef.current?.getBoundingClientRect();
+        const dropPoint = { x: info.point.x, y: info.point.y };
 
-        const dropX = info.point.x;
-        const dropY = info.point.y;
+        let assignedPlatform: Platform = 'dock';
 
-        let newPlatform: Platform = 'dock';
-
-        if (leftRect && dropX >= leftRect.left && dropX <= leftRect.right && dropY >= leftRect.top && dropY <= leftRect.bottom) {
-            newPlatform = 'left';
-        } else if (rightRect && dropX >= rightRect.left && dropX <= rightRect.right && dropY >= rightRect.top && dropY <= rightRect.bottom) {
-            newPlatform = 'right';
+        if (leftRect &&
+            dropPoint.x >= leftRect.left &&
+            dropPoint.x <= leftRect.right &&
+            dropPoint.y >= leftRect.top &&
+            dropPoint.y <= leftRect.bottom) {
+            assignedPlatform = 'left';
+        } else if (rightRect &&
+            dropPoint.x >= rightRect.left &&
+            dropPoint.x <= rightRect.right &&
+            dropPoint.y >= rightRect.top &&
+            dropPoint.y <= rightRect.bottom) {
+            assignedPlatform = 'right';
         }
 
-        setAssignments((prev) =>
-            prev.map((a) =>
-                a.participant.id === participantId ? { ...a, platform: newPlatform } : a
-            )
-        );
+        setAssignments(prev => {
+            const next = prev.filter(a => a.participant.id !== participantId);
+            if (assignedPlatform !== 'dock') {
+                const participant = participants.find(p => p.id === participantId);
+                if (participant) {
+                    next.push({ participant, platform: assignedPlatform });
+                }
+            }
+            return next;
+        });
     };
 
-    // Check if all participants are assigned
-    useEffect(() => {
-        const dockParticipants = getParticipantsByPlatform('dock');
-        if (assignments.length > 0 && dockParticipants.length === 0) {
-            const leftTeam = getParticipantsByPlatform('left');
-            const rightTeam = getParticipantsByPlatform('right');
+    const isAssigned = (id: number) => assignments.some(a => a.participant.id === id);
 
-            // Trigger judgment after a short delay
-            setTimeout(() => {
-                onJudgmentReady(leftTeam, rightTeam);
-            }, 500);
-        }
-    }, [assignments, onJudgmentReady]);
+    const dockParticipants = participants.filter(p => !isAssigned(p.id));
+    const leftParticipants = assignments.filter(a => a.platform === 'left').map(a => a.participant);
+    const rightParticipants = assignments.filter(a => a.platform === 'right').map(a => a.participant);
 
     if (!question) return null;
 
-    const dockParticipants = getParticipantsByPlatform('dock');
-    const leftParticipants = getParticipantsByPlatform('left');
-    const rightParticipants = getParticipantsByPlatform('right');
+    // Animation Variants
+    const platformVariants: Variants = {
+        idle: { y: 0, scale: 1, opacity: 1 },
+        drop: {
+            y: 1000,
+            rotate: 15,
+            opacity: 0,
+            transition: { duration: 1.5, ease: "easeIn" }
+        },
+        win: {
+            scale: 1.1,
+            y: -20,
+            filter: "brightness(1.2) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6))",
+            transition: { duration: 0.5, type: "spring" }
+        }
+    };
 
     return (
         <div className={styles.gameStage}>
             {/* Background */}
             <div className={styles.background} />
 
+            {/* Guard Overlay for Judgment */}
+            <AnimatePresence>
+                {showOverlay && result && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', pointerEvents: 'none' }}
+                    >
+                        {/* Black Overlay */}
+                        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', mixBlendMode: 'multiply' }} />
+
+                        {/* Explanation Text */}
+                        <motion.div
+                            initial={{ y: -50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            style={{ position: 'relative', zIndex: 110, marginBottom: '400px', maxWidth: '40rem', textAlign: 'center', padding: '0 1rem' }}
+                        >
+                            <div style={{
+                                backgroundColor: 'rgba(0,0,0,0.9)',
+                                color: 'white',
+                                padding: '1.5rem',
+                                borderRadius: '1rem',
+                                border: '2px solid #00BFFF',
+                                boxShadow: '0 0 30px rgba(0,191,255,0.3)',
+                                backdropFilter: 'blur(10px)'
+                            }}>
+                                <h3 style={{ color: '#00BFFF', fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                                    {result.winner === 'left' ? question.answer1 : question.answer2}... 이것이 더 터프하다!
+                                </h3>
+                                <p style={{ fontSize: '1.125rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                    {result.explanation}
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Guard */}
+                        <motion.div
+                            initial={{ y: 200, opacity: 0 }}
+                            animate={{ y: 50, opacity: 1 }}
+                            transition={{ type: "spring", damping: 20 }}
+                            style={{ position: 'absolute', bottom: 0, zIndex: 105 }}
+                        >
+                            <img
+                                src="/guard.png"
+                                alt="Guard"
+                                style={{ width: '24rem', maxWidth: '85vw', filter: 'drop-shadow(0 0 50px rgba(0,0,0,0.8))' }}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+
             {/* Question Header */}
             <div className={styles.questionHeader}>
-                <p className={styles.questionText}>{question.question}</p>
+                <h2 className={styles.questionText}>Q. {question.question}</h2>
             </div>
 
-            {/* Platforms Container */}
+            {/* Platforms and Choices */}
             <div className={styles.platformsContainer}>
                 {/* Left Platform */}
-                <div className={styles.platformWrapper}>
+                <motion.div
+                    className={styles.platformWrapper}
+                    variants={platformVariants}
+                    animate={result ? (result.winner === 'left' ? 'win' : 'drop') : 'idle'}
+                >
                     <div
                         ref={leftPlatformRef}
                         className={styles.choiceCard}
@@ -131,10 +237,14 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                             </div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Right Platform */}
-                <div className={styles.platformWrapper}>
+                <motion.div
+                    className={styles.platformWrapper}
+                    variants={platformVariants}
+                    animate={result ? (result.winner === 'right' ? 'win' : 'drop') : 'idle'}
+                >
                     <div
                         ref={rightPlatformRef}
                         className={styles.choiceCard}
@@ -157,7 +267,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                             </div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Avatar Dock */}
