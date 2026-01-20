@@ -199,8 +199,7 @@ export default function SettlementsPage() {
             {groups.length === 0 ? (
               <div className={styles.empty}>
                 <div className={styles.emptyIcon}>📋</div>
-                <div className={styles.emptyText}>아직 참여한 그룹이 없습니다</div>
-                <div className={styles.emptyHint}>새 그룹을 만들거나 초대 코드로 참여해보세요</div>
+                <div className={styles.emptyText}>아직 참여한 그룹이 없어요.</div>
               </div>
             ) : (
               groups.map((g) => (

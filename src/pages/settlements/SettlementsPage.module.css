@@ -105,6 +105,14 @@
   padding-right: 4px;
 }
 
+.paperScroll .empty {
+  margin: auto 0;
+  align-items: center;
+  text-align: center;
+  padding-right: 0;
+  transform: translate(0, -24px);
+}
+
 .card {
   width: 84%;
   border: none;

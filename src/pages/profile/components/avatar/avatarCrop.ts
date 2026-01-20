@@ -10,10 +10,10 @@ const MOUTH = { x: 256, y: 116, w: 108, h: 108 };
 
 // Crop coordinates based on 500x500 reference, scaled to 512x512
 const SCALE_FACTOR = BASE / 500; // 1.024
-const CROP_X = 140 * SCALE_FACTOR;
-const CROP_Y = 45 * SCALE_FACTOR;
-const CROP_WIDTH = 230 * SCALE_FACTOR;
-const CROP_HEIGHT = 200 * SCALE_FACTOR;
+const CROP_X = 115 * SCALE_FACTOR;
+const CROP_Y = 10 * SCALE_FACTOR;
+const CROP_WIDTH = 270 * SCALE_FACTOR;
+const CROP_HEIGHT = 290 * SCALE_FACTOR;
 
 /**
  * Loads an image from a URL and returns a Promise that resolves with the HTMLImageElement
