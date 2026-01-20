@@ -231,14 +231,14 @@ export default function AddExpenseButton({
             <IconDropdown selectedIcon={emoji} onSelectIcon={setEmoji} size="small" />
           </div>
 
-          <button
-            type="button"
-            className={styles.squareIconBtn}
-            aria-label="영수증 선택"
-            onClick={() => fileRef.current?.click()}
-          >
-            📷
-          </button>
+            <button
+              type="button"
+              className={styles.squareIconBtn}
+              aria-label="영수증 선택"
+              onClick={() => fileRef.current?.click()}
+            >
+              <span className={styles.squareIconGlyph}>📷</span>
+            </button>
 
           <input
             ref={fileRef}

@@ -28,7 +28,7 @@ export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small
     setOpen(false);
   };
 
-  const iconSize = size === 'small' ? '24px' : '32px';
+  const iconSize = size === 'small' ? '28px' : '36px';
   const buttonClass = size === 'small' ? styles.selectBtnSmall : styles.selectBtn;
 
   return (

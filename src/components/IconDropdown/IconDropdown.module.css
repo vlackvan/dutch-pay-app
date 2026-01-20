@@ -43,10 +43,11 @@
 
 .menu {
   position: absolute;
-  left: 0;
+  right: 0;
+  left: auto;
   top: calc(100% + 10px);
   min-width: 200px;
-  max-height: 400px;
+  max-height: 50vh;
   overflow-y: auto;
   background: #fffaf0;
   border: 2px solid rgba(209, 190, 158, 0.8);
@@ -85,8 +86,8 @@
 }
 
 .iconWrapper {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,8 +95,8 @@
 }
 
 .iconImage {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
