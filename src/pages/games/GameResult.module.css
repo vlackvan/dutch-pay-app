@@ -43,31 +43,45 @@
 .sceneAvatar {
     position: relative;
     transition: transform 0.3s;
-    animation: fallAndBounce 1s cubic-bezier(0.36, 0, 0.66, -0.56) backwards;
+    --drift: 0px;
+    --spin: 0deg;
+    animation: fallAndBounce 1.15s cubic-bezier(0.22, 0.7, 0.2, 1.15) backwards;
 }
 
 .sceneAvatar:nth-child(1) {
     animation-delay: 0s;
+    --drift: -26px;
+    --spin: -10deg;
 }
 
 .sceneAvatar:nth-child(2) {
     animation-delay: 0.1s;
+    --drift: 22px;
+    --spin: 12deg;
 }
 
 .sceneAvatar:nth-child(3) {
     animation-delay: 0.2s;
+    --drift: -18px;
+    --spin: 8deg;
 }
 
 .sceneAvatar:nth-child(4) {
     animation-delay: 0.3s;
+    --drift: 28px;
+    --spin: -12deg;
 }
 
 .sceneAvatar:nth-child(5) {
     animation-delay: 0.4s;
+    --drift: -14px;
+    --spin: 10deg;
 }
 
 .sceneAvatar:nth-child(6) {
     animation-delay: 0.5s;
+    --drift: 16px;
+    --spin: -8deg;
 }
 
 .sceneAvatar:hover {
@@ -290,7 +304,7 @@
 
 @keyframes fallAndBounce {
     0% {
-        transform: translateY(-800px);
+        transform: translateY(-900px) translateX(calc(var(--drift) * -1)) rotate(calc(var(--spin) * -1));
         opacity: 0;
     }
 
@@ -299,26 +313,26 @@
     }
 
     50% {
-        transform: translateY(0);
+        transform: translateY(0) translateX(var(--drift)) rotate(var(--spin));
     }
 
     65% {
-        transform: translateY(-40px);
+        transform: translateY(-55px) translateX(calc(var(--drift) * 0.7)) rotate(calc(var(--spin) * -0.6));
     }
 
     75% {
-        transform: translateY(0);
+        transform: translateY(0) translateX(calc(var(--drift) * 0.5)) rotate(calc(var(--spin) * 0.4));
     }
 
     85% {
-        transform: translateY(-20px);
+        transform: translateY(-28px) translateX(calc(var(--drift) * 0.3)) rotate(calc(var(--spin) * -0.3));
     }
 
     92% {
-        transform: translateY(0);
+        transform: translateY(0) translateX(calc(var(--drift) * 0.2)) rotate(calc(var(--spin) * 0.2));
     }
 
     100% {
-        transform: translateY(0);
+        transform: translateY(0) translateX(0) rotate(0deg);
     }
 }
