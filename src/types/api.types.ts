@@ -98,6 +98,7 @@ export interface GroupParticipantResponse {
   user_name: string | null;
   user_avatar: AvatarResponse | null;
   user_profile_photo_url: string | null;
+  user_full_body_photo_url: string | null;
   is_claimed: boolean;
   badges?: UserBadgeResponse[];
 }

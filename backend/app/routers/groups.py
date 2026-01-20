@@ -97,6 +97,7 @@ def create_group(
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
                 user_profile_photo_url=p.user.profile_photo_url if p.user else None,
+                user_full_body_photo_url=p.user.full_body_photo_url if p.user else None,
                 is_claimed=bool(p.user_id),
                 badges=[],
             )
@@ -193,6 +194,7 @@ def get_group(
             user_name=p.user.name if p.user else None,
             user_avatar=_avatar_dict(p.user),
             user_profile_photo_url=p.user.profile_photo_url if p.user else None,
+            user_full_body_photo_url=p.user.full_body_photo_url if p.user else None,
             is_claimed=bool(p.user_id),
             badges=badges,
         ))
@@ -270,6 +272,7 @@ def get_group_members(
             user_name=p.user.name if p.user else None,
             user_avatar=_avatar_dict(p.user),
             user_profile_photo_url=p.user.profile_photo_url if p.user else None,
+            user_full_body_photo_url=p.user.full_body_photo_url if p.user else None,
             is_claimed=bool(p.user_id),
             badges=badges,
         ))
@@ -325,6 +328,7 @@ def get_invite_group(
                 user_name=p.user.name if p.user else None,
                 user_avatar=_avatar_dict(p.user),
                 user_profile_photo_url=p.user.profile_photo_url if p.user else None,
+                user_full_body_photo_url=p.user.full_body_photo_url if p.user else None,
                 is_claimed=bool(p.user_id),
                 badges=[],
             )

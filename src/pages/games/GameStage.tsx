@@ -3,10 +3,18 @@ import { motion, type PanInfo } from 'framer-motion';
 import { getRandomQuestion, type QuizQuestion } from '@/data/quizQuestions';
 import styles from './GameStage.module.css';
 
+// Helper to prepend API base URL to relative avatar paths
+const normalizeUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+    return `http://localhost:8000${url}`;
+};
+
 interface Participant {
     id: number;
     name: string;
     profilePhoto?: string | null;
+    fullBodyPhoto?: string | null;
 }
 
 interface GameStageProps {
@@ -112,12 +120,14 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     <div className={styles.platformAvatars}>
                         {leftParticipants.map((p) => (
                             <div key={p.id} className={styles.assignedAvatar}>
-                                {p.profilePhoto ? (
-                                    <img src={p.profilePhoto} alt={p.name} className={styles.avatarImg} />
+                                <span className={styles.avatarNameTop}>{p.name}</span>
+                                {normalizeUrl(p.fullBodyPhoto) ? (
+                                    <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
+                                ) : normalizeUrl(p.profilePhoto) ? (
+                                    <img src={normalizeUrl(p.profilePhoto)!} alt={p.name} className={styles.avatarImg} />
                                 ) : (
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
-                                <span className={styles.avatarName}>{p.name}</span>
                             </div>
                         ))}
                     </div>
@@ -136,12 +146,14 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     <div className={styles.platformAvatars}>
                         {rightParticipants.map((p) => (
                             <div key={p.id} className={styles.assignedAvatar}>
-                                {p.profilePhoto ? (
-                                    <img src={p.profilePhoto} alt={p.name} className={styles.avatarImg} />
+                                <span className={styles.avatarNameTop}>{p.name}</span>
+                                {normalizeUrl(p.fullBodyPhoto) ? (
+                                    <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
+                                ) : normalizeUrl(p.profilePhoto) ? (
+                                    <img src={normalizeUrl(p.profilePhoto)!} alt={p.name} className={styles.avatarImg} />
                                 ) : (
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
-                                <span className={styles.avatarName}>{p.name}</span>
                             </div>
                         ))}
                     </div>
@@ -159,12 +171,14 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                         whileDrag={{ scale: 1.1, zIndex: 100 }}
                         onDragEnd={(event, info) => handleDragEnd(p.id, event, info)}
                     >
-                        {p.profilePhoto ? (
-                            <img src={p.profilePhoto} alt={p.name} className={styles.avatarImg} />
+                        <span className={styles.avatarNameTop}>{p.name}</span>
+                        {normalizeUrl(p.fullBodyPhoto) ? (
+                            <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
+                        ) : normalizeUrl(p.profilePhoto) ? (
+                            <img src={normalizeUrl(p.profilePhoto)!} alt={p.name} className={styles.avatarImg} />
                         ) : (
                             <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                         )}
-                        <span className={styles.avatarName}>{p.name}</span>
                     </motion.div>
                 ))}
             </div>

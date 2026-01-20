@@ -298,6 +298,7 @@ export default function GamesPage() {
                   id: p.id,
                   name: p.name || p.user_name || 'Unknown',
                   profilePhoto: p.user_profile_photo_url,
+                  fullBodyPhoto: p.user_full_body_photo_url,
                 }))}
               onJudgmentReady={handleJudgmentReady}
             />
