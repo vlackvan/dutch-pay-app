@@ -85,6 +85,7 @@ def get_my_badges(current_user: User = Depends(get_current_user), db: Session = 
 @router.post("/me/avatar", response_model=UserResponse)
 async def upload_avatar(
     file: UploadFile = File(...),
+    full_body_file: UploadFile = File(None),
     body: str = Form(...),
     eyes: str = Form(...),
     mouth: str = Form(...),
@@ -92,9 +93,11 @@ async def upload_avatar(
     db: Session = Depends(get_db)
 ):
     """
-    Upload a cropped avatar image and update avatar configuration.
+    Upload a cropped avatar image and optionally a full-body avatar image.
+    Update avatar configuration.
     Accepts FormData with:
     - file: The cropped PNG image (230x200px)
+    - full_body_file: The full-body PNG image (optional)
     - body: The body ID
     - eyes: The eyes ID
     - mouth: The mouth ID
@@ -112,12 +115,12 @@ async def upload_avatar(
     upload_dir = Path("uploads")
     upload_dir.mkdir(exist_ok=True)
 
-    # Generate unique filename
+    # Generate unique filename for crop
     file_extension = os.path.splitext(file.filename)[1] if file.filename else ".png"
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = upload_dir / unique_filename
 
-    # Save the file
+    # Save the cropped file
     try:
         contents = await file.read()
         with open(file_path, "wb") as f:
@@ -127,6 +130,29 @@ async def upload_avatar(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save file: {str(e)}"
         )
+    
+    # Save the full body file if provided
+    full_body_filename = None
+    if full_body_file:
+        if not full_body_file.content_type or not full_body_file.content_type.startswith("image/"):
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Full body file must be an image"
+            )
+        
+        full_ext = os.path.splitext(full_body_file.filename)[1] if full_body_file.filename else ".png"
+        full_body_filename = f"{uuid.uuid4()}_full{full_ext}"
+        full_path = upload_dir / full_body_filename
+
+        try:
+            full_contents = await full_body_file.read()
+            with open(full_path, "wb") as f:
+                f.write(full_contents)
+        except Exception as e:
+             raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to save full body file: {str(e)}"
+            )
 
     # Update or create avatar configuration
     if current_user.avatar:
@@ -139,6 +165,8 @@ async def upload_avatar(
 
     # Update user's profile photo URL
     current_user.profile_photo_url = f"/uploads/{unique_filename}"
+    if full_body_filename:
+        current_user.full_body_photo_url = f"/uploads/{full_body_filename}"
 
     db.commit()
     db.refresh(current_user)

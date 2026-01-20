@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import type { UpdateUserRequest, UpdateAvatarRequest } from '@/types/api.types';
+import { groupKeys } from './useGroups';
 
 export const userKeys = {
   all: ['user'] as const,
@@ -53,6 +54,28 @@ export function useUpdateAvatar() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.me() });
       queryClient.invalidateQueries({ queryKey: userKeys.profile() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
+    },
+  });
+}
+
+export function useUploadAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      file,
+      config,
+      fullBodyBlob,
+    }: {
+      file: Blob;
+      config: { body: string; eyes: string; mouth: string };
+      fullBodyBlob?: Blob;
+    }) => usersApi.uploadAvatar(file, config, fullBodyBlob),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.me() });
+      queryClient.invalidateQueries({ queryKey: userKeys.profile() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 }
