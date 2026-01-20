@@ -33,7 +33,8 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const [question, setQuestion] = useState<QuizQuestion | null>(null);
     const [assignments, setAssignments] = useState<ParticipantAssignment[]>([]);
     const [phase, setPhase] = useState<'playing' | 'judging' | 'completed'>('playing');
-    const [result, setResult] = useState<{ winner: Platform; explanation: string } | null>(null);
+    const [result, setResult] = useState<{ winner: 'left' | 'right'; explanation: string } | null>(null);
+    const [showLegacyResult, setShowLegacyResult] = useState(false);
     const [showOverlay, setShowOverlay] = useState(false);
 
     const stageRef = useRef<HTMLDivElement>(null);
@@ -78,6 +79,13 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
 
     const handleOverlayClick = () => {
         if (phase !== 'judging' || !result) return;
+        // Proceed to Legacy Result Overlay
+        setShowOverlay(false);
+        setShowLegacyResult(true);
+    };
+
+    const handleLegacyFinish = () => {
+        if (!result) return;
         setPhase('completed');
         const leftTeam = assignments.filter(a => a.platform === 'left').map(a => a.participant);
         const rightTeam = assignments.filter(a => a.platform === 'right').map(a => a.participant);
@@ -154,10 +162,59 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
         }
     };
 
+    // Helpers for Legacy Result
+    // Safe to assume result is present if showLegacyResult is true due to flow
+    const winningTeamLegacy = result?.winner === 'left' ? leftParticipants : rightParticipants;
+    const losingTeamLegacy = result?.winner === 'left' ? rightParticipants : leftParticipants;
+
     return (
         <div className={styles.gameStage} ref={stageRef}>
             {/* Background */}
             <div className={styles.background} />
+
+            {/* Legacy Result Overlay */}
+            <AnimatePresence>
+                {showLegacyResult && result && (
+                    <motion.div
+                        className={styles.legacyOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                            className={styles.legacyContent}
+                        >
+                            <h1 className={styles.legacyTitle}>🏆 생존자 🏆</h1>
+
+                            <div className={styles.winnerSection}>
+                                <div className={styles.teamList}>
+                                    {winningTeamLegacy.map(p => (
+                                        <span key={p.id} className={styles.winnerName}>{p.name}</span>
+                                    ))}
+                                </div>
+                                <p className={styles.subText}>터프함을 증명했습니다!</p>
+                            </div>
+
+                            <div className={styles.loserSection}>
+                                <h3 className={styles.loserTitle}>💀 탈락자 💀</h3>
+                                <div className={styles.teamList}>
+                                    {losingTeamLegacy.map(p => (
+                                        <span key={p.id} className={styles.loserName}>{p.name}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button className={styles.finishBtn} onClick={handleLegacyFinish}>
+                                결과 확인 (슈퍼 겁쟁이들)
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
 
             {/* Guard Overlay for Judgment */}
             <AnimatePresence>
@@ -212,7 +269,6 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
-
 
             {/* Question Header */}
             <div className={styles.questionHeader}>

@@ -30,7 +30,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    /* gap removed, using negative margin on items */
+    gap: -50000px;
     /* Overlap slightly */
     width: 100%;
     height: 200px;
@@ -40,13 +40,7 @@
 .sceneAvatar {
     position: relative;
     transition: transform 0.3s;
-    margin-left: -60px;
-    /* Force overlap */
-    animation: fallAndBounce 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.sceneAvatar:first-child {
-    margin-left: 0;
+    animation: fallAndBounce 1s cubic-bezier(0.36, 0, 0.66, -0.56) backwards;
 }
 
 .sceneAvatar:nth-child(1) {
