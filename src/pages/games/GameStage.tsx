@@ -72,16 +72,16 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
             // 2 seconds later, show the Cinematic Overlay with Guard
             setTimeout(() => {
                 setShowOverlay(true);
-
-                // After reading time in overlay, complete
-                setTimeout(() => {
-                    setPhase('completed');
-                    const leftTeam = assignments.filter(a => a.platform === 'left').map(a => a.participant);
-                    const rightTeam = assignments.filter(a => a.platform === 'right').map(a => a.participant);
-                    onJudgmentReady(leftTeam, rightTeam, winningPlatform);
-                }, 6000); // 6 seconds to read explanation
             }, 2000); // 2 second delay for overlay
         }, 300);
+    };
+
+    const handleOverlayClick = () => {
+        if (phase !== 'judging' || !result) return;
+        setPhase('completed');
+        const leftTeam = assignments.filter(a => a.platform === 'left').map(a => a.participant);
+        const rightTeam = assignments.filter(a => a.platform === 'right').map(a => a.participant);
+        onJudgmentReady(leftTeam, rightTeam, result.winner);
     };
 
     const handleDragEnd = (participantId: number, currentPlatform: Platform, _event: any, info: PanInfo) => {
@@ -166,7 +166,8 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', pointerEvents: 'none' }}
+                        style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', pointerEvents: 'auto' }}
+                        onClick={handleOverlayClick}
                     >
                         {/* Black Overlay */}
                         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', mixBlendMode: 'multiply' }} />
