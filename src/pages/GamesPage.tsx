@@ -1,31 +1,23 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import styles from './games/GamesPage.module.css';
 import { useMyGroups } from '@/hooks/queries/useGroups';
-import { useCreateGame } from '@/hooks/queries/useGames';
+
 import { useAuthStore } from '@/stores/auth.store';
 import type { GroupListResponse, GameType, GroupParticipantResponse } from '@/types/api.types';
 import { groupsApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+
 import { IconDropdown } from '@/components/IconDropdown';
 import { IconDisplay } from '@/components/IconPicker/IconPicker';
 import { DEFAULT_ICON } from '@/constants/icons';
+import { GameIntro } from './games/GameIntro';
 
-type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play' | 'result';
-type GameTypeOption = 'roulette' | 'bomb' | 'psychological';
+type Step = 'selectGame' | 'selectGroup' | 'setupGame' | 'play';
+type GameTypeOption = string;
 
-interface GameResult {
-  winners?: { participantId: number; name: string; amount: number }[]; // For psychological game
-  loserParticipantId?: number;
-  loserName?: string;
-  amount: number;
-  splitResult?: { participantId: number; name: string; amount: number }[]; // For split payment
-}
 
-interface PsychologicalChoice {
-  participantId: number;
-  choice: 'trust' | 'betray' | null;
-}
+
+
 
 const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; apiType: GameType }[] = [
   { type: 'roulette', name: '게임장 입장', icon: '', desc: '', apiType: 'PINBALL_ROULETTE' },
@@ -34,8 +26,7 @@ const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; a
 export default function GamesPage() {
   const currentUser = useAuthStore((state) => state.user);
   const { data: groups = [], isLoading: groupsLoading } = useMyGroups();
-  const createGame = useCreateGame();
-  const navigate = useNavigate();
+
 
   const [step, setStep] = useState<Step>('selectGame');
   const [selectedGroup, setSelectedGroup] = useState<GroupListResponse | null>(null);
@@ -46,26 +37,9 @@ export default function GamesPage() {
   const [amount, setAmount] = useState<number>(10000);
   const [settlementIcon, setSettlementIcon] = useState<string>(DEFAULT_ICON);
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
+  const [showIntro, setShowIntro] = useState(true);
 
-  const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
-  // Roulette state
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [rouletteRotation, setRouletteRotation] = useState(0);
-
-  // Bomb game state
-  const [bombSwitches, setBombSwitches] = useState<('hidden' | 'safe' | 'bomb')[]>([]);
-  const [currentTurn, setCurrentTurn] = useState(0);
-
-  // Psychological game state
-  const [psychoChoices, setPsychoChoices] = useState<PsychologicalChoice[]>([]);
-  const [psychoCurrentTurn, setPsychoCurrentTurn] = useState(0);
-  const [psychoPhase, setPsychoPhase] = useState<'choosing' | 'reveal' | 'judging'>('choosing');
-  const [psychoJudgment, setPsychoJudgment] = useState<{
-    trustCount: number;
-    betrayCount: number;
-    losingTeam: 'trust' | 'betray' | 'tie' | null;
-  } | null>(null);
 
   const { data: groupDetail } = useQuery({
     queryKey: ['groups', 'detail', selectedGroup?.id],
@@ -91,15 +65,6 @@ export default function GamesPage() {
     setAmount(10000);
     setSettlementIcon(DEFAULT_ICON);
     setSelectedParticipants([]);
-    setGameResult(null);
-    setIsSpinning(false);
-    setRouletteRotation(0);
-    setBombSwitches([]);
-    setCurrentTurn(0);
-    setPsychoChoices([]);
-    setPsychoCurrentTurn(0);
-    setPsychoPhase('choosing');
-    setPsychoJudgment(null);
   }, []);
 
   const goBack = useCallback(() => {
@@ -109,13 +74,9 @@ export default function GamesPage() {
     } else if (step === 'setupGame') {
       setStep('selectGroup');
       setSelectedGameType(null);
-    } else if (step === 'play') {
-      setStep('setupGame');
-      setSelectedParticipants([]);
-    } else if (step === 'result') {
-      resetGame();
     }
   }, [step, resetGame]);
+
 
   const toggleParticipant = (participantId: number) => {
     setSelectedParticipants((prev) =>
@@ -123,26 +84,7 @@ export default function GamesPage() {
     );
   };
 
-  const initializeGame = useCallback(() => {
-    if (selectedGameType === 'bomb') {
-      const n = selectedParticipants.length;
-      const switches: ('hidden' | 'safe' | 'bomb')[] = Array(n).fill('hidden');
-      const bombIndex = Math.floor(Math.random() * n);
-      // Store bomb position internally
-      setBombSwitches(switches.map((_, i) => (i === bombIndex ? 'bomb' : 'hidden')));
-      setCurrentTurn(0);
-    } else if (selectedGameType === 'psychological') {
-      setPsychoChoices(
-        selectedParticipants.map((pid) => ({
-          participantId: pid,
-          choice: null,
-        }))
-      );
-      setPsychoCurrentTurn(0);
-      setPsychoPhase('choosing');
-      setPsychoJudgment(null);
-    }
-  }, [selectedGameType, selectedParticipants]);
+
 
   const handleStartGame = () => {
     if (selectedParticipants.length < 2) {
@@ -153,248 +95,16 @@ export default function GamesPage() {
       alert('정산 제목을 입력해주세요.');
       return;
     }
-    initializeGame();
+    // Game logic removed
     setStep('play');
+    setShowIntro(true);
   };
 
-  // Roulette logic
-  const spinRoulette = () => {
-    if (isSpinning || selectedParticipants.length === 0) return;
-
-    setIsSpinning(true);
-    const randomRotation = 1800 + Math.random() * 1800;
-    setRouletteRotation((prev) => prev + randomRotation);
-
-    setTimeout(() => {
-      const loserIndex = Math.floor(Math.random() * selectedParticipants.length);
-      const loserParticipantId = selectedParticipants[loserIndex];
-      const loserMember = participants.find((m) => m.id === loserParticipantId);
-      const loserName = loserMember?.name || loserMember?.user_name || 'Unknown';
-
-      setGameResult({ loserParticipantId, loserName, amount });
-      setIsSpinning(false);
-      setStep('result');
-    }, 3000);
+  const handleIntroComplete = () => {
+    setShowIntro(false);
   };
 
-  // Bomb game logic
-  const revealBombSwitch = (index: number) => {
-    if (bombSwitches[index] !== 'hidden' && bombSwitches[index] !== 'bomb') return;
 
-    const isBomb = bombSwitches[index] === 'bomb';
-
-    setBombSwitches((prev) => {
-      const newSwitches = [...prev];
-      newSwitches[index] = isBomb ? 'bomb' : 'safe';
-      return newSwitches;
-    });
-
-    if (isBomb) {
-      const currentPlayer = selectedParticipants[currentTurn % selectedParticipants.length];
-      const loserMember = participants.find((m) => m.id === currentPlayer);
-      const loserName = loserMember?.name || loserMember?.user_name || 'Unknown';
-
-      setTimeout(() => {
-        setGameResult({ loserParticipantId: currentPlayer, loserName, amount });
-        setStep('result');
-      }, 1500);
-    } else {
-      setCurrentTurn((prev) => prev + 1);
-    }
-  };
-
-  // Psychological game logic
-  const handlePsychoChoice = (choice: 'trust' | 'betray') => {
-    const currentParticipantId = selectedParticipants[psychoCurrentTurn];
-
-    setPsychoChoices((prev) =>
-      prev.map((c) =>
-        c.participantId === currentParticipantId ? { ...c, choice } : c
-      )
-    );
-
-    if (psychoCurrentTurn < selectedParticipants.length - 1) {
-      setPsychoCurrentTurn((prev) => prev + 1);
-    } else {
-      // All choices made, reveal phase
-      setTimeout(() => {
-        setPsychoPhase('reveal');
-
-        // Calculate judgment after reveal animation
-        setTimeout(() => {
-          const trustCount = psychoChoices.filter((c) => c.choice === 'trust').length + 1; // +1 for last choice
-          const betrayCount = psychoChoices.filter((c) => c.choice === 'betray').length;
-
-          let losingTeam: 'trust' | 'betray' | 'tie' | null = null;
-          if (trustCount > betrayCount) {
-            losingTeam = 'betray';
-          } else if (betrayCount > trustCount) {
-            losingTeam = 'trust';
-          } else {
-            losingTeam = 'tie';
-          }
-
-          setPsychoJudgment({ trustCount, betrayCount, losingTeam });
-          setPsychoPhase('judging');
-
-          // Calculate results
-          setTimeout(() => {
-            calculatePsychologicalResult(losingTeam, trustCount, betrayCount);
-          }, 3000);
-        }, 2000);
-      }, 500);
-    }
-  };
-
-  const calculatePsychologicalResult = (
-    losingTeam: 'trust' | 'betray' | 'tie' | null,
-    trustCount: number,
-    betrayCount: number
-  ) => {
-    const n = selectedParticipants.length;
-
-    if (losingTeam === 'trust') {
-      // Trust team loses, split among them
-      const trustMembers = psychoChoices
-        .filter((c) => c.choice === 'trust')
-        .map((c) => c.participantId);
-
-      const splitAmount = amount / trustMembers.length;
-      const splitResult = trustMembers.map((pid) => {
-        const member = participants.find((m) => m.id === pid);
-        return {
-          participantId: pid,
-          name: member?.name || member?.user_name || 'Unknown',
-          amount: splitAmount,
-        };
-      });
-
-      setGameResult({ splitResult, amount });
-      setStep('result');
-    } else if (losingTeam === 'betray') {
-      // Betray team loses, roulette among betrayers
-      const betrayMembers = psychoChoices
-        .filter((c) => c.choice === 'betray')
-        .map((c) => c.participantId);
-
-      const loserIndex = Math.floor(Math.random() * betrayMembers.length);
-      const loserParticipantId = betrayMembers[loserIndex];
-      const loserMember = participants.find((m) => m.id === loserParticipantId);
-      const loserName = loserMember?.name || loserMember?.user_name || 'Unknown';
-
-      setGameResult({ loserParticipantId, loserName, amount });
-      setStep('result');
-    } else if (losingTeam === 'tie') {
-      // Tie: trust split half, betray roulette for half
-      const trustMembers = psychoChoices
-        .filter((c) => c.choice === 'trust')
-        .map((c) => c.participantId);
-
-      const betrayMembers = psychoChoices
-        .filter((c) => c.choice === 'betray')
-        .map((c) => c.participantId);
-
-      const halfAmount = amount / 2;
-      const trustSplitAmount = halfAmount / trustMembers.length;
-
-      const trustSplit = trustMembers.map((pid) => {
-        const member = participants.find((m) => m.id === pid);
-        return {
-          participantId: pid,
-          name: member?.name || member?.user_name || 'Unknown',
-          amount: trustSplitAmount,
-        };
-      });
-
-      const betrayLoserIndex = Math.floor(Math.random() * betrayMembers.length);
-      const betrayLoserId = betrayMembers[betrayLoserIndex];
-      const betrayLoser = participants.find((m) => m.id === betrayLoserId);
-
-      const splitResult = [
-        ...trustSplit,
-        {
-          participantId: betrayLoserId,
-          name: betrayLoser?.name || betrayLoser?.user_name || 'Unknown',
-          amount: halfAmount,
-        },
-      ];
-
-      setGameResult({ splitResult, amount });
-      setStep('result');
-    } else {
-      // All trust: split evenly
-      const splitAmount = amount / n;
-      const splitResult = selectedParticipants.map((pid) => {
-        const member = participants.find((m) => m.id === pid);
-        return {
-          participantId: pid,
-          name: member?.name || member?.user_name || 'Unknown',
-          amount: splitAmount,
-        };
-      });
-
-      setGameResult({ splitResult, amount });
-      setStep('result');
-    }
-  };
-
-  const confirmResult = () => {
-    if (!gameResult || !selectedGroup || !selectedGameType) return;
-
-    const gameData = GAMES.find((g) => g.type === selectedGameType);
-
-    // For psychological game with split results, we need to create multiple settlements
-    // For now, we'll use the first loser or create a simplified version
-    let loserParticipantId: number;
-
-    if (gameResult.loserParticipantId) {
-      loserParticipantId = gameResult.loserParticipantId;
-    } else if (gameResult.splitResult && gameResult.splitResult.length > 0) {
-      // Use first person in split as representative
-      loserParticipantId = gameResult.splitResult[0].participantId;
-    } else {
-      alert('결과를 처리할 수 없습니다.');
-      return;
-    }
-
-    createGame.mutate(
-      {
-        group_id: selectedGroup.id,
-        game_type: gameData!.apiType,
-        participants: selectedParticipants,
-        loser_participant_id: loserParticipantId,
-        amount: gameResult.amount,
-        game_data: {
-          game_type: selectedGameType,
-          settlement_title: settlementTitle,
-          settlement_icon: settlementIcon,
-        },
-      },
-      {
-        onSuccess: () => {
-          alert('정산이 생성되었습니다!');
-          resetGame();
-        },
-        onError: () => {
-          alert('정산 생성에 실패했습니다.');
-        },
-      }
-    );
-  };
-
-  const currentPlayerName = useMemo(() => {
-    if (selectedGameType === 'bomb' && selectedParticipants.length > 0) {
-      const currentPlayerId = selectedParticipants[currentTurn % selectedParticipants.length];
-      const member = participants.find((m) => m.id === currentPlayerId);
-      return member?.name || member?.user_name || '';
-    }
-    if (selectedGameType === 'psychological' && selectedParticipants.length > 0) {
-      const currentPlayerId = selectedParticipants[psychoCurrentTurn % selectedParticipants.length];
-      const member = participants.find((m) => m.id === currentPlayerId);
-      return member?.name || member?.user_name || '';
-    }
-    return '';
-  }, [selectedGameType, currentTurn, psychoCurrentTurn, selectedParticipants, participants]);
 
   const canProceed = useMemo(() => {
     if (step === 'selectGame') return !!selectedGameType;
@@ -406,7 +116,7 @@ export default function GamesPage() {
   if (groupsLoading) {
     return (
       <div className={styles.page}>
-        
+
         <div className={styles.loading}>로딩 중...</div>
       </div>
     );
@@ -414,14 +124,14 @@ export default function GamesPage() {
 
   return (
     <div className={`${styles.page} ${step !== 'selectGame' ? styles.pageActive : ''}`}>
-      
+
 
       <div className={styles.content}>
         {step === 'selectGame' && (
           <img className={styles.bottomCharacter} src="/game-character.png" alt="" />
         )}
         {/* Step Indicator */}
-        
+
 
         {step !== 'selectGame' && (
           <button className={styles.backBtn} onClick={goBack}>
@@ -445,7 +155,7 @@ export default function GamesPage() {
                   }}
                   type="button"
                 >
-                                    <div className={styles.gameInfo}>
+                  <div className={styles.gameInfo}>
                     <div className={styles.gameName}>{game.name}</div>
                   </div>
                 </button>
@@ -570,222 +280,21 @@ export default function GamesPage() {
           </>
         )}
 
-        {/* Step 4: Play - Roulette */}
-        {step === 'play' && selectedGameType === 'roulette' && (
-          <div className={styles.gameStage}>
-            <img className={styles.gameStageTreeLeft} src="/game-stage-tree-1.png" alt="" />
-            <img className={styles.gameStageTreeRight} src="/game-stage-tree-2.png" alt="" />
-          </div>
-        )}
-
-        {/* Step 4: Play - Bomb */}
-        {step === 'play' && selectedGameType === 'bomb' && (
+        {/* Step 4: Play - Game Stage */}
+        {step === 'play' && (
           <>
-            <h2 className={styles.sectionTitle}>폭탄 게임</h2>
-            <p className={styles.sectionDesc}>
-              현재 차례: <strong>{currentPlayerName}</strong>
-            </p>
-            <div className={styles.bombArea}>
-              <div className={styles.bombIcon}>💣</div>
-              <div className={styles.switchGrid}>
-                {bombSwitches.map((sw, index) => (
-                  <button
-                    key={index}
-                    className={`${styles.switchCard} ${sw === 'safe' ? styles.switchSafe : ''} ${sw === 'bomb' ? styles.switchBomb : ''}`}
-                    onClick={() => revealBombSwitch(index)}
-                    disabled={sw !== 'hidden' && sw !== 'bomb'}
-                  >
-                    {sw === 'hidden' || sw === 'bomb' ? (
-                      <div className={styles.switchLever}>🎚️</div>
-                    ) : sw === 'safe' ? (
-                      '✅'
-                    ) : (
-                      '💥'
-                    )}
-                  </button>
-                ))}
-              </div>
+            {/* Game Intro Overlay */}
+            {showIntro && <GameIntro onComplete={handleIntroComplete} />}
+
+            {/* Game Stage */}
+            <div className={styles.gameStage}>
+              <img className={styles.gameStageTreeLeft} src="/game-stage-tree-1.png" alt="" />
+              <img className={styles.gameStageTreeRight} src="/game-stage-tree-2.png" alt="" />
             </div>
           </>
         )}
 
-        {/* Step 4: Play - Psychological */}
-        {step === 'play' && selectedGameType === 'psychological' && (
-          <>
-            {psychoPhase === 'choosing' && (
-              <>
-                <h2 className={styles.sectionTitle}>심리 게임</h2>
-                <div className={styles.psychoTurnScreen}>
-                  <div className={styles.psychoAvatar}>
-                    {currentPlayerName.slice(0, 1)}
-                  </div>
-                  <h3 className={styles.psychoPlayerName}>{currentPlayerName}님 차례입니다</h3>
-                  <p className={styles.psychoDesc}>선택을 하세요</p>
 
-                  <div className={styles.psychoChoiceButtons}>
-                    <button
-                      className={`${styles.psychoBtn} ${styles.psychoTrustBtn}`}
-                      onClick={() => handlePsychoChoice('trust')}
-                    >
-                      <div className={styles.psychoBtnIcon}>🤝</div>
-                      <div className={styles.psychoBtnText}>친구를 믿기</div>
-                    </button>
-                    <button
-                      className={`${styles.psychoBtn} ${styles.psychoBetrayBtn}`}
-                      onClick={() => handlePsychoChoice('betray')}
-                    >
-                      <div className={styles.psychoBtnIcon}>🗡️</div>
-                      <div className={styles.psychoBtnText}>친구를 배신하기</div>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {psychoPhase === 'reveal' && (
-              <>
-                <h2 className={styles.sectionTitle}>판별 중...</h2>
-                <div className={styles.psychoRevealScreen}>
-                  <div className={styles.psychoAvatarList}>
-                    {selectedParticipants.map((pid) => {
-                      const member = participants.find((m) => m.id === pid);
-                      const choice = psychoChoices.find((c) => c.participantId === pid)?.choice;
-                      return (
-                        <div
-                          key={pid}
-                          className={`${styles.psychoAvatarCard} ${
-                            choice === 'trust' ? styles.psychoTrustCard : styles.psychoBetrayCard
-                          }`}
-                        >
-                          <div className={styles.psychoSmallAvatar}>
-                            {(member?.name || member?.user_name || '').slice(0, 1)}
-                          </div>
-                          <div className={styles.psychoAvatarName}>
-                            {member?.name || member?.user_name}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className={styles.psychoCamps}>
-                    <div className={styles.psychoCamp}>
-                      <h4>친구 진영</h4>
-                      <div className={styles.psychoCampMembers}>
-                        {psychoChoices
-                          .filter((c) => c.choice === 'trust')
-                          .map((c) => {
-                            const member = participants.find((m) => m.id === c.participantId);
-                            return (
-                              <div key={c.participantId} className={styles.psychoMemberBadge}>
-                                {member?.name || member?.user_name}
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-                    <div className={styles.psychoCamp}>
-                      <h4>배신 진영</h4>
-                      <div className={styles.psychoCampMembers}>
-                        {psychoChoices
-                          .filter((c) => c.choice === 'betray')
-                          .map((c) => {
-                            const member = participants.find((m) => m.id === c.participantId);
-                            return (
-                              <div key={c.participantId} className={styles.psychoMemberBadge}>
-                                {member?.name || member?.user_name}
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {psychoPhase === 'judging' && psychoJudgment && (
-              <>
-                <h2 className={styles.sectionTitle}>판정 결과</h2>
-                <div className={styles.psychoJudgmentScreen}>
-                  <div className={styles.psychoJudgmentText}>
-                    {psychoJudgment.losingTeam === 'trust' && (
-                      <>
-                        <h3 className={styles.psychoLosingTeam}>친구 진영이 패배했습니다!</h3>
-                        <p className={styles.psychoJudgmentDesc}>나누자 친구야...</p>
-                      </>
-                    )}
-                    {psychoJudgment.losingTeam === 'betray' && (
-                      <>
-                        <h3 className={styles.psychoLosingTeam}>배신 진영이 패배했습니다!</h3>
-                        <p className={styles.psychoJudgmentDesc}>지금부터 서로 죽여라!</p>
-                      </>
-                    )}
-                    {psychoJudgment.losingTeam === 'tie' && (
-                      <>
-                        <h3 className={styles.psychoLosingTeam}>무승부입니다!</h3>
-                        <p className={styles.psychoJudgmentDesc}>양쪽 모두 손해를 봅니다</p>
-                      </>
-                    )}
-                  </div>
-                  <div className={styles.psychoCount}>
-                    <div>친구: {psychoJudgment.trustCount}명</div>
-                    <div>배신: {psychoJudgment.betrayCount}명</div>
-                  </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Step 5: Result */}
-        {step === 'result' && gameResult && (
-          <>
-            <div className={styles.resultCard}>
-              <div className={styles.resultIcon}>
-                {selectedGameType === 'roulette' ? '🔥' : selectedGameType === 'bomb' ? '💥' : '🧠'}
-              </div>
-              <div className={styles.resultTitle}>게임 종료!</div>
-
-              {gameResult.loserName && (
-                <>
-                  <div className={styles.resultLoser}>{gameResult.loserName}님이 당첨!</div>
-                  <div className={styles.resultAmount}>₩{Math.round(gameResult.amount || 0).toLocaleString()}</div>
-                </>
-              )}
-
-              {gameResult.splitResult && (
-                <>
-                  <div className={styles.resultSplitTitle}>정산 결과</div>
-                  <div className={styles.resultSplitList}>
-                    {gameResult.splitResult.map((r) => (
-                      <div key={r.participantId} className={styles.resultSplitItem}>
-                        <span className={styles.resultSplitName}>{r.name}</span>
-                        <span className={styles.resultSplitAmount}>
-                          ₩{Math.round(r.amount).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <div className={styles.resultDesc}>정산을 확정하면 자동으로 기록됩니다</div>
-            </div>
-
-            <div className={styles.buttonRow}>
-              <button className={styles.secondaryBtn} onClick={() => navigate('/home')}>
-                홈으로
-              </button>
-              <button
-                className={styles.primaryBtn}
-                onClick={confirmResult}
-                disabled={createGame.isPending}
-              >
-                {createGame.isPending ? '처리 중...' : '기록하기'}
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
