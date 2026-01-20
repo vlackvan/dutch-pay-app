@@ -52,6 +52,17 @@
   font-size: 12px;
 }
 
+.labelWrap{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.categoryIcon{
+  flex: 0 0 auto;
+}
+
 .label{
   font-weight: 700;
 }

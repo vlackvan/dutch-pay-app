@@ -1,7 +1,14 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import styles from "./AppShell.module.css";
 
 export default function AppShell() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <div className={styles.shell}>
       <main className={styles.main}>
