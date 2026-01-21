@@ -82,10 +82,8 @@ export function LoginPage() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoText}>비키니시티 정산소</div>
+          <img src="/login-frame.png" alt="" className={styles.logoImage} />
         </div>
-
-        <h1 className={styles.title}>로그인</h1>
 
         {error && <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>}
 
