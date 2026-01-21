@@ -20,6 +20,7 @@ import {
 import { useMarkPaid } from '@/hooks/queries/useSettlements';
 import { useMyProfile } from '@/hooks/queries/useUser';
 import { useAuthStore } from '@/stores/auth.store';
+import { REIMBURSE_ICON } from '@/constants/icons';
 import type { GroupParticipantResponse, SettlementResponse, UserBadgeResponse } from '@/types/api.types';
 
 type Tab = 'expenses' | 'members' | 'records';
@@ -72,12 +73,13 @@ export default function SettlementDetailPage() {
     let total = 0;
 
     settlements.forEach((s: SettlementResponse) => {
-      if (s.title !== '상환') {
+      const isReimburse = s.title === "\uc0c1\ud658" || s.icon === REIMBURSE_ICON;
+      if (!isReimburse) {
         total += Number(s.total_amount) || 0;
       }
       if (!currentUserParticipantId) return;
       const myShare = s.participants.find((p) => p.participant_id === currentUserParticipantId);
-      if (myShare) {
+      if (myShare && !isReimburse) {
         my += Number(myShare.amount_owed) || 0;
       }
     });
@@ -209,13 +211,21 @@ export default function SettlementDetailPage() {
           {restBadges.length > 0 && (
             <div className={styles.badgeAwardMore}>+{restBadges.length}개</div>
           )}
-          <button
-            className={styles.badgeAwardClose}
-            type="button"
-            onClick={() => setAwardOpen(false)}
-          >
-            확인
-          </button>
+                    {!o.isCompleted && (
+                      <button
+                        className="${styles.btn} ${styles.btnFullWidth} ${styles.btnPrimary}"
+                        type="button"
+                        disabled={markPaidMutation.isPending}
+                        style={{ marginTop: '12px' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkPaid(o.resultId);
+                        }}
+                      >
+                        {markPaidMutation.isPending ? '?????? ???..' : '???????????'}
+                      </button>
+                    )}
+
         </div>
       </div>
     );

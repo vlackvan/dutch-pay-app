@@ -393,7 +393,10 @@ export default function SettlementsPage() {
                     <div className={styles.sectionTitle}>Choose participant</div>
                     <div className={styles.participantsBox}>
                       {inviteGroup.participants.map((p) => (
-                        <label key={p.id} className={styles.participantRow}>
+                        <label
+                          key={p.id}
+                          className={`${styles.inviteParticipantRow} ${p.is_claimed ? styles.inviteParticipantRowDisabled : ''}`}
+                        >
                           <input
                             type="radio"
                             name="participant"
@@ -404,7 +407,23 @@ export default function SettlementsPage() {
                               setNewParticipantName('');
                             }}
                           />
-                          <span className={styles.participantName}>{p.name}</span>
+                          <div className={styles.inviteParticipantInfo}>
+                            <div className={styles.inviteAvatar}>
+                              {p.user_profile_photo_url ? (
+                                <img
+                                  src={`http://localhost:8000${p.user_profile_photo_url}`}
+                                  alt={p.name}
+                                  className={styles.inviteAvatarImg}
+                                />
+                              ) : (
+                                <span>{p.name.slice(0, 1)}</span>
+                              )}
+                            </div>
+                            <div className={styles.inviteNameBlock}>
+                              <span className={styles.participantName}>{p.name}</span>
+                              <span className={styles.inviteSubName}>{p.user_name || 'Unclaimed'}</span>
+                            </div>
+                          </div>
                           {p.is_claimed && <span className={styles.meBadge}>Claimed</span>}
                         </label>
                       ))}

@@ -142,6 +142,39 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const leftParticipants = assignments.filter(a => a.platform === 'left').map(a => a.participant);
     const rightParticipants = assignments.filter(a => a.platform === 'right').map(a => a.participant);
 
+    const getClusterOffset = (index: number, count: number) => {
+        const radius = 24;
+        const baseY = -6;
+
+        if (count <= 1) return { x: 0, y: baseY };
+
+        if (count <= 4) {
+            const spacing = 50;
+            const centerIndex = (count - 1) / 2;
+            return {
+                x: Math.round((index - centerIndex) * spacing),
+                y: baseY,
+            };
+        }
+
+        const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2, Math.PI / 4, (5 * Math.PI) / 4];
+        if (count <= 6) {
+            const angle = angles[index % angles.length];
+            return {
+                x: Math.round(Math.cos(angle) * radius),
+                y: baseY + Math.round(Math.sin(angle) * (radius * 0.5)),
+            };
+        }
+
+        const spacing = 16;
+        const centerIndex = (count - 1) / 2;
+        const jitter = [2, -3, 1, -2, 3];
+        return {
+            x: (index - centerIndex) * spacing,
+            y: baseY + jitter[index % jitter.length],
+        };
+    };
+
     if (!question) return null;
 
     // Animation Variants
@@ -334,14 +367,16 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     <img src="/game-stage-tree-1.png" alt="" className={styles.treeImage} />
                     {/* Left team avatars */}
                     <div className={styles.platformAvatars}>
-                        {leftParticipants.map((p) => (
+                        {leftParticipants.map((p, index) => {
+                            const offset = getClusterOffset(index, leftParticipants.length);
+                            return (
                             <motion.div
                                 key={p.id}
                                 className={styles.assignedAvatar}
                                 drag
                                 dragSnapToOrigin
                                 whileDrag={{ scale: 1.05, zIndex: 200 }}
-                                style={{ zIndex: 5 }}
+                                style={{ zIndex: 5, left: '50%', top: 0, transform: `translate(-50%, 0) translate(${offset.x}px, ${offset.y}px)` }}
                                 onDragEnd={(event, info) => handleDragEnd(p.id, 'left', event, info)}
                             >
                                 <span
@@ -361,7 +396,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
                             </motion.div>
-                        ))}
+                        )})}
                     </div>
                 </motion.div>
 
@@ -380,14 +415,16 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                     <img src="/game-stage-tree-2.png" alt="" className={styles.treeImage} />
                     {/* Right team avatars */}
                     <div className={styles.platformAvatars}>
-                        {rightParticipants.map((p) => (
+                        {rightParticipants.map((p, index) => {
+                            const offset = getClusterOffset(index, rightParticipants.length);
+                            return (
                             <motion.div
                                 key={p.id}
                                 className={styles.assignedAvatar}
                                 drag
                                 dragSnapToOrigin
                                 whileDrag={{ scale: 1.05, zIndex: 200 }}
-                                style={{ zIndex: 5 }}
+                                style={{ zIndex: 5, left: '50%', top: 0, transform: `translate(-50%, 0) translate(${offset.x}px, ${offset.y}px)` }}
                                 onDragEnd={(event, info) => handleDragEnd(p.id, 'right', event, info)}
                             >
                                 <span
@@ -407,7 +444,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                                     <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
                                 )}
                             </motion.div>
-                        ))}
+                        )})}
                     </div>
                 </motion.div>
             </div>

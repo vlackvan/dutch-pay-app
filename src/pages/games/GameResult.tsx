@@ -26,6 +26,19 @@ export function GameResult({ winner, leftTeam, rightTeam, amount, onRestart, onR
         return Math.floor(amount / losingTeam.length);
     }, [amount, losingTeam.length]);
 
+    const getSceneOffset = (index: number, count: number) => {
+        if (count <= 4) return { x: 0, y: 0 };
+        const centerIndex = (count - 1) / 2;
+        const maxSpread = 210;
+        const xSpacing = count > 1 ? Math.min(48, (maxSpread * 2) / (count - 1)) : 0;
+        const ySpacing = 4;
+        const depthJitter = index % 2 === 0 ? -10 : 10;
+        return {
+            x: Math.round((index - centerIndex) * xSpacing),
+            y: Math.round((index - centerIndex) * ySpacing + depthJitter),
+        };
+    };
+
     const formatCurrency = (val: number) => {
         return `₩${val.toLocaleString()}`;
     };
@@ -37,26 +50,40 @@ export function GameResult({ winner, leftTeam, rightTeam, amount, onRestart, onR
             <div className={styles.background}>
                 {/* Loser Avatars in the Room */}
                 <div className={styles.avatarScene}>
-                    {losingTeam.map((p, index) => (
-                        <div key={p.id} className={styles.sceneAvatar} style={{ zIndex: 10 + index }}>
-                            <span
-                                className={
-                                    normalizeUrl(p.fullBodyPhoto)
-                                        ? `${styles.sceneAvatarName} ${styles.sceneAvatarNameTight}`
-                                        : styles.sceneAvatarName
-                                }
+                    {losingTeam.map((p, index) => {
+                        const offset = getSceneOffset(index, losingTeam.length);
+                        return (
+                            <div
+                                key={p.id}
+                                className={styles.sceneAvatarSlot}
+                                style={{
+                                    left: '50%',
+                                    top: 0,
+                                    transform: `translate(-50%, 0) translate(${offset.x}px, ${offset.y}px)`,
+                                    zIndex: 10 + index,
+                                }}
                             >
-                                {p.name}
-                            </span>
-                            {normalizeUrl(p.fullBodyPhoto) ? (
-                                <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
-                            ) : normalizeUrl(p.profilePhoto) ? (
-                                <img src={normalizeUrl(p.profilePhoto)!} alt={p.name} className={styles.profileImg} />
-                            ) : (
-                                <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
-                            )}
-                        </div>
-                    ))}
+                                <div className={styles.sceneAvatar}>
+                                    <span
+                                        className={
+                                            normalizeUrl(p.fullBodyPhoto)
+                                                ? `${styles.sceneAvatarName} ${styles.sceneAvatarNameTight}`
+                                                : styles.sceneAvatarName
+                                        }
+                                    >
+                                        {p.name}
+                                    </span>
+                                    {normalizeUrl(p.fullBodyPhoto) ? (
+                                        <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
+                                    ) : normalizeUrl(p.profilePhoto) ? (
+                                        <img src={normalizeUrl(p.profilePhoto)!} alt={p.name} className={styles.profileImg} />
+                                    ) : (
+                                        <div className={styles.avatarPlaceholder}>{p.name.slice(0, 1)}</div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                     {/* Dropping Guard */}
                     <div className={styles.guardDrop}>
                         <img src="/fullbodyguard.png" alt="Guard" className={styles.guardImg} />

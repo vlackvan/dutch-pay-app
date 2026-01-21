@@ -161,6 +161,20 @@ class SettlementService:
                     balances[participant_id] = Decimal("0")
                 balances[participant_id] -= participant.amount_owed
 
+        # Apply completed transfers so they don't reappear in results
+        completed_transfers = self.db.query(SettlementResult).filter(
+            SettlementResult.group_id == group_id,
+            SettlementResult.is_completed == True
+        ).all()
+        for transfer in completed_transfers:
+            amount = transfer.amount or Decimal("0")
+            balances[transfer.debtor_participant_id] = balances.get(
+                transfer.debtor_participant_id, Decimal("0")
+            ) + amount
+            balances[transfer.creditor_participant_id] = balances.get(
+                transfer.creditor_participant_id, Decimal("0")
+            ) - amount
+
         # Separate into debtors (negative balance) and creditors (positive balance)
         debtors = [(pid, -bal) for pid, bal in balances.items() if bal < 0]
         creditors = [(pid, bal) for pid, bal in balances.items() if bal > 0]
@@ -191,7 +205,6 @@ class SettlementService:
 
                 if existing:
                     existing.amount = transfer_amount
-                    existing.debt_updated_at = datetime.utcnow()
                     result = existing
                 else:
                     result = SettlementResult(
@@ -200,7 +213,6 @@ class SettlementService:
                         creditor_participant_id=creditor_id,
                         amount=transfer_amount,
                         calculation_batch=batch_id,
-                        debt_updated_at=datetime.utcnow(),
                     )
                     self.db.add(result)
 

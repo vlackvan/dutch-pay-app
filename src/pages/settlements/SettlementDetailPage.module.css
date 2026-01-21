@@ -533,7 +533,7 @@
 
 .podiumSlot[data-rank="2"] {
   order: 1;
-  transform: translateX(16px) translateY(-25px);
+  transform: translateX(42px) translateY(-25px);
 }
 
 .podiumSlot[data-rank="3"] {

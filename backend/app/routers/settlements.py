@@ -159,11 +159,12 @@ def mark_payment_complete(
     repayment_settlement = Settlement(
         group_id=result.group_id,
         payer_participant_id=result.debtor_participant_id,
-        title="상환",
-        description=f"{debtor.name}이(가) {creditor.name}에게 상환",
+        title="\uc0c1\ud658",
+        description=f"{debtor.name}\uc774(\uac00) {creditor.name}\uc5d0\uac8c \uc0c1\ud658",
         total_amount=result.amount,
-        split_type="equal",
-        icon="💸"
+        split_type=SplitType.EQUAL,
+        icon="/icons/reimburse.png",
+        is_settled=True,
     )
     db.add(repayment_settlement)
     db.flush()

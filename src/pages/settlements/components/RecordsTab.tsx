@@ -124,7 +124,7 @@ export default function RecordsTab({ participants, settlements }: RecordsTabProp
                   <div className={styles.podiumAvatarFallback}>{p.name.slice(0, 1)}</div>
                 )}
                 <div className={styles.podiumAmount}>
-                  {entry.amount.toLocaleString()}원
+                  {Math.round(entry.amount).toLocaleString()}원
                 </div>
               </div>
             </div>
@@ -157,7 +157,7 @@ export default function RecordsTab({ participants, settlements }: RecordsTabProp
                     </div>
                   </div>
                 </div>
-                <div className={styles.recordAmount}>{entry.amount.toLocaleString()}원</div>
+                <div className={styles.recordAmount}>{Math.round(entry.amount).toLocaleString()}원</div>
               </div>
             );
           })}
