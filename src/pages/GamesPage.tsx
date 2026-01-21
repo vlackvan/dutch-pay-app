@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import styles from './games/GamesPage.module.css';
-import { useMyGroups } from '@/hooks/queries/useGroups';
+import { groupKeys, useMyGroups } from '@/hooks/queries/useGroups';
 
 import { useAuthStore } from '@/stores/auth.store';
 import type { GroupListResponse, GameType, GroupParticipantResponse } from '@/types/api.types';
 import { groupsApi, settlementsApi } from '@/lib/api';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { IconDropdown } from '@/components/IconDropdown';
 import { IconDisplay } from '@/components/IconPicker/IconPicker';
@@ -25,6 +25,7 @@ const GAMES: { type: GameTypeOption; name: string; icon: string; desc: string; a
 export default function GamesPage() {
   const currentUser = useAuthStore((state) => state.user);
   const { data: groups = [], isLoading: groupsLoading } = useMyGroups();
+  const queryClient = useQueryClient();
 
 
   const [step, setStep] = useState<Step>('selectGame');
@@ -33,7 +34,7 @@ export default function GamesPage() {
 
   // Setup game state
   const [settlementTitle, setSettlementTitle] = useState<string>('');
-  const [amount, setAmount] = useState<number>(10000);
+  const [amount, setAmount] = useState<number | ''>(10000);
   const [settlementIcon, setSettlementIcon] = useState<string>(DEFAULT_ICON);
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
   const [selectedPayerId, setSelectedPayerId] = useState<number | null>(null);
@@ -144,12 +145,14 @@ export default function GamesPage() {
     setStep('result');
   };
 
+  const amountNumber = typeof amount === 'number' ? amount : 0;
+
   const canProceed = useMemo(() => {
     if (step === 'selectGame') return !!selectedGameType;
     if (step === 'selectGroup') return !!selectedGroup;
-    if (step === 'setupGame') return selectedParticipants.length >= 2 && amount > 0 && settlementTitle.trim() !== '';
+    if (step === 'setupGame') return selectedParticipants.length >= 2 && amountNumber > 0 && settlementTitle.trim() !== '';
     return false;
-  }, [step, selectedGroup, selectedGameType, selectedParticipants.length, amount, settlementTitle]);
+  }, [step, selectedGroup, selectedGameType, selectedParticipants.length, amountNumber, settlementTitle]);
 
   const payerLabel = useMemo(() => {
     const payer = participants.find((p) => p.id === selectedPayerId);
@@ -292,7 +295,10 @@ export default function GamesPage() {
                 <input
                   type="number"
                   value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setAmount(next === '' ? '' : Number(next));
+                  }}
                   placeholder="10000"
                 />
               </div>
@@ -411,7 +417,7 @@ export default function GamesPage() {
             winner={gameResult.winner}
             leftTeam={gameResult.leftTeam}
             rightTeam={gameResult.rightTeam}
-            amount={amount}
+            amount={amountNumber}
             onRestart={() => {
               // Restart with only losers
               const losers = gameResult.winner === 'left' ? gameResult.rightTeam : gameResult.leftTeam;
@@ -441,8 +447,8 @@ export default function GamesPage() {
               const count = losers.length;
               if (count === 0) return; // Should not happen but safety check
 
-              const share = Math.floor(amount / count);
-              const remainder = amount % count;
+              const share = Math.floor(amountNumber / count);
+              const remainder = amountNumber % count;
 
               const participantInputs = losers.map((p, idx) => ({
                 participant_id: p.id,
@@ -461,12 +467,13 @@ export default function GamesPage() {
                   group_id: selectedGroup.id,
                   payer_participant_id: payer.id,
                   title: `[게임 결과] ${settlementTitle || '슈퍼 겁쟁이들의 벌칙'}`,
-                  total_amount: amount,
+                  total_amount: amountNumber,
                   split_type: 'amount',
                   icon: settlementIcon,
                   participants: participantInputs,
                   date: new Date().toISOString().split('T')[0]
                 });
+                queryClient.invalidateQueries({ queryKey: groupKeys.settlements(selectedGroup.id) });
                 alert('정산 결과가 기록되었습니다!');
                 resetGame();
               } catch (error) {

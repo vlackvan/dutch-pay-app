@@ -39,6 +39,15 @@ export function GameResult({ winner, leftTeam, rightTeam, amount, onRestart, onR
                 <div className={styles.avatarScene}>
                     {losingTeam.map((p, index) => (
                         <div key={p.id} className={styles.sceneAvatar} style={{ zIndex: 10 + index }}>
+                            <span
+                                className={
+                                    normalizeUrl(p.fullBodyPhoto)
+                                        ? `${styles.sceneAvatarName} ${styles.sceneAvatarNameTight}`
+                                        : styles.sceneAvatarName
+                                }
+                            >
+                                {p.name}
+                            </span>
                             {normalizeUrl(p.fullBodyPhoto) ? (
                                 <img src={normalizeUrl(p.fullBodyPhoto)!} alt={p.name} className={styles.fullBodyImg} />
                             ) : normalizeUrl(p.profilePhoto) ? (
