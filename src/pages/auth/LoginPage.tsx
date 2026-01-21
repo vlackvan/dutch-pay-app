@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi, usersApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import styles from './AuthPage.module.css';
+import { ProfileHeaderCard } from '../profile/components/ProfileHeaderCard';
 
 const loginSchema = z.object({
   email: z.string().email('유효한 이메일을 입력하세요'),
@@ -20,9 +21,24 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const loginAttemptRef = useRef(0);
   const [error, setError] = useState<string | null>(null);
+  const [showAfterLogin, setShowAfterLogin] = useState(false);
+  const [showResidentOverlay, setShowResidentOverlay] = useState(false);
+  const [postSignupFlow, setPostSignupFlow] = useState(
+    () => localStorage.getItem('post_signup_login') === '1'
+  );
+  const afterLoginAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!showAfterLogin) return;
+    const audio = afterLoginAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }, [showAfterLogin]);
   const handleGoogleLogin = () => {
     const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
@@ -57,6 +73,12 @@ export function LoginPage() {
       if (context?.attemptId !== loginAttemptRef.current) return;
       queryClient.clear();
       setAuth(token, user);
+      if (postSignupFlow) {
+        localStorage.removeItem('post_signup_login');
+        setPostSignupFlow(false);
+        setShowAfterLogin(true);
+        return;
+      }
       navigate(from, { replace: true });
     },
     onError: (err: Error, _variables, context) => {
@@ -78,8 +100,57 @@ export function LoginPage() {
     loginMutation.mutate(data);
   };
 
+  const finishAfterLogin = () => {
+    setShowAfterLogin(false);
+    setShowResidentOverlay(true);
+  };
+
+  const finishResidentOverlay = () => {
+    navigate('/settlements', { replace: true });
+  };
+
   return (
     <div className={styles.container}>
+      {showAfterLogin && (
+        <div
+          className={styles.afterLoginOverlay}
+          onClick={finishAfterLogin}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              finishAfterLogin();
+            }
+          }}
+        >
+          <img src="/after-login.jpg" alt="" className={styles.afterLoginImage} />
+          <audio
+            ref={afterLoginAudioRef}
+            src="/after-login.mp3"
+            onEnded={finishAfterLogin}
+          />
+        </div>
+      )}
+      {showResidentOverlay && (
+        <div
+          className={styles.residentOverlay}
+          onClick={finishResidentOverlay}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              finishResidentOverlay();
+            }
+          }}
+        >
+          <div className={styles.residentOverlayContent}>
+            <div className={styles.residentOverlayTitle}>주민등록증 등록 완료</div>
+            <div className={styles.residentCardWrap}>
+              <ProfileHeaderCard user={user || undefined} />
+            </div>
+          </div>
+        </div>
+      )}
       <div className={styles.card}>
         <div className={styles.logo}>
           <img src="/login-frame.png" alt="" className={styles.logoImage} />
@@ -117,7 +188,7 @@ export function LoginPage() {
           </div>
 
           <button type="submit" className={styles.submitButton} disabled={loginMutation.isPending}>
-            {loginMutation.isPending ? '로그인 중...' : '로그인'}
+            {loginMutation.isPending && postSignupFlow ? '로그인 중..' : '로그인'}
           </button>
         </form>
 

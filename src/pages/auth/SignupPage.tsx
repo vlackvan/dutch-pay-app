@@ -51,6 +51,7 @@ export function SignupPage() {
   const signupMutation = useMutation({
     mutationFn: authApi.signup,
     onSuccess: () => {
+      localStorage.setItem('post_signup_login', '1');
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
