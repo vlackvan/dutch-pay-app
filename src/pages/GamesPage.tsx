@@ -171,14 +171,14 @@ export default function GamesPage() {
     <div className={`${styles.page} ${step !== 'selectGame' ? styles.pageActive : ''}`}>
 
 
-        <div className={styles.content}>
-          {step === 'selectGame' && (
-            <>
-              <img className={styles.bottomCharacter} src="/game-character.png" alt="" />
-              <img className={styles.smallFishBubble} src="/small-fish-text.png" alt="" />
-              <img className={styles.bigFishBubble} src="/big-fish-text.png" alt="" />
-            </>
-          )}
+      <div className={styles.content}>
+        {step === 'selectGame' && (
+          <>
+            <img className={styles.bottomCharacter} src="/game-character.png" alt="" />
+            <img className={styles.smallFishBubble} src="/small-fish-text.png" alt="" />
+            <img className={styles.bigFishBubble} src="/big-fish-text.png" alt="" />
+          </>
+        )}
         {/* Step Indicator */}
 
 
@@ -280,6 +280,7 @@ export default function GamesPage() {
                   onSelectIcon={setSettlementIcon}
                   size="medium"
                   className={styles.gameIconDropdown}
+                  menuClassName={styles.gameIconMenu}
                 />
               </div>
             </div>

@@ -7,10 +7,11 @@ interface IconDropdownProps {
   selectedIcon: string;
   onSelectIcon: (iconPath: string) => void;
   size?: 'small' | 'medium';
-  className?: string;
+  className?: string; // Wrapper class
+  menuClassName?: string; // Menu overrides
 }
 
-export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small', className }: IconDropdownProps) {
+export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small', className, menuClassName }: IconDropdownProps) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,7 +47,7 @@ export default function IconDropdown({ selectedIcon, onSelectIcon, size = 'small
       </button>
 
       {open && (
-        <div className={styles.menu} role="listbox" aria-label="아이콘 선택">
+        <div className={`${styles.menu} ${menuClassName || ''}`} role="listbox" aria-label="아이콘 선택">
           {ICON_OPTIONS.map((icon) => {
             const isSelected = selectedIcon === icon.path;
             return (

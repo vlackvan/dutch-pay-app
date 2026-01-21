@@ -402,50 +402,69 @@
   flex: 0 0 auto;
 }
 
-.gameIconDropdown :global(.selectBtn),
-.gameIconDropdown :global(.selectBtnSmall) {
+/* Trigger Button */
+.gameIconDropdown>button {
   height: 56px;
-  background: rgba(15, 24, 32, 0.8);
-  border: 2px solid rgba(30, 144, 255, 0.3);
-  box-shadow: none;
-  color: #ffffff;
+  background: rgba(15, 24, 32, 0.8) !important;
+  border: 2px solid rgba(30, 144, 255, 0.3) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  border-radius: 14px;
 }
 
-.gameIconDropdown :global(.selectBtn:hover),
-.gameIconDropdown :global(.selectBtnSmall:hover) {
-  background: rgba(15, 24, 32, 0.9);
-  border-color: #1e90ff;
+.gameIconDropdown>button:hover {
+  background: rgba(15, 24, 32, 0.9) !important;
+  border-color: #1e90ff !important;
 }
 
-.gameIconDropdown :global(.selectBtn img),
-.gameIconDropdown :global(.selectBtnSmall img) {
-  background: rgba(15, 24, 32, 0.9);
-  border: 2px solid rgba(30, 144, 255, 0.6);
-  border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 0 8px rgba(30, 144, 255, 0.35);
+.gameIconDropdown>button svg path {
+  stroke: #1e90ff !important;
 }
 
-.gameIconDropdown :global(svg path) {
-  stroke: rgba(255, 255, 255, 0.6);
+/* Dropdown Menu */
+.gameIconMenu {
+  background: rgba(15, 24, 32, 0.98) !important;
+  border: 2px solid rgba(30, 144, 255, 0.5) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
+  padding: 0.5rem 0;
 }
 
-.gameIconDropdown :global(.menu) {
-  background: rgba(15, 24, 32, 0.98);
-  border: 2px solid rgba(30, 144, 255, 0.3);
-  box-shadow: 0 12px 20px rgba(10, 24, 40, 0.45);
+/* Scrollbar styling for dark theme */
+.gameIconMenu::-webkit-scrollbar {
+  width: 8px;
 }
 
-.gameIconDropdown :global(.menuItem) {
-  color: rgba(130, 15, 15, 0.85);
+.gameIconMenu::-webkit-scrollbar-track {
+  background: rgba(15, 24, 32, 0.5);
+  border-radius: 0 14px 14px 0;
 }
 
-.gameIconDropdown :global(.menuItem:hover) {
-  background: rgba(30, 144, 255, 0.18);
+.gameIconMenu::-webkit-scrollbar-thumb {
+  background: rgba(30, 144, 255, 0.4);
+  border-radius: 4px;
 }
 
-.gameIconDropdown :global(.active) {
-  background: rgba(30, 144, 255, 0.28);
+.gameIconMenu::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 144, 255, 0.6);
+}
+
+/* Menu Items */
+.gameIconMenu button {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+}
+
+.gameIconMenu button:hover {
+  background: rgba(30, 144, 255, 0.2) !important;
+}
+
+.gameIconMenu button img {
+  filter: drop-shadow(0 0 5px rgba(30, 144, 255, 0.5));
 }
 
 .gameIconDropdown :global(.iconWrapper) {

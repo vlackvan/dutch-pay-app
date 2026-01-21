@@ -20,21 +20,21 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 50%;
+    height: 60%;
+    /* Increased from 50% */
     background: url("/weeniejr.png") center bottom / cover no-repeat;
     z-index: 0;
 }
 
 .avatarScene {
     position: absolute;
-    bottom: 2rem;
+    bottom: calc(2rem + 140px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: flex-end;
     justify-content: center;
     gap: -50000px;
-    /* Overlap slightly */
     width: 100%;
     height: 200px;
     z-index: 5;
@@ -90,23 +90,26 @@
 }
 
 .fullBodyImg {
-    height: 140px;
+    height: 94px;
+    /* Reduced from 140px */
     width: auto;
     object-fit: contain;
     filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
 }
 
 .profileImg {
-    width: 80px;
-    height: 80px;
+    width: 54px;
+    /* Reduced from 80px */
+    height: 54px;
     border-radius: 50%;
     border: 3px solid white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .avatarPlaceholder {
-    width: 80px;
-    height: 80px;
+    width: 54px;
+    /* Reduced from 80px */
+    height: 54px;
     border-radius: 50%;
     background: #ccc;
     display: flex;
@@ -117,13 +120,35 @@
     border: 3px solid white;
 }
 
+.guardDrop {
+    position: absolute;
+    bottom: -110px;
+    right: -5%;
+    /* Positioned to the right */
+    z-index: 20;
+    --drift: 0px;
+    --spin: 0deg;
+    animation: fallAndBounce 1.15s cubic-bezier(0.22, 0.7, 0.2, 1.15) backwards;
+    animation-delay: 0.6s;
+}
+
+.guardImg {
+    height: 160px;
+    /* Doubled from 160px */
+    /* Taller than avatars */
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, 0.4));
+}
+
 /* Header Section (Top) */
 .headerContainer {
     position: relative;
     z-index: 10;
     width: 90%;
     max-width: 600px;
-    margin-top: 3rem;
+    margin-top: 1rem;
+    /* Moved up by ~30px (from 3rem) */
     animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
@@ -138,7 +163,7 @@
 }
 
 .headerTitle {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 900;
     color: #333;
     margin: 0;
@@ -164,6 +189,7 @@
 
 /* Settlement Card (Bottom Overlay) */
 /* Settlement Card (Bottom Overlay) */
+/* Settlement Card (Bottom Overlay) */
 .settlementCard {
     position: absolute;
     bottom: 0;
@@ -171,16 +197,16 @@
     z-index: 10;
     width: 100%;
     max-width: 100%;
-    /* Full width */
-    height: 50%;
-    /* Bottom half */
-    background: #fff9e6;
-    /* Soft yellow/cream */
+    height: 45%;
+    /* Decreased from 50% */
+    /* Dark Blue Theme Background */
+    background: linear-gradient(180deg, rgba(10, 24, 40, 0.95) 0%, rgba(15, 30, 45, 0.98) 100%);
+    border-top: 2px solid rgba(30, 144, 255, 0.3);
     border-top-left-radius: 2rem;
     border-top-right-radius: 2rem;
     padding: 2rem 1.5rem calc(88px + 1.5rem);
-    /* Bottom padding for tab bar + safe area */
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
     animation: slideUp 0.5s ease-out;
     display: flex;
     flex-direction: column;
@@ -191,20 +217,41 @@
     flex-direction: column;
     gap: 0.75rem;
     margin-bottom: auto;
-    /* Push buttons to bottom */
     flex: 1;
     overflow-y: auto;
     padding: 0.5rem;
+}
+
+/* Scrollbar for list */
+.losersList::-webkit-scrollbar {
+    width: 6px;
+}
+
+.losersList::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.losersList::-webkit-scrollbar-thumb {
+    background: rgba(30, 144, 255, 0.3);
+    border-radius: 3px;
 }
 
 .loserItem {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: white;
+    background: rgba(255, 255, 255, 0.03);
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(30, 144, 255, 0.15);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.loserItem:hover {
+    background: rgba(30, 144, 255, 0.08);
+    border-color: rgba(30, 144, 255, 0.4);
+    transform: translateY(-2px);
 }
 
 .loserInfo {
@@ -213,28 +260,52 @@
     gap: 0.75rem;
 }
 
-.checkIcon {
-    color: #007AFF;
-    font-size: 1.2rem;
+.listAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Ensure it doesn't shrink */
+    flex-shrink: 0;
+}
+
+.listAvatarPlaceholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1e90ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
 }
 
 .loserName {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: #ffffff;
 }
 
 .loserShare {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #333;
+    color: #00bfff;
+    /* Cyan */
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
 }
 
 /* Buttons */
 .buttonGroup {
     display: grid;
     grid-template-columns: 1.2fr 1.2fr 1fr;
-    gap: 0.5rem;
+    gap: 0.75rem;
     margin-top: 1rem;
 }
 
@@ -242,32 +313,55 @@
     border: none;
     border-radius: 0.75rem;
     padding: 1rem 0.5rem;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: white;
     cursor: pointer;
-    transition: transform 0.1s;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .actionBtn:active {
-    transform: translateY(4px);
-    box-shadow: none;
+    transform: scale(0.96);
 }
 
 .restartBtn {
-    background-color: #172b4d;
-    /* Dark Navy for restart */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.restartBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Record Button - Prominent/Primary */
 .recordBtn {
-    background-color: #0052cc;
-    /* Blue for record */
+    background: linear-gradient(135deg, #1e90ff 0%, #0056b3 100%);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.recordBtn:hover {
+    background: linear-gradient(135deg, #339cff 0%, #006dd9 100%);
+    box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
+}
+
+/* Home Button - Secondary/Teal */
 .homeBtn {
-    background-color: #008DA6;
-    /* Teal/Cyan for home */
+    background: linear-gradient(135deg, #00bfff 0%, #008f99 100%);
+    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.homeBtn:hover {
+    background: linear-gradient(135deg, #22cdff 0%, #00a4b0 100%);
+    box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
 }
 
 @keyframes bounceIn {

@@ -48,22 +48,22 @@ export function GameResult({ winner, leftTeam, rightTeam, amount, onRestart, onR
                             )}
                         </div>
                     ))}
+                    {/* Dropping Guard */}
+                    <div className={styles.guardDrop}>
+                        <img src="/fullbodyguard.png" alt="Guard" className={styles.guardImg} />
+                    </div>
                 </div>
             </div>
 
             {/* Header Title */}
             <div className={styles.headerContainer}>
                 <div className={styles.headerTitleBox}>
-                    <h1 className={styles.headerTitle}>슈퍼 겁쟁이들끼리 내거라!</h1>
+                    <h1 className={styles.headerTitle}>수퍼겁쟁이들의 쉼터는 저쪽이라고.</h1>
                 </div>
             </div>
 
-            {/* Guard Image - reusing the one from public folder if relevant, or just relying on background */}
-            {/* The reference image shows the guard below. I'll add an image element if I have one, or just the card. 
-                Using guard.png as a placeholder for the "tough" guy looking down or similar. 
-                If no specific image requested for this spot, I'll omit or use a generic one. 
-                The CSS has a .guardImage class. I'll try to put the guard there. */}
-            <img src="/guard.png" alt="" className={styles.guardImage} />
+
+
 
 
             {/* Settlement Card (Bottom Sheet style) */}
@@ -72,7 +72,13 @@ export function GameResult({ winner, leftTeam, rightTeam, amount, onRestart, onR
                     {losingTeam.map(p => (
                         <div key={p.id} className={styles.loserItem}>
                             <div className={styles.loserInfo}>
-                                <span className={styles.checkIcon}>☑</span>
+                                {normalizeUrl(p.profilePhoto) ? (
+                                    <img src={normalizeUrl(p.profilePhoto)!} alt="" className={styles.listAvatar} />
+                                ) : (
+                                    <div className={styles.listAvatarPlaceholder}>
+                                        {(p.name || '?').slice(0, 1)}
+                                    </div>
+                                )}
                                 <span className={styles.loserName}>{p.name}</span>
                             </div>
                             <span className={styles.loserShare}>{formatCurrency(settlement)}</span>
