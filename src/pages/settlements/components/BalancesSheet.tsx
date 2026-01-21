@@ -17,7 +17,11 @@ export default function BalancesSheet({
       <button className={styles.owedCard} type="button" onClick={onOpenOwed}>
         <div className={styles.owedLeft}>
           <div className={styles.owedEmoji} aria-hidden="true">
-            {owedAmount > 0 ? '🤑' : owedAmount < 0 ? '😭' : '😊'}
+            <img
+              src={owedAmount > 0 ? '/icons/FinishExpense/needtogetpaid.png' : owedAmount < 0 ? '/icons/FinishExpense/havedebttopay.png' : '/icons/FinishExpense/nothingtopay.png'}
+              alt={owedAmount > 0 ? 'Need to get paid' : owedAmount < 0 ? 'Have debt to pay' : 'Nothing to pay'}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
           <div>
             <div className={styles.owedTitle}>

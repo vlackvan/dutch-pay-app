@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import type { GroupListResponse, GameType, GroupParticipantResponse } from '@/types/api.types';
 import { groupsApi, settlementsApi } from '@/lib/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAudioContext } from '@/contexts/AudioContext';
 
 import { IconDropdown } from '@/components/IconDropdown';
 import { IconDisplay } from '@/components/IconPicker/IconPicker';
@@ -26,6 +27,7 @@ export default function GamesPage() {
   const currentUser = useAuthStore((state) => state.user);
   const { data: groups = [], isLoading: groupsLoading } = useMyGroups();
   const queryClient = useQueryClient();
+  const audio = useAudioContext();
 
 
   const [step, setStep] = useState<Step>('selectGame');
@@ -87,6 +89,27 @@ export default function GamesPage() {
       }
     }
   }, [participants, currentUser, selectedPayerId]);
+
+  // Control music based on game step
+  useEffect(() => {
+    if (step === 'result') {
+      // Switch to result music when entering result step
+      audio.playResult();
+    } else {
+      // Play game music for all other steps
+      // This will start game music on mount and resume it if returning from result
+      audio.playGame();
+    }
+  }, [step, audio]);
+
+  // Cleanup: when leaving the games page, resume main music
+  useEffect(() => {
+    return () => {
+      audio.stopGame();
+      audio.stopResult();
+      audio.playMain();
+    };
+  }, [audio]);
 
   const resetGame = useCallback(() => {
     setStep('selectGame');
