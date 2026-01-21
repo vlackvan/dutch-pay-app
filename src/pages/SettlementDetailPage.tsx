@@ -8,6 +8,7 @@ import AddExpenseButton from './settlements/components/AddExpenseButton';
 import SegmentTabs from './settlements/components/SegmentTabs';
 import ExpensesTab from './settlements/components/ExpensesTab';
 import MembersTab from './settlements/components/MembersTab';
+import RecordsTab from './settlements/components/RecordsTab';
 import BalancesSheet from './settlements/components/BalancesSheet';
 
 import {
@@ -21,7 +22,7 @@ import { useMyProfile } from '@/hooks/queries/useUser';
 import { useAuthStore } from '@/stores/auth.store';
 import type { GroupParticipantResponse, SettlementResponse, UserBadgeResponse } from '@/types/api.types';
 
-type Tab = 'expenses' | 'members';
+type Tab = 'expenses' | 'members' | 'records';
 type Panel = 'main' | 'addExpense' | 'balances';
 
 export default function SettlementDetailPage() {
@@ -366,8 +367,10 @@ export default function SettlementDetailPage() {
           currentUserParticipantId={currentUserParticipantId}
           groupId={groupIdNum}
         />
-      ) : (
+      ) : tab === 'members' ? (
         <MembersTab participants={participants} groupId={groupIdNum} onCopyInviteCode={handleCopyInviteCode} />
+      ) : (
+        <RecordsTab participants={participants} settlements={settlements} />
       )}
       <AwardModal />
     </div>

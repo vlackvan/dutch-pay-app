@@ -1,6 +1,6 @@
 import styles from "../SettlementDetailPage.module.css";
 
-type Tab = "expenses" | "members";
+type Tab = "expenses" | "members" | "records";
 
 export default function SegmentTabs({
   tab,
@@ -20,10 +20,17 @@ export default function SegmentTabs({
       </button>
       <button
         type="button"
+        className={`${styles.segment} ${tab === "records" ? styles.segmentActive : ""}`}
+        onClick={() => onChange("records")}
+      >
+        생활 기록
+      </button>
+      <button
+        type="button"
         className={`${styles.segment} ${tab === "members" ? styles.segmentActive : ""}`}
         onClick={() => onChange("members")}
       >
-        멤버
+        주민 명단
       </button>
     </div>
   );
