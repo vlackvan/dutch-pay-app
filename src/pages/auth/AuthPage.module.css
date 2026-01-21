@@ -211,3 +211,59 @@
   color: #10B981;
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
+
+.afterLoginOverlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  cursor: pointer;
+}
+
+.afterLoginImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.residentOverlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 210;
+  cursor: pointer;
+}
+
+.residentOverlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  width: min(92vw, 520px);
+}
+
+.residentOverlayTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #9ee7ff;
+  text-shadow:
+    0 0 8px rgba(0, 191, 255, 0.9),
+    0 0 18px rgba(0, 140, 255, 0.7),
+    0 0 30px rgba(0, 100, 255, 0.6);
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.residentCardWrap {
+  width: 100%;
+  pointer-events: none;
+}
