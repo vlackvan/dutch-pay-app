@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@700;800&display=swap');
+
 .page {
   --tabbar-h: 78px;
   min-height: 100svh;
@@ -12,6 +14,7 @@
   position: relative;
   overflow: hidden;
   touch-action: none;
+  font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
 }
 
 .pageActive {
@@ -317,6 +320,7 @@
   cursor: pointer;
   transition: all 0.2s;
   backdrop-filter: blur(10px);
+  font-family: initial;
   box-shadow:
     0 0 14px rgba(30, 144, 255, 0.35),
     inset 0 0 12px rgba(30, 144, 255, 0.2);
@@ -382,14 +386,84 @@
   margin-bottom: 1.5rem;
 }
 
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inputRow .titleInput {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.gameIconDropdown {
+  flex: 0 0 auto;
+}
+
+.gameIconDropdown :global(.selectBtn),
+.gameIconDropdown :global(.selectBtnSmall) {
+  height: 56px;
+  background: rgba(15, 24, 32, 0.8);
+  border: 2px solid rgba(30, 144, 255, 0.3);
+  box-shadow: none;
+  color: #ffffff;
+}
+
+.gameIconDropdown :global(.selectBtn:hover),
+.gameIconDropdown :global(.selectBtnSmall:hover) {
+  background: rgba(15, 24, 32, 0.9);
+  border-color: #1e90ff;
+}
+
+.gameIconDropdown :global(.selectBtn img),
+.gameIconDropdown :global(.selectBtnSmall img) {
+  background: rgba(15, 24, 32, 0.9);
+  border: 2px solid rgba(30, 144, 255, 0.6);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 0 8px rgba(30, 144, 255, 0.35);
+}
+
+.gameIconDropdown :global(svg path) {
+  stroke: rgba(255, 255, 255, 0.6);
+}
+
+.gameIconDropdown :global(.menu) {
+  background: rgba(15, 24, 32, 0.98);
+  border: 2px solid rgba(30, 144, 255, 0.3);
+  box-shadow: 0 12px 20px rgba(10, 24, 40, 0.45);
+}
+
+.gameIconDropdown :global(.menuItem) {
+  color: rgba(130, 15, 15, 0.85);
+}
+
+.gameIconDropdown :global(.menuItem:hover) {
+  background: rgba(30, 144, 255, 0.18);
+}
+
+.gameIconDropdown :global(.active) {
+  background: rgba(30, 144, 255, 0.28);
+}
+
+.gameIconDropdown :global(.iconWrapper) {
+  border-radius: 8px;
+  background: rgba(15, 24, 32, 0.85);
+  border: 1px solid rgba(30, 144, 255, 0.3);
+}
+
 .titleInput {
   width: 100%;
   padding: 1rem;
+  height: 56px;
   background: rgba(15, 24, 32, 0.8);
   border: 2px solid rgba(30, 144, 255, 0.3);
   border-radius: 0.75rem;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
   backdrop-filter: blur(10px);
 }
 
@@ -403,11 +477,95 @@
   color: rgba(255, 255, 255, 0.4);
 }
 
+.payerSelectWrap {
+  position: relative;
+}
+
+.payerSelectBtn {
+  width: 100%;
+  height: 56px;
+  padding: 0 1rem;
+  background: rgba(15, 24, 32, 0.8);
+  border: 2px solid rgba(30, 144, 255, 0.3);
+  border-radius: 0.75rem;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.payerSelectBtn:hover {
+  border-color: #1e90ff;
+}
+
+.payerSelectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.payerSelectChevron {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.payerMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: rgba(15, 24, 32, 0.98);
+  border: 2px solid rgba(30, 144, 255, 0.3);
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 20px rgba(10, 24, 40, 0.45);
+  z-index: 30;
+}
+
+.payerMenu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.payerMenu::-webkit-scrollbar-track {
+  background: rgba(30, 144, 255, 0.08);
+}
+
+.payerMenu::-webkit-scrollbar-thumb {
+  background: rgba(30, 144, 255, 0.4);
+  border-radius: 8px;
+}
+
+.payerMenuItem {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  cursor: pointer;
+  font-family: "Gowun Dodum", "Nanum Myeongjo", "Segoe UI", serif;
+}
+
+.payerMenuItem:hover {
+  background: rgba(30, 144, 255, 0.18);
+}
+
+.payerMenuItemActive {
+  background: rgba(30, 144, 255, 0.28);
+}
+
 .amountInput {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: 0 1rem;
+  height: 56px;
   background: rgba(15, 24, 32, 0.8);
   border: 2px solid rgba(30, 144, 255, 0.3);
   border-radius: 0.75rem;
@@ -418,7 +576,7 @@
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #ffffff;
 }
@@ -429,6 +587,7 @@
 
 .amountInput span {
   color: rgba(255, 255, 255, 0.6);
+  font-size: 1.05rem;
 }
 
 .iconGrid {
@@ -509,6 +668,13 @@
   font-size: 0.75rem;
   color: white;
   font-weight: 600;
+  overflow: hidden;
+}
+
+.participantAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 

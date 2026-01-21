@@ -79,7 +79,7 @@ export function GameIntro({ onComplete }: GameIntroProps) {
                             <motion.div
                                 style={{
                                     position: 'absolute',
-                                    top: '12%',
+                                    top: '8%',
                                     left: '50%',
                                     transform: 'translateX(-50%)',
                                     padding: '1.5rem 2.5rem',
@@ -87,8 +87,8 @@ export function GameIntro({ onComplete }: GameIntroProps) {
                                     border: '2px solid #00BFFF',
                                     borderRadius: '1.25rem',
                                     color: '#00BFFF',
-                                    fontSize: '1.20rem',
-                                    fontWeight: 700,
+                                    fontSize: '1.26rem',
+                                    fontWeight: 900,
                                     textShadow: '0 0 10px rgba(0, 191, 255, 0.8)',
                                     zIndex: 12,
                                     width: 'min(96vw, 720px)',
@@ -97,7 +97,7 @@ export function GameIntro({ onComplete }: GameIntroProps) {
                                     whiteSpace: 'pre-line',
                                 }}
                             >
-                                {'룰은 다음과 같다.\n\n너희 물고기들은 우리 사나이 클럽에 들어오기 위해\n겁쟁이 테스트를 통과해야 한다.\n\n스스로 터프하다고 생각하는 절벽으로 올라가\n진짜 사나이로 살아남아라.\n\np.s.\n겁쟁이가 되면… 벌칙금을 내게 될 거다.\n어때, 도전할 용기는 있나?'}
+                                {'룰은 다음과 같다.\n\n너희 물고기들은 우리 사나이 클럽에 \n들어오기 위해\n겁쟁이 테스트를 통과해야 한다.\n\n스스로 터프하다고 생각하는 \n절벽으로 올라가\n진짜 사나이로 살아남아라.\n\np.s.\n겁쟁이가 되면… 벌칙금을 내게 될 거다.\n어때, 도전할 용기는 있나?'}
                             </motion.div>
                         </>
                     ) : (

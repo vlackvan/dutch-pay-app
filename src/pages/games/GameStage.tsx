@@ -36,6 +36,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const [result, setResult] = useState<{ winner: 'left' | 'right'; explanation: string } | null>(null);
     const [showLegacyResult, setShowLegacyResult] = useState(false);
     const [showOverlay, setShowOverlay] = useState(false);
+    const [waitingForOverlay, setWaitingForOverlay] = useState(false);
 
     const stageRef = useRef<HTMLDivElement>(null);
     const leftPlatformRef = useRef<HTMLDivElement>(null);
@@ -70,10 +71,8 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                 explanation: question.explanation
             });
 
-            // 2 seconds later, show the Cinematic Overlay with Guard
-            setTimeout(() => {
-                setShowOverlay(true);
-            }, 2000); // 2 second delay for overlay
+            // Wait for user click before showing the Cinematic Overlay with Guard
+            setWaitingForOverlay(true);
         }, 300);
     };
 
@@ -167,10 +166,30 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
     const winningTeamLegacy = result?.winner === 'left' ? leftParticipants : rightParticipants;
     const losingTeamLegacy = result?.winner === 'left' ? rightParticipants : leftParticipants;
 
+    const handleStageClick = () => {
+        if (phase !== 'judging' || !result || showOverlay || showLegacyResult) return;
+        if (!waitingForOverlay) return;
+        setWaitingForOverlay(false);
+        setShowOverlay(true);
+    };
+
     return (
-        <div className={styles.gameStage} ref={stageRef}>
+        <div className={styles.gameStage} ref={stageRef} onClick={handleStageClick}>
             {/* Background */}
             <div className={styles.background} />
+
+            {waitingForOverlay && !showOverlay && !showLegacyResult && result && (
+                <button
+                    type="button"
+                    className={styles.explainBtn}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        handleStageClick();
+                    }}
+                >
+                    이유 보기
+                </button>
+            )}
 
             {/* Legacy Result Overlay */}
             <AnimatePresence>
@@ -187,22 +206,44 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                             transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             className={styles.legacyContent}
                         >
-                            <h1 className={styles.legacyTitle}>🏆 생존자 🏆</h1>
+                            <h1 className={styles.legacyTitle}>🏆 진짜 사나이 🏆</h1>
 
                             <div className={styles.winnerSection}>
                                 <div className={styles.teamList}>
                                     {winningTeamLegacy.map(p => (
-                                        <span key={p.id} className={styles.winnerName}>{p.name}</span>
+                                        <div key={p.id} className={styles.winnerCard}>
+                                            {normalizeUrl(p.profilePhoto) ? (
+                                                <img
+                                                    src={normalizeUrl(p.profilePhoto)!}
+                                                    alt={p.name}
+                                                    className={styles.winnerAvatar}
+                                                />
+                                            ) : (
+                                                <div className={styles.winnerAvatarFallback}>{p.name.slice(0, 1)}</div>
+                                            )}
+                                            <div className={styles.winnerLabel}>{p.name}</div>
+                                        </div>
                                     ))}
                                 </div>
                                 <p className={styles.subText}>터프함을 증명했습니다!</p>
                             </div>
 
                             <div className={styles.loserSection}>
-                                <h3 className={styles.loserTitle}>💀 탈락자 💀</h3>
+                                <h3 className={styles.loserTitle}>💀 겁쟁이 💀</h3>
                                 <div className={styles.teamList}>
                                     {losingTeamLegacy.map(p => (
-                                        <span key={p.id} className={styles.loserName}>{p.name}</span>
+                                        <div key={p.id} className={styles.loserCard}>
+                                            {normalizeUrl(p.profilePhoto) ? (
+                                                <img
+                                                    src={normalizeUrl(p.profilePhoto)!}
+                                                    alt={p.name}
+                                                    className={styles.loserAvatar}
+                                                />
+                                            ) : (
+                                                <div className={styles.loserAvatarFallback}>{p.name.slice(0, 1)}</div>
+                                            )}
+                                            <div className={styles.loserLabel}>{p.name}</div>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -258,12 +299,12 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
                             initial={{ y: 200, opacity: 0 }}
                             animate={{ y: 50, opacity: 1 }}
                             transition={{ type: "spring", damping: 20 }}
-                            style={{ position: 'absolute', bottom: 0, zIndex: 105 }}
+                            style={{ position: 'absolute', bottom: 115, zIndex: 105 }}
                         >
                             <img
                                 src="/guard.png"
                                 alt="Guard"
-                                style={{ width: '24rem', maxWidth: '85vw', filter: 'drop-shadow(0 0 50px rgba(0,0,0,0.8))' }}
+                                style={{ width: '16rem', maxWidth: '78vw', filter: 'drop-shadow(0 0 50px rgba(0,0,0,0.8))' }}
                             />
                         </motion.div>
                     </motion.div>
@@ -277,7 +318,7 @@ export function GameStage({ participants, onJudgmentReady }: GameStageProps) {
 
             {/* Platforms and Choices */}
             <div className={styles.platformsContainer}>
-                <img src="/fightingfish.png" alt="" className={styles.fightingFish} />
+                {!result && <img src="/fightingfish.png" alt="" className={styles.fightingFish} />}
                 {/* Left Platform */}
                 <motion.div
                     className={styles.platformWrapper}
