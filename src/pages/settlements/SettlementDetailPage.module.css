@@ -188,7 +188,7 @@
   background: var(--card-muted);
   border-radius: 16px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   padding: 5px;
   gap: 5px;
   border: 2px solid var(--border);
@@ -453,6 +453,216 @@
   font-weight: 800;
   color: var(--text-2);
   border: 1px solid var(--border);
+}
+
+/* =========================
+   Records Tab
+   ========================= */
+.recordsWrap {
+  padding: 0 var(--px-screen) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.recordsFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: center;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+
+.recordsFilterBtn {
+  border: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 6px 12px rgba(70, 88, 96, 0.12);
+}
+
+.recordsFilterBtnActive {
+  background: #e6f4f1;
+  border-color: rgba(75, 140, 150, 0.5);
+}
+
+.podiumStage {
+  background: url("/stage_new.jpg") center 40% / 110% auto no-repeat;
+  border-radius: 6px;
+  border: none;
+  padding: 18px 12px 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  width: 100%;
+}
+
+.podiumSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 86px;
+  position: relative;
+  z-index: 1;
+}
+
+.podiumSlot .podiumAvatarWrap {
+  transform: translateY(-40px);
+}
+
+.podiumSlot[data-rank="1"] {
+  order: 2;
+  transform: translateX(3px) translateY(-90px);
+}
+
+.podiumSlot[data-rank="2"] {
+  order: 1;
+  transform: translateX(16px) translateY(-25px);
+}
+
+.podiumSlot[data-rank="3"] {
+  order: 3;
+  transform: translateX(-47px) translateY(12px);
+}
+
+.podiumAvatarWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 170px;
+  padding-bottom: 8px;
+}
+
+.podiumAvatarWrapFace {
+  gap: 10px;
+}
+
+.podiumAvatarWrapBody {
+  gap: -4px;
+}
+
+.podiumAvatarBody {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(70, 88, 96, 0.18));
+  order: 1;
+}
+
+.podiumAvatarFace,
+.podiumAvatarFallback {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: var(--text-1);
+  box-shadow: 0 8px 16px rgba(70, 88, 96, 0.18);
+  order: 1;
+}
+
+.podiumName {
+  font-size: 14px;
+  font-weight: 900;
+  color: #ffffff;
+  text-align: center;
+  order: 0;
+}
+
+.podiumNameBody {
+  margin-bottom:  -9px;
+}
+
+.podiumAmount {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffe36e;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 227, 110, 0.5);
+  margin-top: -25px;
+  order: 2;
+  white-space: nowrap;
+  text-shadow:
+    0 0 6px rgba(255, 227, 110, 0.9),
+    0 0 12px rgba(255, 211, 64, 0.75),
+    0 0 20px rgba(255, 180, 0, 0.6);
+  letter-spacing: 0.2px;
+  animation: podiumSparkle 1.4s ease-in-out infinite;
+}
+
+@keyframes podiumSparkle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+.podiumAvatarBody,
+.podiumAvatarFace,
+.podiumAvatarFallback {
+  order: 1;
+}
+
+
+.recordsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recordsList .avatar {
+  margin-left: -6px;
+}
+
+.recordRankBadge {
+  min-width: 40px;
+  height: auto;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-1);
+  margin-left: 8px;
+}
+
+.recordAmount {
+  margin-left: auto;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--text-1);
+  white-space: nowrap;
 }
 
 /* =========================
