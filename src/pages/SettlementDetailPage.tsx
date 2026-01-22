@@ -73,7 +73,7 @@ export default function SettlementDetailPage() {
     let total = 0;
 
     settlements.forEach((s: SettlementResponse) => {
-      const isReimburse = s.title === "\uc0c1\ud658" || s.icon === REIMBURSE_ICON;
+      const isReimburse = s.title === '상환' || s.icon === REIMBURSE_ICON;
       if (!isReimburse) {
         total += Number(s.total_amount) || 0;
       }
@@ -111,17 +111,17 @@ export default function SettlementDetailPage() {
   const netAmount = useMemo(() => {
     if (!resultsData?.results || !currentUserParticipantId) return 0;
 
-    // 내가 받아야 할 돈
+    // 받을 금액 합계
     const toReceive = resultsData.results
       .filter((r) => r.creditor_participant_id === currentUserParticipantId && !r.is_completed)
       .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
-    // 내가 내야 할 돈
+    // 낼 금액 합계
     const toPay = resultsData.results
       .filter((r) => r.debtor_participant_id === currentUserParticipantId && !r.is_completed)
       .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
-    // 받아야 할 돈 - 내야 할 돈
+    // 받을 금액 - 낼 금액
     return toReceive - toPay;
   }, [resultsData, currentUserParticipantId]);
 
@@ -166,7 +166,7 @@ export default function SettlementDetailPage() {
       await navigator.clipboard.writeText(result.invite_code);
       alert(`초대 코드가 복사되었습니다: ${result.invite_code}`);
     } catch {
-      alert('초대 코드를 가져오는데 실패했습니다.');
+      alert('초대 코드 복사에 실패했습니다.');
     }
   };
 
@@ -182,7 +182,7 @@ export default function SettlementDetailPage() {
         setAwardOpen(true);
       }
     } catch (error) {
-      alert('지불 완료 처리에 실패했습니다.');
+      alert('정산 완료 처리에 실패했습니다.');
     }
   };
 
@@ -199,7 +199,7 @@ export default function SettlementDetailPage() {
       <div className={styles.badgeAwardOverlay} role="dialog" aria-modal="true">
         <div className={styles.badgeAwardBackdrop} onClick={() => setAwardOpen(false)} />
         <div className={styles.badgeAwardCard}>
-          <div className={styles.badgeAwardTitle}>배지를 획득했습니다!</div>
+          <div className={styles.badgeAwardTitle}>배지 획득!</div>
           <img
             src={primaryBadge.badge.icon}
             alt={primaryBadge.badge.name}
@@ -211,21 +211,13 @@ export default function SettlementDetailPage() {
           {restBadges.length > 0 && (
             <div className={styles.badgeAwardMore}>+{restBadges.length}개</div>
           )}
-                    {!o.isCompleted && (
-                      <button
-                        className="${styles.btn} ${styles.btnFullWidth} ${styles.btnPrimary}"
-                        type="button"
-                        disabled={markPaidMutation.isPending}
-                        style={{ marginTop: '12px' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkPaid(o.resultId);
-                        }}
-                      >
-                        {markPaidMutation.isPending ? '?????? ???..' : '???????????'}
-                      </button>
-                    )}
-
+          <button
+            className={styles.badgeAwardClose}
+            type="button"
+            onClick={() => setAwardOpen(false)}
+          >
+            닫기
+          </button>
         </div>
       </div>
     );
@@ -246,8 +238,8 @@ export default function SettlementDetailPage() {
         >
           🔗
         </button>
-        <button className={styles.iconBtn} aria-label="더보기" type="button">
-          ⋯
+        <button className={styles.iconBtn} aria-label="그룹 설정" type="button">
+          ⚙️
         </button>
       </div>
     </header>
@@ -266,7 +258,7 @@ export default function SettlementDetailPage() {
     return (
       <div className={styles.page}>
         <TopBar onBack={() => nav('/settlements')} />
-        <div className={styles.error}>그룹을 찾을 수 없습니다.</div>
+        <div className={styles.error}>정산 그룹을 찾을 수 없습니다.</div>
       </div>
     );
   }
@@ -289,7 +281,7 @@ export default function SettlementDetailPage() {
       <div className={styles.page}>
         <TopBar onBack={() => setPanel('main')} />
 
-        <GroupHeader title={group.name} emoji={group.icon || '🧾'} />
+        <GroupHeader title={group.name} emoji={group.icon || '👥'} />
 
         <BalancesSheet owedAmount={netAmount} balances={balances} onOpenOwed={() => setOwedOpen(true)} />
 
@@ -303,18 +295,18 @@ export default function SettlementDetailPage() {
                 onClick={() => setOwedOpen(false)}
                 aria-label="닫기"
               >
-                ×
+                ✕
               </button>
 
-              <div className={styles.modalTitle}>정산 상세</div>
+              <div className={styles.modalTitle}>정산 결과</div>
               <div className={styles.pill}>₩{Math.round(Math.abs(netAmount) || 0).toLocaleString()}</div>
 
               <div className={styles.owedList}>
                 {owedDetails.map((o) => (
                   <div key={o.id} className={styles.owedItem}>
                     <div className={styles.owedLine}>
-                      <b>{o.from}</b> <span className={styles.gray}>가</span> <b>{o.to}</b>{' '}
-                      <span className={styles.gray}>에게</span>
+                      <b>{o.from}</b> <span className={styles.gray}>→</span> <b>{o.to}</b>{' '}
+                      <span className={styles.gray}>정산</span>
                     </div>
                     <div className={styles.owedAmt}>₩{Math.round(o.amount || 0).toLocaleString()}</div>
 
@@ -322,20 +314,20 @@ export default function SettlementDetailPage() {
                       <div className={styles.paymentInfo}>{o.paymentInfo}</div>
                     )}
 
-                    <button
-                      className={`${styles.btn} ${styles.btnFullWidth} ${o.isCompleted ? styles.btnDisabled : styles.btnPrimary}`}
-                      type="button"
-                      disabled={o.isCompleted || markPaidMutation.isPending}
-                      style={{ marginTop: '12px' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!o.isCompleted) {
+                    {!o.isCompleted && (
+                      <button
+                        className={`${styles.btn} ${styles.btnFullWidth} ${styles.btnPrimary}`}
+                        type="button"
+                        disabled={markPaidMutation.isPending}
+                        style={{ marginTop: '12px' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleMarkPaid(o.resultId);
-                        }
-                      }}
-                    >
-                      {o.isCompleted ? '완료됨' : markPaidMutation.isPending ? '처리 중...' : '지불 완료'}
-                    </button>
+                        }}
+                      >
+                        {markPaidMutation.isPending ? '처리 중...' : '지불 완료'}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -353,16 +345,16 @@ export default function SettlementDetailPage() {
     <div className={styles.page}>
       <TopBar onBack={() => nav('/settlements')} />
 
-      <GroupHeader title={group.name} emoji={group.icon || '🧾'} />
+      <GroupHeader title={group.name} emoji={group.icon || '👥'} />
 
       <section className={styles.actions}>
         <button className={styles.actionCard} type="button" onClick={() => setPanel('addExpense')}>
-          <div className={styles.actionIcon}>＋</div>
+          <div className={styles.actionIcon}>➕</div>
           <div className={styles.actionText}>정산 추가</div>
         </button>
 
         <button className={styles.actionCard} type="button" onClick={() => setPanel('balances')}>
-          <div className={styles.actionIcon}>🧾</div>
+          <div className={styles.actionIcon}>📊</div>
           <div className={styles.actionText}>정산 결과</div>
         </button>
       </section>
